@@ -41,7 +41,18 @@ export type AnimationKind =
   | "closing-tabs"
   | "warm-beam"
   | "lifting-stone"
-  | "constellation";
+  | "constellation"
+  // tredje vågen — kroppsspecifika och kontextuella
+  | "belly-hand"
+  | "shoulder-drop"
+  | "jaw-release"
+  | "footprints"
+  | "doorway"
+  | "first-step"
+  | "typing-cursor"
+  | "morning-sun"
+  | "stretch-up"
+  | "inbox-priority";
 
 type Props = {
   phase?: string;
