@@ -28,7 +28,7 @@ function Page() {
     const diff = v.before / v.n - v.after / v.n;
     if (diff > 0.5) {
       insights.push(
-        `Din skattning av ${METRIC_LABELS[metric as never].toLowerCase()} brukar sjunka med ${diff.toFixed(1)} poäng efter en övning.`,
+        `Din skattning av ${METRIC_LABELS[metric as RatingMetric].toLowerCase()} brukar sjunka med ${diff.toFixed(1)} poäng efter en övning.`,
       );
     }
   }
