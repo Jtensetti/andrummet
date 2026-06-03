@@ -34,8 +34,6 @@ type Phase = "before" | "running" | "after" | "done";
 function Player() {
   const { id } = Route.useParams();
   const ex = getExercise(id);
-  const navigate = useNavigate();
-
   if (!ex) {
     return (
       <div className="grid min-h-screen place-items-center bg-background">
@@ -48,6 +46,11 @@ function Player() {
       </div>
     );
   }
+  return <PlayerInner ex={ex} />;
+}
+
+function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }) {
+  const navigate = useNavigate();
 
   const [phase, setPhase] = useState<Phase>("before");
   const [stepIdx, setStepIdx] = useState(0);
