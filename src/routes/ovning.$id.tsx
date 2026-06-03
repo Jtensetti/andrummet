@@ -27,40 +27,41 @@ const themeBg: Record<Category, string> = {
 type Phase = "intro" | "before" | "running" | "after" | "done";
 
 /**
- * Kort "vad du gör nu" — en eller två ord. Plockas från labeln när det går,
- * faller annars tillbaka på första 1–2 orden.
+ * Kort "vad du gör nu" — helst ETT ord, max två. Plockas från labeln.
  */
 function cueFor(label: string): string {
   const l = label.trim();
   if (!l) return "";
   const lower = l.toLowerCase();
-  const map: Array<[RegExp, string]> = [
-    [/^andas\s*in/, "Andas in"],
-    [/^andas\s*ut/, "Andas ut"],
+  const oneWord: Array<[RegExp, string]> = [
+    [/andas\s*in/, "In"],
+    [/andas\s*ut/, "Ut"],
     [/^håll/, "Håll"],
     [/^vila|^paus/, "Vila"],
-    [/^stanna|^stå|^stopp/, "Stanna"],
-    [/^släpp|släpp/, "Släpp"],
-    [/^lägg märke|^märk|lägg märke/, "Märk"],
-    [/^känn|^känner/, "Känn"],
+    [/^stanna|^stå(\s|$)|^stopp/, "Stanna"],
+    [/släpp/, "Släpp"],
+    [/lägg märke|^märk/, "Märk"],
+    [/^känn/, "Känn"],
     [/^välj/, "Välj"],
     [/^skriv/, "Skriv"],
     [/^se\b|^titta|^se dig/, "Se"],
     [/^nämn|^säg/, "Säg"],
-    [/^lägg/, "Lägg"],
     [/^dra/, "Dra"],
-    [/^gå\b/, "Gå"],
+    [/^sänk/, "Sänk"],
     [/^öppna/, "Öppna"],
     [/^stäng/, "Stäng"],
-    [/^sänk/, "Sänk"],
+    [/^gå\b/, "Gå"],
+    [/^lägg/, "Lägg"],
+    [/^mjuka/, "Mjuka"],
+    [/^skanna|^scanna/, "Skanna"],
+    [/^lyssna/, "Lyssna"],
+    [/^räkna/, "Räkna"],
     [/^andas/, "Andas"],
   ];
-  for (const [re, cue] of map) if (re.test(lower)) return cue;
+  for (const [re, cue] of oneWord) if (re.test(lower)) return cue;
   if (l.endsWith("?")) return "Reflektera";
-  // fallback: 1–2 första ord, max ~18 tecken
-  const words = l.split(/\s+/);
-  const short = words.slice(0, 2).join(" ");
-  return short.length > 22 ? words[0] : short;
+  const first = l.split(/\s+/)[0];
+  return first.length > 14 ? first.slice(0, 12) + "…" : first;
 }
 
 function Player() {
@@ -295,12 +296,12 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
                   transition={{ duration: 0.4 }}
-                  className="flex max-w-md flex-col items-center gap-2 text-center"
+                  className="flex max-w-md flex-col items-center gap-3 text-center"
                 >
-                  <p className="text-xs font-extrabold uppercase tracking-[0.25em] opacity-70">
+                  <p className="text-5xl font-black leading-none tracking-tight md:text-6xl">
                     {cueFor(ex.steps[stepIdx]?.label ?? "")}
                   </p>
-                  <h2 className="text-2xl font-extrabold leading-tight md:text-3xl">
+                  <h2 className="text-base font-semibold leading-snug opacity-80 md:text-lg">
                     {ex.steps[stepIdx]?.label}
                   </h2>
                 </motion.div>
