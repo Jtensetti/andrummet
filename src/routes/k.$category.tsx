@@ -1,32 +1,27 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { ArrowLeft, Clock, Zap } from "lucide-react";
+import { ArrowLeft, Clock, Zap, Brain, Wind } from "lucide-react";
+import { useState } from "react";
 import {
+  ALL_CATEGORIES,
   CATEGORY_LABELS,
   CATEGORY_SUBTITLE,
   getByCategory,
+  getByKind,
   type Category,
+  type ExerciseKind,
 } from "@/lib/exercises";
-import { FloatingAkutPaus } from "./index";
-
-const VALID: Category[] = [
-  "calm",
-  "focus",
-  "anxiety",
-  "sleep",
-  "stress",
-  "compassion",
-  "recovery",
-];
 
 export const Route = createFileRoute("/k/$category")({
   loader: ({ params }) => {
-    if (!VALID.includes(params.category as Category)) throw notFound();
+    if (!ALL_CATEGORIES.includes(params.category as Category)) throw notFound();
     return { category: params.category as Category };
   },
   head: ({ params }) => ({
     meta: [
-      { title: `${CATEGORY_LABELS[params.category as Category] ?? "Andrum"} – Andrum` },
+      {
+        title: `${CATEGORY_LABELS[params.category as Category] ?? "Andrum"} – Andrum`,
+      },
     ],
   }),
   notFoundComponent: () => (
@@ -42,64 +37,37 @@ export const Route = createFileRoute("/k/$category")({
   component: CategoryPage,
 });
 
-const THEME: Record<
-  Category,
-  { bg: string; ink: string; chip: string; accent: string }
-> = {
-  calm: {
-    bg: "bg-[var(--calm)]",
-    ink: "text-[var(--calm-ink)]",
-    chip: "bg-white/20 text-[var(--calm-ink)]",
-    accent: "var(--calm)",
-  },
-  focus: {
-    bg: "bg-[var(--focus)]",
-    ink: "text-[var(--focus-ink)]",
-    chip: "bg-black/10 text-[var(--focus-ink)]",
-    accent: "var(--focus)",
-  },
-  anxiety: {
-    bg: "bg-[var(--anxiety)]",
-    ink: "text-[var(--anxiety-ink)]",
-    chip: "bg-white/20 text-[var(--anxiety-ink)]",
-    accent: "var(--anxiety)",
-  },
-  sleep: {
-    bg: "bg-[var(--sleep)]",
-    ink: "text-[var(--sleep-ink)]",
-    chip: "bg-white/15 text-[var(--sleep-ink)]",
-    accent: "var(--sleep)",
-  },
-  stress: {
-    bg: "bg-[var(--stress)]",
-    ink: "text-[var(--stress-ink)]",
-    chip: "bg-black/10 text-[var(--stress-ink)]",
-    accent: "var(--stress)",
-  },
-  compassion: {
-    bg: "bg-[var(--compassion)]",
-    ink: "text-[var(--compassion-ink)]",
-    chip: "bg-white/30 text-[var(--compassion-ink)]",
-    accent: "var(--compassion)",
-  },
-  recovery: {
-    bg: "bg-[var(--recovery)]",
-    ink: "text-[var(--recovery-ink)]",
-    chip: "bg-black/10 text-[var(--recovery-ink)]",
-    accent: "var(--recovery)",
-  },
+const THEME: Record<Category, { bg: string; ink: string; chip: string }> = {
+  body: { bg: "bg-[var(--body)]", ink: "text-[var(--body-ink)]", chip: "bg-black/10 text-[var(--body-ink)]" },
+  breath: { bg: "bg-[var(--breath)]", ink: "text-[var(--breath-ink)]", chip: "bg-white/20 text-[var(--breath-ink)]" },
+  anxiety: { bg: "bg-[var(--anxiety)]", ink: "text-[var(--anxiety-ink)]", chip: "bg-white/20 text-[var(--anxiety-ink)]" },
+  stress: { bg: "bg-[var(--stress)]", ink: "text-[var(--stress-ink)]", chip: "bg-black/10 text-[var(--stress-ink)]" },
+  focus: { bg: "bg-[var(--focus)]", ink: "text-[var(--focus-ink)]", chip: "bg-black/10 text-[var(--focus-ink)]" },
+  sleep: { bg: "bg-[var(--sleep)]", ink: "text-[var(--sleep-ink)]", chip: "bg-white/15 text-[var(--sleep-ink)]" },
+  reflection: { bg: "bg-[var(--reflection)]", ink: "text-[var(--reflection-ink)]", chip: "bg-white/20 text-[var(--reflection-ink)]" },
+  "quick-pause": { bg: "bg-[var(--quick-pause)]", ink: "text-[var(--quick-pause-ink)]", chip: "bg-black/10 text-[var(--quick-pause-ink)]" },
+  compassion: { bg: "bg-[var(--compassion)]", ink: "text-[var(--compassion-ink)]", chip: "bg-white/30 text-[var(--compassion-ink)]" },
+  anger: { bg: "bg-[var(--anger)]", ink: "text-[var(--anger-ink)]", chip: "bg-white/20 text-[var(--anger-ink)]" },
+  worklife: { bg: "bg-[var(--worklife)]", ink: "text-[var(--worklife-ink)]", chip: "bg-black/10 text-[var(--worklife-ink)]" },
 };
+
+type Filter = ExerciseKind | "all";
 
 function CategoryPage() {
   const data = Route.useLoaderData() as { category: Category };
   const category = data.category;
   const t = THEME[category];
-  const exercises = getByCategory(category);
-  const quick = exercises.find((e) => e.minutes <= 2) ?? exercises[0];
+  const all = getByCategory(category);
+  const [filter, setFilter] = useState<Filter>("all");
+  const [expanded, setExpanded] = useState(false);
+
+  const exercises = getByKind(category, filter);
+  const visible = expanded ? exercises : exercises.slice(0, 8);
+  const quick = all.find((e) => e.kind === "short" && e.minutes <= 2) ?? all[0];
 
   return (
     <div className={`relative min-h-[100dvh] ${t.bg} ${t.ink}`}>
-      <div className="mx-auto max-w-2xl px-5 pb-32 pt-6 md:px-8 md:pt-12">
+      <div className="mx-auto max-w-2xl px-5 pb-24 pt-6 md:px-8 md:pt-12">
         <Link
           to="/"
           className="inline-flex items-center gap-1 rounded-full bg-black/10 px-3 py-1.5 text-xs font-bold transition hover:bg-black/20"
@@ -110,11 +78,11 @@ function CategoryPage() {
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
+          transition={{ duration: 0.35 }}
           className="mt-6"
         >
           <p className="text-xs font-bold uppercase tracking-widest opacity-70">
-            En känsla
+            Ett behov
           </p>
           <h1 className="mt-1 text-4xl font-extrabold leading-tight md:text-5xl">
             {CATEGORY_LABELS[category]}
@@ -144,16 +112,29 @@ function CategoryPage() {
           </Link>
         )}
 
-        <section className="mt-8 space-y-3">
-          <h2 className="text-xs font-bold uppercase tracking-widest opacity-70">
-            Övningar för dig som vill {CATEGORY_LABELS[category].toLowerCase()}
-          </h2>
-          {exercises.map((ex, i) => (
+        {/* Filter-chips */}
+        <div className="mt-7 flex gap-2">
+          <FilterChip active={filter === "all"} onClick={() => setFilter("all")}>
+            Alla ({all.length})
+          </FilterChip>
+          <FilterChip active={filter === "short"} onClick={() => setFilter("short")}>
+            <Wind className="h-3 w-3" /> Korta
+          </FilterChip>
+          <FilterChip
+            active={filter === "reflective"}
+            onClick={() => setFilter("reflective")}
+          >
+            <Brain className="h-3 w-3" /> Reflekterande
+          </FilterChip>
+        </div>
+
+        <section className="mt-5 space-y-3">
+          {visible.map((ex, i) => (
             <motion.div
               key={ex.id}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.05 * i, duration: 0.35 }}
+              transition={{ delay: 0.04 * i, duration: 0.3 }}
             >
               <Link
                 to="/ovning/$id"
@@ -162,9 +143,11 @@ function CategoryPage() {
               >
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <h3 className="text-xl font-extrabold leading-tight">
-                      {ex.title}
-                    </h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-xl font-extrabold leading-tight">
+                        {ex.title}
+                      </h3>
+                    </div>
                     <p className="mt-1 text-sm opacity-85">{ex.short}</p>
                   </div>
                   <span
@@ -174,18 +157,58 @@ function CategoryPage() {
                     {ex.minutes} min
                   </span>
                 </div>
-                {ex.metaphor && (
-                  <p className="mt-3 text-xs italic opacity-75">
-                    "{ex.metaphor.intro.split(". ")[0]}."
-                  </p>
-                )}
+                <div className="mt-3 flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider opacity-70">
+                  {ex.kind === "short" ? (
+                    <>
+                      <Wind className="h-3 w-3" /> Kort övning
+                    </>
+                  ) : (
+                    <>
+                      <Brain className="h-3 w-3" /> Reflekterande
+                    </>
+                  )}
+                </div>
               </Link>
             </motion.div>
           ))}
+
+          {exercises.length === 0 && (
+            <p className="rounded-3xl bg-black/10 p-6 text-sm opacity-80">
+              Inga övningar i den här kategorin för det filtret än.
+            </p>
+          )}
+
+          {exercises.length > 8 && !expanded && (
+            <button
+              onClick={() => setExpanded(true)}
+              className="w-full rounded-full bg-black/15 py-3 text-sm font-bold transition active:scale-[0.99]"
+            >
+              Visa fler ({exercises.length - 8} till)
+            </button>
+          )}
         </section>
       </div>
-
-      {category !== "recovery" && <FloatingAkutPaus />}
     </div>
+  );
+}
+
+function FilterChip({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition ${
+        active ? "bg-foreground text-background" : "bg-black/10 hover:bg-black/15"
+      }`}
+    >
+      {children}
+    </button>
   );
 }

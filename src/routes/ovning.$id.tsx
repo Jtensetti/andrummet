@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { X, Pause, Play, ArrowLeft } from "lucide-react";
-import { getExercise, METRIC_LABELS } from "@/lib/exercises";
+import { getExercise, METRIC_LABELS, type Category } from "@/lib/exercises";
 import { addEntry } from "@/lib/history";
 import { AnimationFor } from "@/components/animations";
 
@@ -10,14 +10,18 @@ export const Route = createFileRoute("/ovning/$id")({
   component: Player,
 });
 
-const themeBg: Record<string, string> = {
-  calm: "bg-[var(--calm)] text-[var(--calm-ink)]",
-  stress: "bg-[var(--stress)] text-[var(--stress-ink)]",
-  sleep: "bg-[var(--sleep)] text-[var(--sleep-ink)]",
+const themeBg: Record<Category, string> = {
+  body: "bg-[var(--body)] text-[var(--body-ink)]",
+  breath: "bg-[var(--breath)] text-[var(--breath-ink)]",
   anxiety: "bg-[var(--anxiety)] text-[var(--anxiety-ink)]",
+  stress: "bg-[var(--stress)] text-[var(--stress-ink)]",
   focus: "bg-[var(--focus)] text-[var(--focus-ink)]",
+  sleep: "bg-[var(--sleep)] text-[var(--sleep-ink)]",
+  reflection: "bg-[var(--reflection)] text-[var(--reflection-ink)]",
+  "quick-pause": "bg-[var(--quick-pause)] text-[var(--quick-pause-ink)]",
   compassion: "bg-[var(--compassion)] text-[var(--compassion-ink)]",
-  recovery: "bg-[var(--recovery)] text-[var(--recovery-ink)]",
+  anger: "bg-[var(--anger)] text-[var(--anger-ink)]",
+  worklife: "bg-[var(--worklife)] text-[var(--worklife-ink)]",
 };
 
 type Phase = "intro" | "before" | "running" | "after" | "done";
@@ -43,7 +47,13 @@ function Player() {
 function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }) {
   const navigate = useNavigate();
 
-  const [phase, setPhase] = useState<Phase>(ex.metaphor ? "intro" : "before");
+  const initialPhase: Phase = ex.metaphor
+    ? "intro"
+    : ex.requiresRating
+      ? "before"
+      : "running";
+
+  const [phase, setPhase] = useState<Phase>(initialPhase);
   const [stepIdx, setStepIdx] = useState(0);
   const [stepRemaining, setStepRemaining] = useState(ex.steps[0]?.seconds ?? 0);
   const [paused, setPaused] = useState(false);
@@ -60,7 +70,7 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
         setStepIdx((i) => {
           const next = i + 1;
           if (next >= ex.steps.length) {
-            setPhase("after");
+            setPhase(ex.requiresRating ? "after" : "done");
             return i;
           }
           setStepRemaining(ex.steps[next].seconds);
@@ -72,7 +82,7 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
     return () => {
       if (tickRef.current) window.clearInterval(tickRef.current);
     };
-  }, [phase, paused, ex.steps]);
+  }, [phase, paused, ex.steps, ex.requiresRating]);
 
   const totalSeconds = useMemo(
     () => ex.steps.reduce((s, x) => s + x.seconds, 0),
@@ -81,11 +91,10 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
   const elapsed = useMemo(
     () =>
       ex.steps.slice(0, stepIdx).reduce((s, x) => s + x.seconds, 0) +
-      (ex.steps[stepIdx]?.seconds ?? 0) -
-      stepRemaining,
+      ((ex.steps[stepIdx]?.seconds ?? 0) - stepRemaining),
     [ex.steps, stepIdx, stepRemaining],
   );
-  const progress = Math.min(100, (elapsed / totalSeconds) * 100);
+  const progress = Math.min(1, elapsed / Math.max(1, totalSeconds));
 
   function finish(beforeVal: number | null, afterVal: number | null, text: string) {
     addEntry({
@@ -103,10 +112,25 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
     setPhase("done");
   }
 
+  function afterToDone() {
+    if (ex.requiresRating || ex.reflectionPrompt) {
+      setPhase("after");
+    } else {
+      finish(null, null, "");
+    }
+  }
+
+  const delta =
+    ratingBefore !== null && ratingAfter !== null
+      ? ratingBefore - ratingAfter
+      : null;
+
   return (
     <div className={`relative min-h-[100dvh] ${themeBg[ex.category]}`}>
       <button
-        onClick={() => navigate({ to: "/k/$category", params: { category: ex.category } })}
+        onClick={() =>
+          navigate({ to: "/k/$category", params: { category: ex.category } })
+        }
         aria-label="Avsluta"
         className="absolute right-4 top-4 z-20 grid h-10 w-10 place-items-center rounded-full bg-black/10 backdrop-blur"
       >
@@ -117,7 +141,7 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
         {phase === "intro" && ex.metaphor && (
           <motion.div
             key="intro"
-            initial={{ opacity: 0, y: 16 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
             className="mx-auto flex min-h-[100dvh] max-w-md flex-col justify-center px-6 py-12"
@@ -131,15 +155,17 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
             <p className="mt-5 text-lg leading-relaxed opacity-95">
               {ex.metaphor.intro}
             </p>
-
             <div className="mt-8 flex justify-center">
               <div className="rounded-3xl bg-black/10 p-6">
-                <AnimationFor kind={ex.metaphor.illustration ?? ex.animation} phase="andas in" />
+                <AnimationFor
+                  kind={ex.metaphor.illustration ?? ex.animation}
+                  phase="andas in"
+                  progress={0.4}
+                />
               </div>
             </div>
-
             <button
-              onClick={() => setPhase("before")}
+              onClick={() => setPhase(ex.requiresRating ? "before" : "running")}
               className="mt-10 rounded-full bg-black/85 px-6 py-4 text-base font-extrabold text-white active:scale-[0.98]"
             >
               Jag är med
@@ -150,7 +176,7 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
         {phase === "before" && (
           <motion.div
             key="before"
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
             className="mx-auto flex min-h-[100dvh] max-w-md flex-col justify-center px-6 py-12"
@@ -163,7 +189,7 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
 
             <div className="mt-10 rounded-3xl bg-black/10 p-5">
               <p className="text-sm font-bold">
-                Hur känns din {METRIC_LABELS[ex.metric].toLowerCase()} just nu?
+                Hur stark är din {METRIC_LABELS[ex.metric].toLowerCase()} just nu?
               </p>
               <RatingRow value={ratingBefore} onChange={setRatingBefore} />
             </div>
@@ -199,24 +225,36 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
             exit={{ opacity: 0 }}
             className="flex min-h-[100dvh] flex-col items-center justify-between px-6 py-10"
           >
+            {/* progress */}
             <div className="w-full max-w-md">
-              <div className="h-1.5 w-full overflow-hidden rounded-full bg-black/15">
+              <div className="h-1 w-full overflow-hidden rounded-full bg-black/15">
                 <motion.div
                   className="h-full bg-white/80"
-                  animate={{ width: `${progress}%` }}
+                  animate={{ width: `${progress * 100}%` }}
                   transition={{ ease: "linear", duration: 0.4 }}
                 />
               </div>
             </div>
 
+            {/* central animation + en instruktion */}
             <div className="flex flex-1 flex-col items-center justify-center gap-10">
-              <h2 className="text-center text-4xl font-extrabold leading-tight md:text-5xl">
-                {ex.steps[stepIdx]?.label}
-              </h2>
-              <AnimationFor kind={ex.animation} phase={ex.steps[stepIdx]?.label ?? ""} />
-              <p className="text-sm font-semibold opacity-70">
-                Steg {stepIdx + 1} av {ex.steps.length}
-              </p>
+              <AnimationFor
+                kind={ex.animation}
+                phase={ex.steps[stepIdx]?.label ?? ""}
+                progress={progress}
+              />
+              <AnimatePresence mode="wait">
+                <motion.h2
+                  key={stepIdx}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.5 }}
+                  className="max-w-md text-center text-3xl font-extrabold leading-tight md:text-4xl"
+                >
+                  {ex.steps[stepIdx]?.label}
+                </motion.h2>
+              </AnimatePresence>
             </div>
 
             <div className="flex items-center gap-3">
@@ -227,6 +265,12 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
               >
                 {paused ? <Play className="h-6 w-6" /> : <Pause className="h-6 w-6" />}
               </button>
+              <button
+                onClick={afterToDone}
+                className="rounded-full bg-black/10 px-4 py-3 text-xs font-bold opacity-70"
+              >
+                Hoppa till slut
+              </button>
             </div>
           </motion.div>
         )}
@@ -234,29 +278,44 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
         {phase === "after" && (
           <motion.div
             key="after"
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
             className="mx-auto flex min-h-[100dvh] max-w-md flex-col justify-center px-6 py-12"
           >
-            <p className="text-sm font-bold uppercase tracking-wide opacity-80">Färdigt</p>
-            <h1 className="mt-2 text-4xl font-extrabold leading-tight">Hur känns det nu?</h1>
+            <p className="text-sm font-bold uppercase tracking-wide opacity-80">
+              Färdigt
+            </p>
+            <h1 className="mt-2 text-4xl font-extrabold leading-tight">
+              Hur känns det nu?
+            </h1>
             <p className="mt-2 opacity-90">{ex.closing}</p>
 
-            <div className="mt-8 rounded-3xl bg-black/10 p-5">
-              <p className="text-sm font-bold">
-                Din {METRIC_LABELS[ex.metric].toLowerCase()} just nu
-              </p>
-              <RatingRow value={ratingAfter} onChange={setRatingAfter} />
-            </div>
+            {ex.requiresRating && (
+              <div className="mt-8 rounded-3xl bg-black/10 p-5">
+                <p className="text-sm font-bold">
+                  Din {METRIC_LABELS[ex.metric].toLowerCase()} just nu
+                </p>
+                <RatingRow value={ratingAfter} onChange={setRatingAfter} />
+                {delta !== null && delta !== 0 && (
+                  <p className="mt-3 text-xs opacity-80">
+                    {delta > 0
+                      ? `Din skattning gick från ${ratingBefore} till ${ratingAfter}. Det betyder inte att allt är löst — bara en liten signal.`
+                      : `Skattningen gick från ${ratingBefore} till ${ratingAfter}. Det räknas också. Du gjorde övningen.`}
+                  </p>
+                )}
+              </div>
+            )}
 
             <label className="mt-6 block">
-              <span className="text-sm font-bold">Vill du lämna en tanke?</span>
+              <span className="text-sm font-bold">
+                {ex.reflectionPrompt ?? "Vill du lämna en tanke?"}
+              </span>
               <textarea
                 value={reflection}
                 onChange={(e) => setReflection(e.target.value)}
                 rows={3}
-                placeholder="En mening räcker. Din hjärna behöver inte lämna rapport."
+                placeholder="En mening räcker. Alla tankar behöver inte bli dokument."
                 className="mt-2 w-full resize-none rounded-2xl bg-black/10 p-3 text-sm placeholder:opacity-60 focus:outline-none focus:ring-2 focus:ring-black/30"
               />
             </label>
