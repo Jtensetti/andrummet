@@ -234,7 +234,7 @@ const SEEDS: Seed[] = [
     category: "breath",
     kind: "short",
     minutes: 3,
-    animation: "breath-wave",
+    animation: "spiral",
     metric: "stress",
     steps: WAVE(6),
     closing: "Tankarna fortsatte. De får. Du andades långsammare.",
@@ -301,7 +301,7 @@ const SEEDS: Seed[] = [
     category: "quick-pause",
     kind: "short",
     minutes: 1,
-    animation: "traffic-light",
+    animation: "pendulum",
     metric: "stress",
     steps: [
       ["Rött: stanna", 10],
@@ -339,7 +339,7 @@ const SEEDS: Seed[] = [
     category: "quick-pause",
     kind: "short",
     minutes: 2,
-    animation: "mailbox",
+    animation: "closing-tabs",
     metric: "stress",
     steps: [
       ["Vad tar plats just nu?", 20],
@@ -361,7 +361,7 @@ const SEEDS: Seed[] = [
     category: "anxiety",
     kind: "reflective",
     minutes: 5,
-    animation: "passing-traffic",
+    animation: "drifting-leaves",
     metric: "oro",
     steps: [
       ["Se trafiken passera", 40],
@@ -523,7 +523,7 @@ const SEEDS: Seed[] = [
     category: "stress",
     kind: "reflective",
     minutes: 5,
-    animation: "anchor-drop",
+    animation: "lifting-stone",
     metric: "stress",
     steps: [
       ["Vad har du burit på idag?", 40],
@@ -563,7 +563,7 @@ const SEEDS: Seed[] = [
     category: "focus",
     kind: "short",
     minutes: 3,
-    animation: "focus-lens",
+    animation: "orbit",
     metric: "fokus",
     steps: [
       ["Lägg märke till hur spritt det är", 20],
@@ -642,7 +642,7 @@ const SEEDS: Seed[] = [
     category: "sleep",
     kind: "reflective",
     minutes: 6,
-    animation: "body-scan",
+    animation: "warm-beam",
     metric: "trötthet",
     steps: [
       ["Hjässan blir varm", 40],
@@ -684,7 +684,7 @@ const SEEDS: Seed[] = [
     category: "sleep",
     kind: "short",
     minutes: 3,
-    animation: "breath-wave",
+    animation: "sleep-waves",
     metric: "trötthet",
     steps: WAVE(7),
     closing: "Kroppen följde med till slut. Som den brukar.",
@@ -816,7 +816,7 @@ const SEEDS: Seed[] = [
     category: "reflection",
     kind: "reflective",
     minutes: 8,
-    animation: "drifting-clouds",
+    animation: "constellation",
     metric: "oro",
     requiresRating: false,
     steps: [
@@ -859,7 +859,7 @@ const SEEDS: Seed[] = [
     category: "compassion",
     kind: "reflective",
     minutes: 4,
-    animation: "warm-hand",
+    animation: "compassion-heart",
     metric: "stress",
     requiresRating: false,
     steps: [

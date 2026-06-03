@@ -1074,6 +1074,379 @@ export function WarmHand({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Pro
 }
 
 // ─────────────────────────────────────────────────────────────
+// 21. SLEEP-WAVES — långsam vågrörelse som sjunker mot natten
+// ─────────────────────────────────────────────────────────────
+export function SleepWaves({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Props) {
+  const safeCount = Math.max(1, stepCount);
+  const sink = clamp01((stepIndex + stepProgress) / safeCount);
+  const baseY = 70 + sink * 70;
+  const amp = 16 - sink * 11;
+  const phase = stepProgress * Math.PI * 2;
+  return (
+    <div className="relative grid place-items-center overflow-hidden rounded-3xl" style={{ width: 280, height: 220 }}>
+      <div
+        className="absolute inset-0"
+        style={{
+          background: `linear-gradient(180deg, rgba(30,27,75,${0.25 + sink * 0.5}) 0%, rgba(15,23,42,${0.15 + sink * 0.6}) 100%)`,
+        }}
+      />
+      {[0, 1, 2].map((layer) => {
+        const layerAmp = amp * (1 - layer * 0.3);
+        const layerY = baseY + layer * 24;
+        const speed = 1 + layer * 0.6;
+        let d = `M0,${layerY}`;
+        for (let x = 0; x <= 280; x += 14) {
+          const y = layerY + Math.sin((x / 280) * Math.PI * 2 + phase / speed) * layerAmp;
+          d += ` L${x},${y}`;
+        }
+        d += ` L280,220 L0,220 Z`;
+        return (
+          <svg key={layer} viewBox="0 0 280 220" className="absolute inset-0 h-full w-full">
+            <path d={d} fill={`rgba(255,255,255,${0.18 - layer * 0.04})`} />
+          </svg>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// 22. DRIFTING-LEAVES — ett löv per steg driver förbi
+// ─────────────────────────────────────────────────────────────
+export function DriftingLeaves({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Props) {
+  const safeCount = Math.max(1, stepCount);
+  const colors = ["#fed7aa", "#fbbf24", "#fca5a5", "#d9f99d", "#fde68a", "#fdba74"];
+  return (
+    <div className="relative grid place-items-center overflow-hidden rounded-3xl" style={{ width: 280, height: 220 }}>
+      <div className="absolute left-0 right-0 top-1/2 h-px bg-white/15" />
+      {Array.from({ length: safeCount }).map((_, i) => {
+        const isPast = i < stepIndex;
+        const isCurrent = i === stepIndex;
+        const isFuture = i > stepIndex;
+        const x = isPast ? 320 : isFuture ? -40 : -40 + stepProgress * 360;
+        const yJitter = Math.sin(stepProgress * Math.PI * 2 + i) * 12;
+        const rot = isCurrent ? stepProgress * 280 : 0;
+        return (
+          <div
+            key={i}
+            className="absolute"
+            style={{
+              left: x,
+              top: 90 + ((i * 17) % 40) + yJitter,
+              transform: `rotate(${rot}deg)`,
+              opacity: isFuture ? 0 : 1,
+              transition: "left 0.15s linear",
+            }}
+          >
+            <svg viewBox="0 0 30 20" width="28" height="20">
+              <path d="M2,10 Q15,-2 28,10 Q15,22 2,10 Z" fill={colors[i % colors.length]} opacity="0.85" />
+              <line x1="2" y1="10" x2="28" y2="10" stroke="rgba(0,0,0,0.15)" strokeWidth="0.5" />
+            </svg>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// 23. CLOSING-TABS — en webbläsarflik stängs per steg
+// ─────────────────────────────────────────────────────────────
+export function ClosingTabs({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Props) {
+  const safeCount = Math.max(1, stepCount);
+  return (
+    <div className="relative grid place-items-center" style={{ width: 280, height: 220 }}>
+      <div className="flex flex-col gap-2">
+        {Array.from({ length: safeCount }).map((_, i) => {
+          const closed = i < stepIndex;
+          const closing = i === stepIndex;
+          const t = closing ? stepProgress : 0;
+          const opacity = closed ? 0.15 : 1 - t * 0.85;
+          const xShift = closed ? -40 : -t * 40;
+          const scaleY = closed ? 0.4 : 1 - t * 0.6;
+          return (
+            <div
+              key={i}
+              className="flex items-center gap-2 rounded-lg px-3 py-2"
+              style={{
+                width: 200,
+                background: "rgba(255,255,255,0.16)",
+                opacity,
+                transform: `translateX(${xShift}px) scaleY(${scaleY})`,
+                transformOrigin: "center",
+                transition: "all 0.25s ease",
+              }}
+            >
+              <div className="h-2 w-2 rounded-full bg-white/60" />
+              <div className="h-1.5 flex-1 rounded-full bg-white/30" />
+              <div className="grid h-4 w-4 place-items-center rounded-full text-[10px] text-white/70">
+                {closed ? "" : "×"}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// 24. WARM-BEAM — varm stråle vandrar nedåt över kroppen
+// ─────────────────────────────────────────────────────────────
+export function WarmBeam({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Props) {
+  const safeCount = Math.max(1, stepCount);
+  const y = ((stepIndex + stepProgress) / safeCount) * 200 + 20;
+  return (
+    <div className="relative grid place-items-center" style={{ width: 280, height: 260 }}>
+      <svg viewBox="0 0 120 240" className="absolute h-60 w-32">
+        <ellipse cx="60" cy="30" rx="20" ry="22" fill="rgba(255,255,255,0.22)" />
+        <path d="M40,55 Q60,50 80,55 L88,160 Q60,170 32,160 Z" fill="rgba(255,255,255,0.22)" />
+        <rect x="46" y="160" width="12" height="70" rx="6" fill="rgba(255,255,255,0.22)" />
+        <rect x="62" y="160" width="12" height="70" rx="6" fill="rgba(255,255,255,0.22)" />
+      </svg>
+      <motion.div
+        className="absolute left-1/2 h-20 w-40 -translate-x-1/2 rounded-full"
+        style={{
+          top: y - 40,
+          background:
+            "radial-gradient(ellipse, rgba(254,215,170,0.85) 0%, rgba(252,165,165,0.4) 40%, transparent 75%)",
+          filter: "blur(8px)",
+        }}
+        animate={{ opacity: [0.7, 1, 0.7] }}
+        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <div
+        className="absolute left-1/2 w-24 -translate-x-1/2 rounded-full"
+        style={{
+          top: 20,
+          height: Math.max(0, y - 20),
+          background: "linear-gradient(180deg, rgba(254,215,170,0.0), rgba(254,215,170,0.35))",
+          filter: "blur(6px)",
+        }}
+      />
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// 25. LIFTING-STONE — en sten lyfts av bröstet, steg för steg
+// ─────────────────────────────────────────────────────────────
+export function LiftingStone({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Props) {
+  const safeCount = Math.max(1, stepCount);
+  const lift = clamp01((stepIndex + stepProgress) / safeCount);
+  const y = 120 - lift * 100;
+  const x = lift * 80;
+  const rot = lift * 25;
+  const stoneOpacity = 1 - Math.max(0, lift - 0.85) * 5;
+  return (
+    <div className="relative grid place-items-center" style={{ width: 280, height: 240 }}>
+      <svg viewBox="0 0 200 200" className="absolute h-56 w-56">
+        <ellipse cx="100" cy="120" rx="70" ry="55" fill="rgba(255,255,255,0.18)" />
+      </svg>
+      <div
+        className="absolute h-20 w-32 rounded-full"
+        style={{
+          top: 120,
+          background: "radial-gradient(ellipse, rgba(254,215,170,0.7), transparent 70%)",
+          filter: "blur(10px)",
+          opacity: lift * 0.9,
+        }}
+      />
+      <svg
+        viewBox="0 0 60 50"
+        className="absolute h-14 w-16"
+        style={{ top: y, left: 140 + x, opacity: stoneOpacity, transform: `rotate(${rot}deg)`, transition: "all 0.25s ease" }}
+      >
+        <ellipse cx="30" cy="28" rx="26" ry="18" fill="#475569" />
+        <ellipse cx="22" cy="22" rx="8" ry="4" fill="#64748b" />
+        <ellipse cx="38" cy="32" rx="6" ry="3" fill="#334155" />
+      </svg>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// 26. CONSTELLATION — en stjärna tänds per steg, linjer ritas
+// ─────────────────────────────────────────────────────────────
+export function Constellation({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Props) {
+  const safeCount = Math.max(1, stepCount);
+  const stars = Array.from({ length: Math.max(safeCount, 7) }, (_, i) => {
+    const a = (i * 137.5) % 360;
+    const r = 60 + ((i * 53) % 50);
+    return {
+      x: 140 + Math.cos((a * Math.PI) / 180) * r,
+      y: 110 + Math.sin((a * Math.PI) / 180) * r * 0.7,
+    };
+  });
+  return (
+    <div
+      className="relative grid place-items-center overflow-hidden rounded-3xl"
+      style={{ width: 280, height: 220, background: "linear-gradient(180deg, rgba(30,27,75,0.4), rgba(15,23,42,0.5))" }}
+    >
+      <svg viewBox="0 0 280 220" className="absolute inset-0 h-full w-full">
+        {stars.slice(0, stepIndex).map((s, i) => {
+          if (i === 0) return null;
+          const prev = stars[i - 1];
+          return <line key={`l${i}`} x1={prev.x} y1={prev.y} x2={s.x} y2={s.y} stroke="rgba(255,255,255,0.4)" strokeWidth="0.8" />;
+        })}
+        {stepIndex > 0 && stepIndex < stars.length && (
+          <line
+            x1={stars[stepIndex - 1].x}
+            y1={stars[stepIndex - 1].y}
+            x2={stars[stepIndex - 1].x + (stars[stepIndex].x - stars[stepIndex - 1].x) * stepProgress}
+            y2={stars[stepIndex - 1].y + (stars[stepIndex].y - stars[stepIndex - 1].y) * stepProgress}
+            stroke="rgba(255,255,255,0.6)"
+            strokeWidth="1"
+          />
+        )}
+        {stars.map((s, i) => {
+          const lit = i < stepIndex;
+          const lighting = i === stepIndex;
+          const opacity = lit ? 1 : lighting ? 0.3 + stepProgress * 0.7 : 0.15;
+          const r = lit ? 2.6 : lighting ? 2 + stepProgress * 0.6 : 1.4;
+          return (
+            <g key={i}>
+              {(lit || lighting) && <circle cx={s.x} cy={s.y} r={r * 2.8} fill="white" opacity={opacity * 0.25} />}
+              <circle cx={s.x} cy={s.y} r={r} fill="white" opacity={opacity} />
+            </g>
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// 27. SPIRAL — spiral som öppnas/lossnar steg för steg
+// ─────────────────────────────────────────────────────────────
+export function Spiral({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Props) {
+  const safeCount = Math.max(1, stepCount);
+  const unwind = clamp01((stepIndex + stepProgress) / safeCount);
+  const points: string[] = [];
+  const turns = 4 - unwind * 2.8;
+  const maxR = 70 + unwind * 20;
+  const total = 200;
+  for (let i = 0; i <= total; i++) {
+    const t = i / total;
+    const angle = t * turns * Math.PI * 2;
+    const r = t * maxR;
+    points.push(`${140 + Math.cos(angle) * r},${110 + Math.sin(angle) * r}`);
+  }
+  return (
+    <div className="relative grid place-items-center" style={{ width: 280, height: 220 }}>
+      <svg viewBox="0 0 280 220" className="h-full w-full">
+        <motion.polyline
+          points={points.join(" ")}
+          fill="none"
+          stroke="rgba(255,255,255,0.85)"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+          animate={{ rotate: unwind * -90 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          style={{ transformOrigin: "140px 110px" }}
+        />
+        <circle cx="140" cy="110" r="5" fill="white" opacity={0.6 + unwind * 0.4} />
+      </svg>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// 28. ORBIT — distraktioner dras in i mitten, en per steg
+// ─────────────────────────────────────────────────────────────
+export function Orbit({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Props) {
+  const safeCount = Math.max(1, stepCount);
+  const center = { x: 140, y: 110 };
+  return (
+    <div className="relative grid place-items-center" style={{ width: 280, height: 220 }}>
+      <svg viewBox="0 0 280 220" className="h-full w-full">
+        <circle cx={center.x} cy={center.y} r="78" fill="none" stroke="rgba(255,255,255,0.15)" strokeDasharray="3 5" />
+        <circle cx={center.x} cy={center.y} r="10" fill="white" opacity="0.9" />
+        <circle cx={center.x} cy={center.y} r={14 + stepIndex * 1.2} fill="none" stroke="white" strokeWidth="0.6" opacity="0.35" />
+        {Array.from({ length: safeCount }).map((_, i) => {
+          const angle = (i / safeCount) * Math.PI * 2 - Math.PI / 2;
+          const orbitX = center.x + Math.cos(angle) * 78;
+          const orbitY = center.y + Math.sin(angle) * 78;
+          const absorbed = i < stepIndex;
+          const absorbing = i === stepIndex;
+          const t = absorbing ? stepProgress : 0;
+          const x = absorbed ? center.x : orbitX + (center.x - orbitX) * t;
+          const y = absorbed ? center.y : orbitY + (center.y - orbitY) * t;
+          const opacity = absorbed ? 0 : 1 - t * 0.4;
+          return <circle key={i} cx={x} cy={y} r={5} fill="rgba(254,215,170,0.9)" opacity={opacity} />;
+        })}
+      </svg>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// 29. PENDULUM — pendelns utslag minskar per steg
+// ─────────────────────────────────────────────────────────────
+export function Pendulum({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Props) {
+  const safeCount = Math.max(1, stepCount);
+  const decay = 1 - (stepIndex + stepProgress) / safeCount;
+  const maxSwing = 45 * Math.max(decay, 0.08);
+  const angle = Math.cos(stepProgress * Math.PI * 2 - stepIndex * Math.PI) * maxSwing;
+  return (
+    <div className="relative grid place-items-center" style={{ width: 280, height: 240 }}>
+      <svg viewBox="0 0 200 240" className="h-full w-full">
+        <rect x="90" y="20" width="20" height="6" rx="2" fill="rgba(255,255,255,0.4)" />
+        <g style={{ transformOrigin: "100px 26px", transform: `rotate(${angle}deg)` }}>
+          <line x1="100" y1="26" x2="100" y2="170" stroke="rgba(255,255,255,0.5)" strokeWidth="1.2" />
+          <circle cx="100" cy="180" r="14" fill="white" opacity="0.92" />
+          <circle cx="100" cy="180" r="20" fill="none" stroke="white" strokeWidth="0.6" opacity={0.3 * decay} />
+        </g>
+        <line x1="100" y1="200" x2="100" y2="220" stroke="rgba(255,255,255,0.25)" strokeDasharray="2 3" />
+      </svg>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// 30. COMPASSION-HEART — mjuk hjärtform som värms upp per steg
+// ─────────────────────────────────────────────────────────────
+export function CompassionHeart({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Props) {
+  const safeCount = Math.max(1, stepCount);
+  const warmth = clamp01((stepIndex + stepProgress) / safeCount);
+  const beat = Math.sin(stepProgress * Math.PI * 2) * 0.5 + 0.5;
+  const scale = 1 + beat * 0.08 + warmth * 0.05;
+  const heartPath = "M50,82 C20,60 8,38 26,22 C38,12 50,22 50,32 C50,22 62,12 74,22 C92,38 80,60 50,82 Z";
+  return (
+    <div className="relative grid place-items-center" style={{ width: 280, height: 240 }}>
+      <motion.div
+        className="absolute h-48 w-48 rounded-full"
+        style={{
+          background: `radial-gradient(circle, rgba(254,202,202,${0.25 + warmth * 0.55}) 0%, rgba(254,215,170,${0.15 + warmth * 0.3}) 50%, transparent 80%)`,
+          filter: "blur(12px)",
+        }}
+        animate={{ scale: 1 + beat * 0.14, opacity: 0.5 + beat * 0.4 }}
+        transition={{ duration: 0.4 }}
+      />
+      <motion.svg viewBox="0 0 100 100" className="absolute h-40 w-40" animate={{ scale }} transition={{ duration: 0.4 }}>
+        <defs>
+          <linearGradient id="heart-warm" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor="#fecaca" stopOpacity="0.95" />
+            <stop offset="100%" stopColor={`rgba(254,${165 - warmth * 20},${165 - warmth * 40},0.95)`} />
+          </linearGradient>
+        </defs>
+        <path d={heartPath} fill="url(#heart-warm)" />
+        <path d={heartPath} fill="white" opacity={warmth * 0.18} transform="scale(0.7) translate(21 18)" />
+      </motion.svg>
+      <div className="absolute bottom-3 flex gap-1.5">
+        {Array.from({ length: safeCount }).map((_, i) => (
+          <div
+            key={i}
+            className="h-1.5 w-6 rounded-full"
+            style={{ background: i < stepIndex ? "white" : i === stepIndex ? `rgba(255,255,255,${0.4 + beat * 0.5})` : "rgba(255,255,255,0.2)" }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
 // Router
 // ─────────────────────────────────────────────────────────────
 export function AnimationFor({
@@ -1135,33 +1508,36 @@ export function AnimationFor({
     case "warm-hand":
       return <WarmHand {...p} />;
 
-    // legacy → mappa till närmaste
+    // promoverade: egna dedikerade animationer
+    case "sleep-waves":
+      return <SleepWaves {...p} />;
+    case "drifting-leaves":
+      return <DriftingLeaves {...p} />;
+    case "closing-tabs":
+      return <ClosingTabs {...p} />;
+    case "warm-beam":
+      return <WarmBeam {...p} />;
+    case "lifting-stone":
+      return <LiftingStone {...p} />;
+    case "constellation":
+      return <Constellation {...p} />;
+    case "spiral":
+      return <Spiral {...p} />;
+    case "orbit":
+      return <Orbit {...p} />;
+    case "pendulum":
+      return <Pendulum {...p} />;
+    case "compassion-heart":
+      return <CompassionHeart {...p} />;
+
+    // kvarvarande legacy
     case "breath-blob":
       return <BreathWave {...p} />;
     case "passing-thoughts":
-    case "drifting-leaves":
       return <PassingTraffic {...p} />;
     case "reset-shapes":
       return <VolumeSlider {...p} />;
-    case "sleep-waves":
-      return <BodyScan {...p} />;
-    case "compassion-heart":
-      return <WarmHand {...p} />;
     case "pulse":
       return <AnchorDrop {...p} />;
-    case "spiral":
-      return <BreathWave {...p} />;
-    case "orbit":
-      return <SortingShelf {...p} />;
-    case "pendulum":
-      return <TrafficLight {...p} />;
-    case "closing-tabs":
-      return <Mailbox {...p} />;
-    case "warm-beam":
-      return <BodyScan {...p} />;
-    case "lifting-stone":
-      return <AnchorDrop {...p} />;
-    case "constellation":
-      return <FocusLens {...p} />;
   }
 }
