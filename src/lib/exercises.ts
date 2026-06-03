@@ -859,7 +859,7 @@ const SEEDS: Seed[] = [
     category: "compassion",
     kind: "reflective",
     minutes: 4,
-    animation: "unknotting",
+    animation: "warm-hand",
     metric: "stress",
     requiresRating: false,
     steps: [
