@@ -192,7 +192,7 @@ const SEEDS: Seed[] = [
     category: "breath",
     kind: "short",
     minutes: 2,
-    animation: "breath-wave",
+    animation: "belly-hand",
     metric: "kroppsspänning",
     steps: [
       ["Lägg en hand på magen", 10],
@@ -322,7 +322,7 @@ const SEEDS: Seed[] = [
     category: "quick-pause",
     kind: "short",
     minutes: 1,
-    animation: "volume-slider",
+    animation: "jaw-release",
     metric: "kroppsspänning",
     steps: [
       ["Lägg märke till käken", 10],
@@ -582,7 +582,7 @@ const SEEDS: Seed[] = [
     category: "focus",
     kind: "short",
     minutes: 2,
-    animation: "focus-lens",
+    animation: "first-step",
     metric: "fokus",
     steps: [
       ["Vad är första handlingen?", 30],
@@ -600,7 +600,7 @@ const SEEDS: Seed[] = [
     category: "focus",
     kind: "short",
     minutes: 2,
-    animation: "focus-lens",
+    animation: "typing-cursor",
     metric: "fokus",
     steps: [
       ["Vad ska du skriva om?", 20],
@@ -719,7 +719,7 @@ const SEEDS: Seed[] = [
     category: "body",
     kind: "short",
     minutes: 1,
-    animation: "anchor-drop",
+    animation: "footprints",
     metric: "kroppsspänning",
     steps: [
       ["Hela foten mot golvet", 15],
@@ -736,7 +736,7 @@ const SEEDS: Seed[] = [
     category: "body",
     kind: "short",
     minutes: 1,
-    animation: "volume-slider",
+    animation: "jaw-release",
     metric: "kroppsspänning",
     steps: [
       ["Lägg märke till käken", 12],
@@ -753,7 +753,7 @@ const SEEDS: Seed[] = [
     category: "body",
     kind: "short",
     minutes: 2,
-    animation: "volume-slider",
+    animation: "shoulder-drop",
     metric: "kroppsspänning",
     steps: [
       ["Dra axlarna upp", 8],
@@ -993,7 +993,7 @@ const SEEDS: Seed[] = [
     category: "worklife",
     kind: "short",
     minutes: 2,
-    animation: "focus-lens",
+    animation: "morning-sun",
     metric: "fokus",
     steps: [
       ["Vad är dagens en viktiga sak?", 30],
@@ -1012,7 +1012,7 @@ const SEEDS: Seed[] = [
     category: "worklife",
     kind: "short",
     minutes: 1,
-    animation: "anchor-drop",
+    animation: "stretch-up",
     metric: "stress",
     steps: [
       ["Stå upp om du kan", 10],
@@ -1047,7 +1047,7 @@ const SEEDS: Seed[] = [
     category: "worklife",
     kind: "short",
     minutes: 2,
-    animation: "sorting-shelf",
+    animation: "inbox-priority",
     metric: "stress",
     steps: [
       ["Stäng inkorgen ett ögonblick", 15],
@@ -1065,7 +1065,7 @@ const SEEDS: Seed[] = [
     category: "worklife",
     kind: "short",
     minutes: 2,
-    animation: "anchor-drop",
+    animation: "doorway",
     metric: "stress",
     steps: [
       ["Stanna utanför ett ögonblick", 15],
