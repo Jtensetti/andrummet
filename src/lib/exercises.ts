@@ -621,7 +621,7 @@ const SEEDS: Seed[] = [
     category: "sleep",
     kind: "reflective",
     minutes: 8,
-    animation: "body-scan",
+    animation: "candle",
     metric: "trötthet",
     steps: [
       ["Sänk tempot", 60],
