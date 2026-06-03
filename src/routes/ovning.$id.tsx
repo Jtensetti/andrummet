@@ -184,9 +184,12 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
                 />
               </div>
             </div>
+            <p className="mt-6 text-center text-xs font-semibold uppercase tracking-widest opacity-60">
+              Följ texten — den byter med några sekunders mellanrum.
+            </p>
             <button
               onClick={() => setPhase(ex.requiresRating ? "before" : "running")}
-              className="mt-10 rounded-full bg-black/85 px-6 py-4 text-base font-extrabold text-white active:scale-[0.98]"
+              className="mt-6 rounded-full bg-black/85 px-6 py-4 text-base font-extrabold text-white active:scale-[0.98]"
             >
               Jag är med
             </button>
