@@ -26,6 +26,43 @@ const themeBg: Record<Category, string> = {
 
 type Phase = "intro" | "before" | "running" | "after" | "done";
 
+/**
+ * Kort "vad du gör nu" — en eller två ord. Plockas från labeln när det går,
+ * faller annars tillbaka på första 1–2 orden.
+ */
+function cueFor(label: string): string {
+  const l = label.trim();
+  if (!l) return "";
+  const lower = l.toLowerCase();
+  const map: Array<[RegExp, string]> = [
+    [/^andas\s*in/, "Andas in"],
+    [/^andas\s*ut/, "Andas ut"],
+    [/^håll/, "Håll"],
+    [/^vila|^paus/, "Vila"],
+    [/^stanna|^stå|^stopp/, "Stanna"],
+    [/^släpp|släpp/, "Släpp"],
+    [/^lägg märke|^märk|lägg märke/, "Märk"],
+    [/^känn|^känner/, "Känn"],
+    [/^välj/, "Välj"],
+    [/^skriv/, "Skriv"],
+    [/^se\b|^titta|^se dig/, "Se"],
+    [/^nämn|^säg/, "Säg"],
+    [/^lägg/, "Lägg"],
+    [/^dra/, "Dra"],
+    [/^gå\b/, "Gå"],
+    [/^öppna/, "Öppna"],
+    [/^stäng/, "Stäng"],
+    [/^sänk/, "Sänk"],
+    [/^andas/, "Andas"],
+  ];
+  for (const [re, cue] of map) if (re.test(lower)) return cue;
+  if (l.endsWith("?")) return "Reflektera";
+  // fallback: 1–2 första ord, max ~18 tecken
+  const words = l.split(/\s+/);
+  const short = words.slice(0, 2).join(" ");
+  return short.length > 22 ? words[0] : short;
+}
+
 function Player() {
   const { id } = Route.useParams();
   const ex = getExercise(id);
@@ -88,11 +125,16 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
     () => ex.steps.reduce((s, x) => s + x.seconds, 0),
     [ex.steps],
   );
+  const stepSeconds = ex.steps[stepIdx]?.seconds ?? 1;
+  const stepElapsed = stepSeconds - stepRemaining;
+  const stepProgress = Math.min(
+    1,
+    Math.max(0, stepElapsed / Math.max(1, stepSeconds)),
+  );
   const elapsed = useMemo(
     () =>
-      ex.steps.slice(0, stepIdx).reduce((s, x) => s + x.seconds, 0) +
-      ((ex.steps[stepIdx]?.seconds ?? 0) - stepRemaining),
-    [ex.steps, stepIdx, stepRemaining],
+      ex.steps.slice(0, stepIdx).reduce((s, x) => s + x.seconds, 0) + stepElapsed,
+    [ex.steps, stepIdx, stepElapsed],
   );
   const progress = Math.min(1, elapsed / Math.max(1, totalSeconds));
 
@@ -236,24 +278,32 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
               </div>
             </div>
 
-            {/* central animation + en instruktion */}
-            <div className="flex flex-1 flex-col items-center justify-center gap-10">
+            {/* central animation + cue + label */}
+            <div className="flex flex-1 flex-col items-center justify-center gap-8">
               <AnimationFor
                 kind={ex.animation}
                 phase={ex.steps[stepIdx]?.label ?? ""}
                 progress={progress}
+                stepIndex={stepIdx}
+                stepCount={ex.steps.length}
+                stepProgress={stepProgress}
               />
               <AnimatePresence mode="wait">
-                <motion.h2
+                <motion.div
                   key={stepIdx}
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.5 }}
-                  className="max-w-md text-center text-3xl font-extrabold leading-tight md:text-4xl"
+                  transition={{ duration: 0.4 }}
+                  className="flex max-w-md flex-col items-center gap-2 text-center"
                 >
-                  {ex.steps[stepIdx]?.label}
-                </motion.h2>
+                  <p className="text-xs font-extrabold uppercase tracking-[0.25em] opacity-70">
+                    {cueFor(ex.steps[stepIdx]?.label ?? "")}
+                  </p>
+                  <h2 className="text-2xl font-extrabold leading-tight md:text-3xl">
+                    {ex.steps[stepIdx]?.label}
+                  </h2>
+                </motion.div>
               </AnimatePresence>
             </div>
 
