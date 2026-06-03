@@ -970,7 +970,7 @@ export function AnimationFor({
       return <Mailbox {...p} />;
 
     case "unknotting":
-      return <Unknotting />;
+      return <Unknotting {...p} />;
     case "walking-path":
       return <WalkingPath {...p} />;
     case "battery-fill":
@@ -979,6 +979,16 @@ export function AnimationFor({
       return <VolumeSlider {...p} />;
     case "ember":
       return <Ember {...p} />;
+    case "candle":
+      return <Candle {...p} />;
+    case "pebbles":
+      return <Pebbles {...p} />;
+    case "horizon":
+      return <Horizon {...p} />;
+    case "opening-hand":
+      return <OpeningHand {...p} />;
+    case "warm-hand":
+      return <WarmHand {...p} />;
 
     // legacy → mappa till närmaste
     case "breath-blob":
