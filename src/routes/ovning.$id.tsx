@@ -5,6 +5,7 @@ import { X, Pause, Play, ArrowLeft } from "lucide-react";
 import { getExercise, METRIC_LABELS, type Category } from "@/lib/exercises";
 import { addEntry } from "@/lib/history";
 import { AnimationFor } from "@/components/animations";
+import { LottiePlayer } from "@/components/animations/LottiePlayer";
 
 export const Route = createFileRoute("/ovning/$id")({
   component: Player,
@@ -261,14 +262,22 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
 
             {/* central animation + undertext + steg-rubrik */}
             <div className="flex flex-1 flex-col items-center justify-center gap-8">
-              <AnimationFor
-                kind={ex.animation}
-                phase={ex.steps[stepIdx]?.label ?? ""}
-                progress={progress}
-                stepIndex={stepIdx}
-                stepCount={ex.steps.length}
-                stepProgress={stepProgress}
-              />
+              {ex.lottie ? (
+                <LottiePlayer
+                  spec={ex.lottie}
+                  stepProgress={stepProgress}
+                  stepIndex={stepIdx}
+                />
+              ) : (
+                <AnimationFor
+                  kind={ex.animation}
+                  phase={ex.steps[stepIdx]?.label ?? ""}
+                  progress={progress}
+                  stepIndex={stepIdx}
+                  stepCount={ex.steps.length}
+                  stepProgress={stepProgress}
+                />
+              )}
               {(() => {
                 const sub = subtitleFor(ex.steps[stepIdx], stepProgress);
                 return (

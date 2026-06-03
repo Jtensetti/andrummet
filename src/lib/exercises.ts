@@ -1,4 +1,5 @@
 import type { AnimationKind } from "@/components/animations";
+import type { LottieSpec } from "@/components/animations/LottiePlayer";
 
 export type Category =
   | "breath"
@@ -46,6 +47,8 @@ export interface Exercise {
   kind: ExerciseKind;
   minutes: number;
   animation: AnimationKind;
+  /** Valfri Lottie-animation. Om satt används den istället för SVG-primitiven. */
+  lottie?: LottieSpec;
   steps: ExerciseStep[];
   metric: RatingMetric;
   requiresRating: boolean;
@@ -107,6 +110,7 @@ type Seed = {
   kind: ExerciseKind;
   minutes: number;
   animation: AnimationKind;
+  lottie?: LottieSpec;
   metric: RatingMetric;
   requiresRating?: boolean;
   steps: StepTuple[];
@@ -126,6 +130,7 @@ function build(s: Seed): Exercise {
     kind: s.kind,
     minutes: s.minutes,
     animation: s.animation,
+    lottie: s.lottie,
     metric: s.metric,
     requiresRating: s.requiresRating ?? s.kind === "short",
     steps: s.steps.map((t) => ({
