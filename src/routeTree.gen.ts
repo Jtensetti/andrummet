@@ -13,6 +13,7 @@ import { Route as ReflektionRouteImport } from './routes/reflektion'
 import { Route as OvningarRouteImport } from './routes/ovningar'
 import { Route as MinVeckaRouteImport } from './routes/min-vecka'
 import { Route as InsikterRouteImport } from './routes/insikter'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as OvningIdRouteImport } from './routes/ovning.$id'
 
@@ -36,6 +37,11 @@ const InsikterRoute = InsikterRouteImport.update({
   path: '/insikter',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -49,6 +55,7 @@ const OvningIdRoute = OvningIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/insikter': typeof InsikterRoute
   '/min-vecka': typeof MinVeckaRoute
   '/ovningar': typeof OvningarRoute
@@ -57,6 +64,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/insikter': typeof InsikterRoute
   '/min-vecka': typeof MinVeckaRoute
   '/ovningar': typeof OvningarRoute
@@ -66,6 +74,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/insikter': typeof InsikterRoute
   '/min-vecka': typeof MinVeckaRoute
   '/ovningar': typeof OvningarRoute
@@ -76,6 +85,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/auth'
     | '/insikter'
     | '/min-vecka'
     | '/ovningar'
@@ -84,6 +94,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/auth'
     | '/insikter'
     | '/min-vecka'
     | '/ovningar'
@@ -92,6 +103,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/auth'
     | '/insikter'
     | '/min-vecka'
     | '/ovningar'
@@ -101,6 +113,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthRoute: typeof AuthRoute
   InsikterRoute: typeof InsikterRoute
   MinVeckaRoute: typeof MinVeckaRoute
   OvningarRoute: typeof OvningarRoute
@@ -138,6 +151,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InsikterRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -157,6 +177,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthRoute: AuthRoute,
   InsikterRoute: InsikterRoute,
   MinVeckaRoute: MinVeckaRoute,
   OvningarRoute: OvningarRoute,
@@ -166,3 +187,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
