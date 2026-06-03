@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as OvningarRouteImport } from './routes/ovningar'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as OvningIdRouteImport } from './routes/ovning.$id'
 
 const OvningarRoute = OvningarRouteImport.update({
   id: '/ovningar',
@@ -22,31 +23,40 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OvningIdRoute = OvningIdRouteImport.update({
+  id: '/ovning/$id',
+  path: '/ovning/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/ovningar': typeof OvningarRoute
+  '/ovning/$id': typeof OvningIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/ovningar': typeof OvningarRoute
+  '/ovning/$id': typeof OvningIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/ovningar': typeof OvningarRoute
+  '/ovning/$id': typeof OvningIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/ovningar'
+  fullPaths: '/' | '/ovningar' | '/ovning/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/ovningar'
-  id: '__root__' | '/' | '/ovningar'
+  to: '/' | '/ovningar' | '/ovning/$id'
+  id: '__root__' | '/' | '/ovningar' | '/ovning/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   OvningarRoute: typeof OvningarRoute
+  OvningIdRoute: typeof OvningIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -65,12 +75,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ovning/$id': {
+      id: '/ovning/$id'
+      path: '/ovning/$id'
+      fullPath: '/ovning/$id'
+      preLoaderRoute: typeof OvningIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   OvningarRoute: OvningarRoute,
+  OvningIdRoute: OvningIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
