@@ -266,7 +266,7 @@ const SEEDS: Seed[] = [
     category: "quick-pause",
     kind: "short",
     minutes: 1,
-    animation: "anchor-drop",
+    animation: "pebbles",
     metric: "oro",
     steps: [
       ["En sak du ser", 12],
@@ -621,7 +621,7 @@ const SEEDS: Seed[] = [
     category: "sleep",
     kind: "reflective",
     minutes: 8,
-    animation: "body-scan",
+    animation: "candle",
     metric: "trötthet",
     steps: [
       ["Sänk tempot", 60],
@@ -859,7 +859,7 @@ const SEEDS: Seed[] = [
     category: "compassion",
     kind: "reflective",
     minutes: 4,
-    animation: "unknotting",
+    animation: "warm-hand",
     metric: "stress",
     requiresRating: false,
     steps: [
@@ -898,7 +898,7 @@ const SEEDS: Seed[] = [
     category: "compassion",
     kind: "short",
     minutes: 3,
-    animation: "volume-slider",
+    animation: "opening-hand",
     metric: "stress",
     steps: [
       ["Vad säger du till dig själv just nu?", 30],
