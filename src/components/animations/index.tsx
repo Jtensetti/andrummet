@@ -16,12 +16,17 @@ export type AnimationKind =
   | "sorting-shelf"
   | "traffic-light"
   | "mailbox"
-  // sekundära (ej step-synkade ännu — håller egen rytm)
+  // sekundära (poleras nu — alla step-synkade)
   | "unknotting"
   | "walking-path"
   | "battery-fill"
   | "volume-slider"
   | "ember"
+  | "candle"
+  | "pebbles"
+  | "horizon"
+  | "opening-hand"
+  | "warm-hand"
   // legacy aliases
   | "breath-blob"
   | "passing-thoughts"
