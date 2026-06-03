@@ -84,12 +84,19 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "Andrum är en svensk app för korta andningsövningar, mindfulness och mentala pauser. Kom in, andas lite, gå vidare.",
       },
-      { property: "og:title", content: "Andrum" },
+      { property: "og:title", content: "Andrum – ett litet mellanrum i vardagen" },
       {
         property: "og:description",
         content: "Kom in, andas lite, släpp taget, gå vidare.",
       },
       { property: "og:type", content: "website" },
+      { name: "twitter:title", content: "Andrum – ett litet mellanrum i vardagen" },
+      { name: "description", content: "En svensk PWA för mindfulness, meditation och korta mentala pauser." },
+      { property: "og:description", content: "En svensk PWA för mindfulness, meditation och korta mentala pauser." },
+      { name: "twitter:description", content: "En svensk PWA för mindfulness, meditation och korta mentala pauser." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/ec826b4e-226f-41e7-9669-1222690b561a/id-preview-c30be6e1--f6de5050-e2bb-4b64-b2b9-294cd2b75373.lovable.app-1780496573760.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/ec826b4e-226f-41e7-9669-1222690b561a/id-preview-c30be6e1--f6de5050-e2bb-4b64-b2b9-294cd2b75373.lovable.app-1780496573760.png" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
