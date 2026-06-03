@@ -609,30 +609,55 @@ export function BatteryFill({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: 
 export function VolumeSlider({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Props) {
   const safeCount = Math.max(1, stepCount);
   const p = (stepIndex + clamp01(stepProgress)) / safeCount;
+  // ljudvågor uppe: tystnar gradvis
+  const waveOpacity = 1 - p * 0.85;
   return (
-    <div className="relative grid place-items-center" style={{ width: 280, height: 340 }}>
+    <div className="relative grid place-items-center" style={{ width: 300, height: 360 }}>
+      {/* ljudvågor som tystnar */}
+      <svg viewBox="0 0 80 60" className="absolute top-2 h-12 w-24" style={{ opacity: waveOpacity }}>
+        {[10, 25, 40, 55, 70].map((x, i) => {
+          const h = 8 + (i % 3) * 8;
+          return (
+            <rect
+              key={i}
+              x={x - 3}
+              y={30 - h / 2}
+              width={6}
+              height={h}
+              rx={3}
+              fill="white"
+            />
+          );
+        })}
+      </svg>
       <div className="relative h-80 w-10 rounded-full bg-white/15">
-        {/* skala-markörer */}
-        {Array.from({ length: safeCount + 1 }).map((_, i) => (
-          <div
-            key={i}
-            className="absolute -right-3 h-0.5 w-3 bg-white/40"
-            style={{ top: `${(i / safeCount) * 100}%` }}
-          />
-        ))}
+        {Array.from({ length: safeCount + 1 }).map((_, i) => {
+          const passed = i <= stepIndex;
+          return (
+            <div
+              key={i}
+              className="absolute -right-4 h-0.5 rounded-full"
+              style={{
+                top: `${(i / safeCount) * 100}%`,
+                width: passed ? 16 : 10,
+                background: passed ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.35)",
+              }}
+            />
+          );
+        })}
         <div
-          className="absolute inset-x-0 bottom-0 rounded-full bg-white/70"
+          className="absolute inset-x-0 bottom-0 rounded-full bg-white/70 transition-all"
           style={{ height: `${(1 - p) * 100}%` }}
         />
         <motion.div
           className="absolute left-1/2 h-12 w-20 -translate-x-1/2 rounded-2xl bg-white shadow-xl"
           animate={{ top: `calc(${p * 100}% - 24px)` }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
+          transition={{ duration: 0.45, ease: "easeOut" }}
         />
       </div>
-      <div className="absolute right-1/4 flex h-80 flex-col justify-between text-[10px] font-bold text-white/60">
-        <span>Högt</span>
-        <span>Lågt</span>
+      <div className="absolute right-6 flex h-72 flex-col justify-between text-[10px] font-bold text-white/70">
+        <span>HÖGT</span>
+        <span>LÅGT</span>
       </div>
     </div>
   );
