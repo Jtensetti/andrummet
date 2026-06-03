@@ -256,7 +256,7 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
               </div>
             </div>
 
-            {/* central animation + cue + label */}
+            {/* central animation + undertext + steg-rubrik */}
             <div className="flex flex-1 flex-col items-center justify-center gap-8">
               <AnimationFor
                 kind={ex.animation}
@@ -266,24 +266,30 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
                 stepCount={ex.steps.length}
                 stepProgress={stepProgress}
               />
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={stepIdx}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.4 }}
-                  className="flex max-w-md flex-col items-center gap-3 text-center"
-                >
-                  <p className="text-5xl font-black leading-none tracking-tight md:text-6xl">
-                    {cueFor(ex.steps[stepIdx]?.label ?? "")}
-                  </p>
-                  <h2 className="text-base font-semibold leading-snug opacity-80 md:text-lg">
-                    {ex.steps[stepIdx]?.label}
-                  </h2>
-                </motion.div>
-              </AnimatePresence>
+              {(() => {
+                const sub = subtitleFor(ex.steps[stepIdx], stepProgress);
+                return (
+                  <div className="flex max-w-md flex-col items-center gap-3 text-center">
+                    <AnimatePresence mode="wait">
+                      <motion.p
+                        key={`${stepIdx}-${sub.index}`}
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -6 }}
+                        transition={{ duration: 0.25 }}
+                        className="min-h-[3.5rem] text-3xl font-extrabold leading-tight tracking-tight md:text-4xl"
+                      >
+                        {sub.text}
+                      </motion.p>
+                    </AnimatePresence>
+                    <p className="text-[11px] font-bold uppercase tracking-widest opacity-60">
+                      Steg {stepIdx + 1} / {ex.steps.length} · {ex.steps[stepIdx]?.label}
+                    </p>
+                  </div>
+                );
+              })()}
             </div>
+
 
             <div className="flex items-center gap-3">
               <button
