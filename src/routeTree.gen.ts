@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ReflektionRouteImport } from './routes/reflektion'
 import { Route as OvningarRouteImport } from './routes/ovningar'
+import { Route as MinVeckaRouteImport } from './routes/min-vecka'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as OvningIdRouteImport } from './routes/ovning.$id'
 
@@ -22,6 +23,11 @@ const ReflektionRoute = ReflektionRouteImport.update({
 const OvningarRoute = OvningarRouteImport.update({
   id: '/ovningar',
   path: '/ovningar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MinVeckaRoute = MinVeckaRouteImport.update({
+  id: '/min-vecka',
+  path: '/min-vecka',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -37,12 +43,14 @@ const OvningIdRoute = OvningIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/min-vecka': typeof MinVeckaRoute
   '/ovningar': typeof OvningarRoute
   '/reflektion': typeof ReflektionRoute
   '/ovning/$id': typeof OvningIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/min-vecka': typeof MinVeckaRoute
   '/ovningar': typeof OvningarRoute
   '/reflektion': typeof ReflektionRoute
   '/ovning/$id': typeof OvningIdRoute
@@ -50,20 +58,28 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/min-vecka': typeof MinVeckaRoute
   '/ovningar': typeof OvningarRoute
   '/reflektion': typeof ReflektionRoute
   '/ovning/$id': typeof OvningIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/ovningar' | '/reflektion' | '/ovning/$id'
+  fullPaths: '/' | '/min-vecka' | '/ovningar' | '/reflektion' | '/ovning/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/ovningar' | '/reflektion' | '/ovning/$id'
-  id: '__root__' | '/' | '/ovningar' | '/reflektion' | '/ovning/$id'
+  to: '/' | '/min-vecka' | '/ovningar' | '/reflektion' | '/ovning/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/min-vecka'
+    | '/ovningar'
+    | '/reflektion'
+    | '/ovning/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  MinVeckaRoute: typeof MinVeckaRoute
   OvningarRoute: typeof OvningarRoute
   ReflektionRoute: typeof ReflektionRoute
   OvningIdRoute: typeof OvningIdRoute
@@ -85,6 +101,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OvningarRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/min-vecka': {
+      id: '/min-vecka'
+      path: '/min-vecka'
+      fullPath: '/min-vecka'
+      preLoaderRoute: typeof MinVeckaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -104,6 +127,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  MinVeckaRoute: MinVeckaRoute,
   OvningarRoute: OvningarRoute,
   ReflektionRoute: ReflektionRoute,
   OvningIdRoute: OvningIdRoute,
