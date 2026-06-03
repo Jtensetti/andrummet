@@ -1,154 +1,99 @@
+# Mindfullare övningar: riktiga instruktioner + bygg om animationerna
 
-# Optimering av Andrum
+## Vad som är fel idag
 
-Behåller all befintlig teknik: TanStack-routing, `useHistory`, Supabase-sync, auth, `ovning.$id.tsx`-spelaren, `k.$category.tsx`, AppShell. Inga DB-migrationer. Detta är en **innehålls-, animations- och layoutomgång**.
+1. **Texten säger nästan inget.** `cueFor()` i `src/routes/ovning.$id.tsx` klipper varje stegrubrik till **ett** ord. "En sak du ser" blir **"En"**. Den fulla rubriken finns under men i pytteliten stil. Användaren ser ett ord + en sten som faller och fattar inget.
+2. **Stegen är för glesa.** Ett steg på 10–20 sek visar samma rubrik hela tiden — inget händer i texten, inget driver framåt.
+3. **Animationerna är hoppiga och otydliga.** Du bekräftade att det gäller alla, inte bara tre. Genomgående problem jag ser i `src/components/animations/index.tsx`:
+   - Många använder `animate={{...}}` med egen `transition` *ovanpå* sekundkontrollen — då glider de mot ett mål med eget tempo istället för att följa övningens klocka. Resultatet: rycker, hinner inte ifatt, eller fortsätter när stegtexten redan bytts.
+   - Andra mappar `stepIndex % N` utan `phase`-fallback — vid steg som inte är "in/ut/håll/vila" hoppar de fel.
+   - Flera kroppsanimationer (jaw, axlar, mage) visar en kroppsdel utan kontext eller etikett — "jaha, hakan?".
+   - Steg-byten ger teleport-effekt eftersom inget element bär över state mellan steg.
 
-## 1. Rensad mobil-startsida (`src/routes/index.tsx`)
+## Lösning
 
-Ny struktur, max ett syfte per skärm:
+### 1. Inför "subtitle script" per steg
 
-```text
-┌─────────────────────────────┐
-│  Vad behöver du just nu?    │
-│                             │
-│  [ Starta 60 sek paus ]     │  ← stor primär-CTA
-│                             │
-│  8 behovskakel (2 kolumner):│
-│  Lugna kroppen   Andas      │
-│  Hantera oro     Släppa     │
-│  Fokusera        Sova       │
-│  Reflektera      Snabb paus │
-│                             │
-│  Max 4 "för dig just nu"    │  ← liten sektion, inte dominant
-└─────────────────────────────┘
-```
-
-Tas bort från mobilstart: statistik, veckosammanfattning, historik-preview. Allt sådant flyttas till `/min-vecka` och desktop-sidopanelen.
-
-## 2. Två tydliga övningstyper
-
-Utöka `Exercise`-typen i `src/lib/exercises.ts`:
+Utvidga `ExerciseStep`:
 
 ```ts
-type ExerciseKind = "short" | "reflective";
-// short: 30s–3min, konkret, animation styr handling
-// reflective: 4–12min, 4–8 reflektionssteg, animation håller rytm
-```
-
-Filterchip i `k.$category.tsx`: **Korta** / **Reflekterande** / **Alla**.
-
-## 3. 15 nya animationstyper (ersätter generiska centrum-ut)
-
-Ny katalog `src/components/animations/` med en fil per typ. Varje animation har **egen rörelselogik kopplad till övningens syfte** — ingen pulsblob som default.
-
-| # | `kind` | Rörelse | Används för |
-|---|---|---|---|
-| 1 | `box-breath` | Prick åker längs fyrkantens sidor, en sida per fas | Boxandning |
-| 2 | `breath-wave` | Horisontell våg in/ut från sidan | Andningsvåg |
-| 3 | `body-scan` | Ljuspunkt vandrar nedåt längs siluett, stannar vid zoner | Kroppsskanning |
-| 4 | `passing-traffic` | Former glider vänster→höger i olika hastighet/höjd | Tankar som trafik |
-| 5 | `drifting-clouds` | Långsamma moln med olika opacitet över himmel | Moln/känslor |
-| 6 | `anchor-drop` | Vertikal sjunkande tyngd mot botten | Grounding |
-| 7 | `focus-lens` | Spridda punkter samlas gradvis mot mitten | Fokus (endast) |
-| 8 | `sorting-shelf` | Lappar glider in i 3–4 fack | Sortera tankar |
-| 9 | `unknotting` | SVG-linje med trasslig path → mjukare path | Släpp spänning |
-| 10 | `walking-path` | Liten figur går steg-för-steg genom färgfält | Lång reflektion |
-| 11 | `traffic-light` | Rött → gult → grönt, en åt gången | Paus före reaktion |
-| 12 | `battery-fill` | Ojämn, långsam fyllning | Återhämtning |
-| 13 | `volume-slider` | Stort reglage dras nedåt | Sänk intensitet |
-| 14 | `mailbox` | Lappar läggs i låda märkt "sen" | Lägg undan |
-| 15 | `ember` | Platt eld → glöd över tid | Ilska |
-
-Tekniskt: en gemensam `progress` (0–1) drivs av spelaren och skickas till animationen via prop, så rörelsen följer övningens framsteg istället för att bara loopa. `AnimationFor` i `src/components/animations/index.tsx` mappar `kind` → komponent. `breath-blob` och centrum-skala-animationer tas bort som default; finns kvar endast om någon övning uttryckligen behöver dem.
-
-## 4. Övningsspelaren (`src/routes/ovning.$id.tsx`)
-
-Helskärm, ett syfte per vy. Behåller fas-flödet `intro → before → running → after → done` men städar `running`:
-
-- Endast: färgtema, central animation, **en** instruktion åt gången, diskret progress-rad, paus, X.
-- Tar bort sekundära element, hjälptext, "steg X av Y" som siffra (visas bara i progress-baren).
-- Instruktioner från `exercise.steps[].label` visas en åt gången, ingen lista.
-
-`reflective`-övningar får en lugnare layout: instruktion som typewriter-fade, längre stegtider, valfri "skriv en tanke"-prompt mellan steg på sista tredjedelen.
-
-## 5. Skattning före/efter — relevant dimension per övning
-
-Utöka `metric` på övning så att den styr frågetexten. Visa **bara om övningen har `requiresRating: true`** — inte alla övningar varje gång.
-
-Återkoppling efter: "Din skattning gick från 7 till 5. Det är en liten signal, inte ett facit."
-
-## 6. Övningsbibliotek (seed-data)
-
-Bygger ut `src/lib/exercises.ts` med övningarna från promptens lista, grupperade i kategorier som mappar till befintliga + nya kategori-routes:
-
-- `breath` (Andning) — ~25 övningar
-- `quick-pause` (Snabb paus) — ~25
-- `anxiety` (Oro & ångest) — ~25
-- `stress` (Stress & återhämtning) — ~25
-- `focus` (Fokus) — ~25
-- `sleep` (Sömn & kväll) — ~25
-- `body` (Kropp & närvaro) — ~25
-- `reflection` (Reflektion) — ~25
-- `compassion` (Självmedkänsla) — ~25
-- `anger` (Ilska) — ~20
-- `worklife` (Arbetsdag & vardag) — ~25
-
-För att hålla filstorleken hanterbar: splittra till `src/lib/exercises/` med en fil per kategori + en `index.ts` som exporterar samlat. Varje övning får:
-
-```ts
-{
-  id, title, category, kind: "short" | "reflective",
-  minutes, purpose, animation: AnimationKind,
-  theme: { bg, ink },  // ärvs från kategori
-  short, steps: [{label, seconds}],
-  closing, microcopy,
-  metric, requiresRating: boolean,
-  reflectionPrompt?: string,   // endast reflective
-  metaphor?: { intro, illustration }
+interface ExerciseStep {
+  label: string;         // kort rubrik, små bokstäver under
+  seconds: number;
+  script?: string[];     // 2–8 korta fraser, 1–3 ord, visas i tur och ordning
 }
 ```
 
-Behovskakel på startsidan mappar till kategori-route (`/k/$category`), inte till en enskild övning.
+Spelaren visar `script[floor(stepProgress * script.length)]` — som undertexter till en lugn röst. Mjuk 200 ms fade mellan fraser. Saknas `script` används `label`.
 
-## 7. Kategorisida (`src/routes/k.$category.tsx`)
+Ta bort `cueFor()`. Den stora texten är nästa fras i scriptet. Rubriken visas litet under som "kapitelnamn".
 
-Behåller färgtema-arv. Lägger till:
-- Filter: Korta / Reflekterande / Alla
-- "Snabb 60 sek"-knapp överst i varje kategori (mappar till en kort övning i kategorin)
-- Max 8 övningar synliga, "Visa fler" expanderar
+### 2. Skriv om alla 50 övningar
 
-## 8. Min vecka / progression (`src/routes/min-vecka.tsx`)
+Varje steg får ett script som verkligen guidar. Exempel:
 
-Behåller flikarna, men byter primärsiffror till **mönster, inte prestation**:
-- Antal pass, total tid (sekundärt)
-- Vanligaste övningstyp (`kind` + `animation`)
-- Vilka övningar som oftast sänkt skattning mest
-- Vilka känslor som återkommer (från kategori-mix)
-- Tider på dygnet
-- Försiktiga insiktstexter ("Du verkar ofta välja korta andningsövningar när stressen är hög.")
+**"Tre saker du ser" — innan:**
+```
+["En sak du ser", 12]
+```
+**Efter:**
+```
+{ label: "En sak du ser", seconds: 18, script: [
+  "Titta upp.", "Låt blicken vila.",
+  "Hitta en sak.", "Vad är det?",
+  "Säg det tyst.", "Stanna där."
+]}
+```
 
-Streak förblir borta.
+**"Paus för käken":** scriptet förklarar *varför* vi tittar på käken — inte bara "Lägg märke till käken".
 
-## 9. AppShell
+Längder justeras så scriptet ryms (≈2–4 sek per fras). Jag går igenom alla 50 övningar i `src/lib/exercises.ts`.
 
-Mobil: behåll 3-flikars nav. Ta bort eventuella analys-widgets som råkat hamna i mobilheadern. Desktop-sidopanelen får utökad analysmodul (samma data som `/min-vecka` insikter-flik, komprimerad).
+### 3. Bygg om animationerna från grunden — gemensamma principer
 
-## 10. Mikrocopy och ton
+Skriv om hela `src/components/animations/index.tsx` runt tre regler:
 
-Genomgång av alla texter så att de matchar promptens exempel — vänligt, icke-medicinskt, inte taggigt positiva, inte prestationsinriktade. Reflektionsplaceholder: "En mening räcker. Alla tankar behöver inte bli dokument."
+- **Klockan styr, inte easing.** Allt visuellt drivs av `stepProgress` (0→1) och `stepIndex` direkt via `style={{ transform: ... }}` eller SVG-attribut. Inga `animate`-mål med egen `transition` som krockar med övningens tempo.
+- **Inget hoppar mellan steg.** Element bär över sin slutposition från föregående steg och fortsätter mjukt. För cykler (andning, ruta) är slutet av steg N = början av steg N+1 i samma punkt.
+- **Animationen *visar* instruktionen.** Det som händer i bilden ska matcha det undertexten säger just nu — andas in → något fylls/växer, andas ut → samma sak töms/minskar i samma tempo.
 
-## Tekniska detaljer
+### 4. Konkret omarbetning per animationstyp
 
-- `src/lib/exercises.ts` → splittas till `src/lib/exercises/{breath,quickPause,anxiety,...}.ts` + `index.ts`. Behåller exporterad form (`getExercise`, `METRIC_LABELS`) så `ovning.$id.tsx` inte ändrar API.
-- `src/components/animations/index.tsx` → behåll `AnimationFor`, lägg till nya `kind`-mappningar. Gamla `breath-blob`/`box-breath` finns kvar tills nya `box-breath` (sidovandring) är på plats, sen byts importen ut.
-- Ingen DB-ändring. Ingen ändring av `auth.tsx`, `history.ts`, `client.ts`, `supabase/config.toml`.
-- Routes oförändrade förutom innehåll: `index.tsx`, `k.$category.tsx`, `ovning.$id.tsx`, `min-vecka.tsx`.
-- Färgteman: utöka CSS-variabler i `src/styles.css` med tokens för nya kategorier (`anger`, `worklife`, `breath`, `quick-pause`).
+Jag grupperar de ~45 typerna i ~12 robusta primitiver och låter resten vara alias:
 
-## Vad som inte ändras
+- **Andning (box-breath, breath-wave, breath-blob, belly-hand):** en enda mjuk pulserande cirkel/form vars radie = `stepProgress` på "in", `1-stepProgress` på "ut", konstant på "håll/vila". `BoxBreath` får en prick som glider *en* sida per andningsfas, härlett från `phase` med `stepIndex`-fallback.
+- **Kroppsfokus (body-scan, jaw-release, shoulder-drop, footprints, warm-hand, opening-hand, stretch-up):** en stiliserad kroppssiluett där fokusområdet pulsar mjukt och **ordet** ("käke", "axlar", "mage") står bredvid pricken. Fokus glider mellan zoner kontinuerligt (inget teleporterande ljus).
+- **Tankar passerar (passing-traffic, drifting-clouds, drifting-leaves, passing-thoughts):** en horisont där ett objekt per steg glider in från höger och ut till vänster, drivet linjärt av `stepProgress`. Inga staplade objekt med olika opacitet — bara ett i taget, mjukt.
+- **Tid/förlopp (sand-clock, candle, ember, battery-fill, volume-slider, horizon, morning-sun):** en mätare/form som fylls/töms linjärt av `progress` (hela övningens), inte stegvis.
+- **Val/handling (traffic-light, path-fork, steering-wheel, closing-laptop, closing-tabs, mailbox, inbox-priority, note-to-self, dropping-bags, release-balloon, deflate, measuring-tape, lifting-stone):** en metafor som genomför *en* handling per steg, synkad till `stepProgress`. T.ex. ballong släpps vid 0.5, stiger till toppen vid 1.
+- **Övriga (spiral, orbit, pendulum, anchor-drop, focus-lens, sorting-shelf, constellation, unknotting, walking-path, pebbles, first-step, doorway, typing-cursor, inner-voice, warm-beam, compassion-heart):** samma mall — *en* tydlig rörelse som följer klockan.
 
-Inloggning (Google + e-post), `sessions`-tabellen, RLS, realtidssynk, `useHistory`, lokal fallback, auth-route, sparflödet i spelaren, generell routing-arkitektur.
+Varje primitiv får en kort **etikett-rad** under bilden där det är pedagogiskt nödvändigt ("käke", "1 av 3", "in", "ut").
 
-## Öppen fråga (löser default om inget svar)
+### 5. Spelaren
 
-Behovskakel på startsidan: ska "Reflektera" leda till en separat reflektionskategori-route eller filtrera `kind=reflective` tvärs alla kategorier? **Default:** egen kategori-route med blandade reflektionsövningar (enklare mental modell).
+- Ta bort `cueFor` + den gigantiska enords-rubriken.
+- Visa `script`-fras stort (max ~24 tecken/rad, två rader), `label` mindre under.
+- Lägg till en liten "X av Y"-räknare så användaren ser sin progress mellan steg.
+- I `intro`: kort hjälptext *"Följ texten — den byter med några sekunders mellanrum."*
+
+## Filer som ändras
+
+- `src/lib/exercises.ts` — utöka `ExerciseStep` med `script`, skriv om alla 50 övningars steg.
+- `src/components/animations/index.tsx` — full omskrivning, ~12 primitiver + alias.
+- `src/routes/ovning.$id.tsx` — ny subtitle-rendering, stegräknare, intro-hjälptext, bort med `cueFor`.
+
+## Vad jag inte gör
+
+- Ingen röst/ljudguide.
+- Inga nya övningar — bara förbättring av de 50 som finns.
+- Inga ändringar i kategorisidor, historik, auth eller datamodell utöver `script`-fältet.
+
+## Leveransförslag
+
+Det här är ganska mycket. Två rimliga vägar:
+
+- **A. Allt i ett svep** — jag levererar spelare + alla animationer + alla 50 övningars script i en omgång. Stor diff, men du ser hela resultatet på en gång.
+- **B. I etapper** — (1) spelare + subtitle-motor + 5 övningar att utvärdera, (2) alla animationer omskrivna, (3) resterande övningars script.
+
+Säg vilket du föredrar så kör jag.

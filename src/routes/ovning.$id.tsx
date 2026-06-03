@@ -27,41 +27,18 @@ const themeBg: Record<Category, string> = {
 type Phase = "intro" | "before" | "running" | "after" | "done";
 
 /**
- * Kort "vad du gör nu" — helst ETT ord, max två. Plockas från labeln.
+ * Plocka en aktuell undertext-fras ur steg-scriptet utifrån stepProgress.
+ * Saknas script används labeln själv som enda fras.
  */
-function cueFor(label: string): string {
-  const l = label.trim();
-  if (!l) return "";
-  const lower = l.toLowerCase();
-  const oneWord: Array<[RegExp, string]> = [
-    [/andas\s*in/, "In"],
-    [/andas\s*ut/, "Ut"],
-    [/^håll/, "Håll"],
-    [/^vila|^paus/, "Vila"],
-    [/^stanna|^stå(\s|$)|^stopp/, "Stanna"],
-    [/släpp/, "Släpp"],
-    [/lägg märke|^märk/, "Märk"],
-    [/^känn/, "Känn"],
-    [/^välj/, "Välj"],
-    [/^skriv/, "Skriv"],
-    [/^se\b|^titta|^se dig/, "Se"],
-    [/^nämn|^säg/, "Säg"],
-    [/^dra/, "Dra"],
-    [/^sänk/, "Sänk"],
-    [/^öppna/, "Öppna"],
-    [/^stäng/, "Stäng"],
-    [/^gå\b/, "Gå"],
-    [/^lägg/, "Lägg"],
-    [/^mjuka/, "Mjuka"],
-    [/^skanna|^scanna/, "Skanna"],
-    [/^lyssna/, "Lyssna"],
-    [/^räkna/, "Räkna"],
-    [/^andas/, "Andas"],
-  ];
-  for (const [re, cue] of oneWord) if (re.test(lower)) return cue;
-  if (l.endsWith("?")) return "Reflektera";
-  const first = l.split(/\s+/)[0];
-  return first.length > 14 ? first.slice(0, 12) + "…" : first;
+function subtitleFor(
+  step: { label: string; script?: string[] } | undefined,
+  stepProgress: number,
+): { text: string; index: number; total: number } {
+  if (!step) return { text: "", index: 0, total: 1 };
+  const script = step.script && step.script.length > 0 ? step.script : [step.label];
+  const total = script.length;
+  const idx = Math.min(total - 1, Math.max(0, Math.floor(stepProgress * total)));
+  return { text: script[idx], index: idx, total };
 }
 
 function Player() {
@@ -207,9 +184,12 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
                 />
               </div>
             </div>
+            <p className="mt-6 text-center text-xs font-semibold uppercase tracking-widest opacity-60">
+              Följ texten — den byter med några sekunders mellanrum.
+            </p>
             <button
               onClick={() => setPhase(ex.requiresRating ? "before" : "running")}
-              className="mt-10 rounded-full bg-black/85 px-6 py-4 text-base font-extrabold text-white active:scale-[0.98]"
+              className="mt-6 rounded-full bg-black/85 px-6 py-4 text-base font-extrabold text-white active:scale-[0.98]"
             >
               Jag är med
             </button>
@@ -279,7 +259,7 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
               </div>
             </div>
 
-            {/* central animation + cue + label */}
+            {/* central animation + undertext + steg-rubrik */}
             <div className="flex flex-1 flex-col items-center justify-center gap-8">
               <AnimationFor
                 kind={ex.animation}
@@ -289,24 +269,30 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
                 stepCount={ex.steps.length}
                 stepProgress={stepProgress}
               />
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={stepIdx}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.4 }}
-                  className="flex max-w-md flex-col items-center gap-3 text-center"
-                >
-                  <p className="text-5xl font-black leading-none tracking-tight md:text-6xl">
-                    {cueFor(ex.steps[stepIdx]?.label ?? "")}
-                  </p>
-                  <h2 className="text-base font-semibold leading-snug opacity-80 md:text-lg">
-                    {ex.steps[stepIdx]?.label}
-                  </h2>
-                </motion.div>
-              </AnimatePresence>
+              {(() => {
+                const sub = subtitleFor(ex.steps[stepIdx], stepProgress);
+                return (
+                  <div className="flex max-w-md flex-col items-center gap-3 text-center">
+                    <AnimatePresence mode="wait">
+                      <motion.p
+                        key={`${stepIdx}-${sub.index}`}
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -6 }}
+                        transition={{ duration: 0.25 }}
+                        className="min-h-[3.5rem] text-3xl font-extrabold leading-tight tracking-tight md:text-4xl"
+                      >
+                        {sub.text}
+                      </motion.p>
+                    </AnimatePresence>
+                    <p className="text-[11px] font-bold uppercase tracking-widest opacity-60">
+                      Steg {stepIdx + 1} / {ex.steps.length} · {ex.steps[stepIdx]?.label}
+                    </p>
+                  </div>
+                );
+              })()}
             </div>
+
 
             <div className="flex items-center gap-3">
               <button
