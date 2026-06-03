@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import type { ReactNode } from "react";
 import type { Exercise } from "@/lib/exercises";
 import { Clock } from "lucide-react";
 
