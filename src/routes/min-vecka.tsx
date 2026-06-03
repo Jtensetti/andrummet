@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useHistory } from "@/lib/history";
-import { CATEGORY_LABELS, METRIC_LABELS } from "@/lib/exercises";
+import { CATEGORY_LABELS, METRIC_LABELS, type Category } from "@/lib/exercises";
 import { useMemo } from "react";
 
 export const Route = createFileRoute("/min-vecka")({
