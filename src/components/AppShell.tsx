@@ -75,7 +75,28 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </aside>
 
-      <main className="flex-1 pb-28 md:pb-12">{children}</main>
+      <main className="flex-1 pb-28 md:pb-12">
+        <div className="flex justify-end px-4 pt-3 md:hidden">
+          {user ? (
+            <button
+              onClick={() => supabase.auth.signOut()}
+              className="inline-flex items-center gap-1.5 rounded-full bg-card px-3 py-1.5 text-xs font-semibold text-muted-foreground shadow-sm"
+              aria-label="Logga ut"
+            >
+              <UserIcon className="h-3.5 w-3.5" />
+              <span className="max-w-[140px] truncate">{user.email}</span>
+            </button>
+          ) : (
+            <Link
+              to="/auth"
+              className="inline-flex items-center gap-1.5 rounded-full bg-foreground px-3 py-1.5 text-xs font-bold text-background"
+            >
+              <LogIn className="h-3.5 w-3.5" /> Logga in
+            </Link>
+          )}
+        </div>
+        {children}
+      </main>
 
       {/* Mobil bottennav */}
       <nav className="fixed inset-x-0 bottom-0 z-40 border-t bg-card/95 backdrop-blur md:hidden">
