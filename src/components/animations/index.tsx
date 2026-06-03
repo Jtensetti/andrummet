@@ -52,7 +52,18 @@ export type AnimationKind =
   | "typing-cursor"
   | "morning-sun"
   | "stretch-up"
-  | "inbox-priority";
+  | "inbox-priority"
+  // fjärde vågen — situations- och metafor-specifika
+  | "release-balloon"
+  | "sand-clock"
+  | "steering-wheel"
+  | "closing-laptop"
+  | "note-to-self"
+  | "inner-voice"
+  | "path-fork"
+  | "deflate"
+  | "measuring-tape"
+  | "dropping-bags";
 
 type Props = {
   phase?: string;
