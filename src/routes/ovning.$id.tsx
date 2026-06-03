@@ -5,6 +5,7 @@ import { X, Pause, Play, ArrowLeft } from "lucide-react";
 import { getExercise, METRIC_LABELS, type Category } from "@/lib/exercises";
 import { addEntry } from "@/lib/history";
 import { AnimationFor } from "@/components/animations";
+import { LottiePlayer } from "@/components/animations/LottiePlayer";
 
 export const Route = createFileRoute("/ovning/$id")({
   component: Player,
