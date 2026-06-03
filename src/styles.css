@@ -36,20 +36,29 @@
   --color-ring: var(--ring);
 
   /* Tema-färger per kategori */
-  --color-calm: var(--calm);
-  --color-calm-ink: var(--calm-ink);
-  --color-stress: var(--stress);
-  --color-stress-ink: var(--stress-ink);
-  --color-sleep: var(--sleep);
-  --color-sleep-ink: var(--sleep-ink);
+  --color-breath: var(--breath);
+  --color-breath-ink: var(--breath-ink);
+  --color-quick-pause: var(--quick-pause);
+  --color-quick-pause-ink: var(--quick-pause-ink);
   --color-anxiety: var(--anxiety);
   --color-anxiety-ink: var(--anxiety-ink);
+  --color-stress: var(--stress);
+  --color-stress-ink: var(--stress-ink);
   --color-focus: var(--focus);
   --color-focus-ink: var(--focus-ink);
+  --color-sleep: var(--sleep);
+  --color-sleep-ink: var(--sleep-ink);
+  --color-body: var(--body);
+  --color-body-ink: var(--body-ink);
+  --color-reflection: var(--reflection);
+  --color-reflection-ink: var(--reflection-ink);
   --color-compassion: var(--compassion);
   --color-compassion-ink: var(--compassion-ink);
-  --color-recovery: var(--recovery);
-  --color-recovery-ink: var(--recovery-ink);
+  --color-anger: var(--anger);
+  --color-anger-ink: var(--anger-ink);
+  --color-worklife: var(--worklife);
+  --color-worklife-ink: var(--worklife-ink);
+
 }
 
 @import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap");
