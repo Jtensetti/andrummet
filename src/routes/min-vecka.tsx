@@ -67,7 +67,7 @@ function Page() {
         <Stat label="Minuter" value={String(totalMinutes)} />
         <Stat
           label="Vanligast"
-          value={topCategory ? CATEGORY_LABELS[topCategory[0] as never] : "–"}
+          value={topCategory ? CATEGORY_LABELS[topCategory[0] as Category] : "–"}
         />
       </div>
 
