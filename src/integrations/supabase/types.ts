@@ -14,7 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      sessions: {
+        Row: {
+          category: string
+          completed_at: string
+          created_at: string
+          exercise_id: string
+          id: string
+          metric: string
+          minutes: number
+          rating_after: number | null
+          rating_before: number | null
+          reflection: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          completed_at?: string
+          created_at?: string
+          exercise_id: string
+          id?: string
+          metric: string
+          minutes?: number
+          rating_after?: number | null
+          rating_before?: number | null
+          reflection?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          completed_at?: string
+          created_at?: string
+          exercise_id?: string
+          id?: string
+          metric?: string
+          minutes?: number
+          rating_after?: number | null
+          rating_before?: number | null
+          reflection?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
