@@ -754,38 +754,40 @@ export function Ember({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Props)
 // ─────────────────────────────────────────────────────────────
 export function Candle({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Props) {
   const safeCount = Math.max(1, stepCount);
-  const p = (stepIndex + clamp01(stepProgress)) / safeCount;
-  const flameH = 60 - p * 45;
-  const glow = 0.6 - p * 0.5;
+  // diskret: vid varje steg sänks lågan till nästa nivå
+  const targetLevel = 1 - (stepIndex + clamp01(stepProgress)) / safeCount;
+  const flameH = 22 + targetLevel * 48; // 22..70
+  const glow = 0.15 + targetLevel * 0.55;
+  // vax-droppar: en per slutfört steg
   return (
-    <div className="relative grid place-items-center" style={{ width: 220, height: 320 }}>
+    <div className="relative grid place-items-center" style={{ width: 240, height: 340 }}>
       {/* glöd runt lågan */}
       <motion.div
-        className="absolute h-40 w-40 rounded-full"
+        className="absolute h-44 w-44 rounded-full"
         style={{
-          top: 40,
+          top: 30,
           background:
-            "radial-gradient(circle, rgba(254,240,138,0.7) 0%, rgba(251,146,60,0.2) 40%, transparent 70%)",
-          filter: "blur(8px)",
+            "radial-gradient(circle, rgba(254,240,138,0.8) 0%, rgba(251,146,60,0.25) 40%, transparent 70%)",
+          filter: "blur(10px)",
         }}
-        animate={{ opacity: glow, scale: 1 - p * 0.4 }}
+        animate={{ opacity: glow, scale: 0.7 + targetLevel * 0.5 }}
         transition={{ duration: 0.8 }}
       />
       {/* låga */}
       <motion.div
         className="absolute"
         style={{ top: 80, left: "50%", marginLeft: -10 }}
-        animate={{ height: flameH }}
-        transition={{ duration: 0.6 }}
+        animate={{ y: 70 - flameH }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
       >
         <motion.svg
-          viewBox="0 0 20 60"
-          style={{ width: 20, height: flameH }}
-          animate={{ scaleX: [1, 0.92, 1.05, 1], scaleY: [1, 1.05, 0.95, 1] }}
-          transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+          viewBox="0 0 20 70"
+          style={{ width: 22, height: flameH }}
+          animate={{ scaleX: [1, 0.94, 1.04, 1], scaleY: [1, 1.04, 0.96, 1] }}
+          transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
         >
           <path
-            d="M10 60 Q 0 50 2 32 Q 4 18 10 0 Q 16 18 18 32 Q 20 50 10 60 Z"
+            d="M10 70 Q 0 58 2 38 Q 4 22 10 0 Q 16 22 18 38 Q 20 58 10 70 Z"
             fill="url(#candleG)"
           />
           <defs>
@@ -796,15 +798,142 @@ export function Candle({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Props
           </defs>
         </motion.svg>
       </motion.div>
-      {/* ljusstake */}
+      {/* ljusstake + vax-droppar */}
       <div
         className="absolute left-1/2 -translate-x-1/2 rounded-md bg-white/85"
-        style={{ top: 160, width: 28, height: 120 }}
+        style={{ top: 170, width: 30, height: 130 }}
       />
+      {/* droppe per slutfört steg, växer ner längs ljuset */}
+      {Array.from({ length: stepIndex }).map((_, i) => (
+        <div
+          key={i}
+          className="absolute rounded-full bg-white/90"
+          style={{
+            top: 180 + i * 18,
+            left: `calc(50% + ${i % 2 === 0 ? -16 : 14}px)`,
+            width: 8 + (i % 2) * 2,
+            height: 16,
+          }}
+        />
+      ))}
       <div
         className="absolute left-1/2 -translate-x-1/2 rounded-full bg-white/60"
-        style={{ top: 278, width: 80, height: 14 }}
+        style={{ top: 298, width: 90, height: 14 }}
       />
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// 17. PEBBLES — en sten läggs i skålen per steg
+// ─────────────────────────────────────────────────────────────
+export function Pebbles({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Props) {
+  const safeCount = Math.max(1, stepCount);
+  const t = clamp01(stepProgress);
+  // studsig in-fall: först ner snabbt, sen liten studs
+  const fallY = t < 0.7 ? (t / 0.7) * 220 : 220 + Math.sin((t - 0.7) / 0.3 * Math.PI) * -10;
+  return (
+    <div className="relative" style={{ width: 320, height: 280 }}>
+      {/* skål */}
+      <div className="absolute bottom-0 left-1/2 h-28 w-60 -translate-x-1/2 overflow-hidden rounded-b-[120px] bg-white/15 border-t-2 border-white/40">
+        <div className="absolute inset-x-0 top-0 h-2 bg-white/30" />
+      </div>
+      {/* befintliga stenar i botten */}
+      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex w-52 flex-wrap justify-center gap-1.5">
+        {Array.from({ length: stepIndex }).map((_, i) => (
+          <div
+            key={i}
+            className="rounded-full"
+            style={{
+              width: 26 + (i % 3) * 4,
+              height: 18 + (i % 2) * 4,
+              background:
+                i % 3 === 0
+                  ? "#cbd5e1"
+                  : i % 3 === 1
+                    ? "#e2e8f0"
+                    : "#94a3b8",
+            }}
+          />
+        ))}
+      </div>
+      {/* nuvarande sten faller med studs */}
+      {stepIndex < safeCount && (
+        <motion.div
+          className="absolute left-1/2 h-6 w-9 -translate-x-1/2 rounded-full bg-slate-200 shadow"
+          animate={{
+            top: -10 + fallY,
+            opacity: t < 0.92 ? 1 : 0.15,
+            scaleY: t < 0.7 ? 1 : 0.85,
+          }}
+          transition={{ duration: 0.25, ease: "linear" }}
+        />
+      )}
+      {/* steg-räknare stor och tydlig */}
+      <div className="absolute left-1/2 top-2 -translate-x-1/2 text-3xl font-black tabular-nums opacity-80">
+        {Math.min(stepIndex + 1, safeCount)}
+        <span className="text-base opacity-60"> / {safeCount}</span>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// 18. HORIZON — solen sjunker mot horisonten per steg (kvällsläge)
+// ─────────────────────────────────────────────────────────────
+export function Horizon({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Props) {
+  const safeCount = Math.max(1, stepCount);
+  const p = (stepIndex + clamp01(stepProgress)) / safeCount;
+  const sky =
+    p < 0.5
+      ? `linear-gradient(180deg, oklch(0.85 0.05 230 / 0.6), oklch(0.78 0.12 60 / 0.55))`
+      : `linear-gradient(180deg, oklch(${0.55 - p * 0.35} 0.08 280 / 0.85), oklch(${0.42 - p * 0.22} 0.1 30 / 0.7))`;
+  const sunY = 30 + p * 160;
+  return (
+    <div
+      className="relative overflow-hidden rounded-3xl"
+      style={{ width: 320, height: 240, background: sky }}
+    >
+      {/* sol */}
+      <motion.div
+        className="absolute left-1/2 h-24 w-24 -translate-x-1/2 rounded-full"
+        style={{
+          background: "radial-gradient(circle, #fef08a 0%, #f97316 65%, transparent 100%)",
+          filter: "blur(1px)",
+          boxShadow: "0 0 40px rgba(251,146,60,0.6)",
+        }}
+        animate={{ top: sunY, opacity: 1 - p * 0.25 }}
+        transition={{ duration: 0.7, ease: "easeOut" }}
+      />
+      {/* hav/horisont */}
+      <div className="absolute inset-x-0 bottom-0 h-20" style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.25), rgba(0,0,0,0.45))" }} />
+      <div className="absolute inset-x-0" style={{ bottom: 80, height: 1, background: "rgba(255,255,255,0.55)" }} />
+      {/* reflektion på vattnet */}
+      <motion.div
+        className="absolute left-1/2 -translate-x-1/2 rounded-full"
+        style={{
+          bottom: 4,
+          width: 90,
+          height: 70,
+          background: "radial-gradient(ellipse at top, rgba(254,215,170,0.55) 0%, transparent 70%)",
+          filter: "blur(4px)",
+        }}
+        animate={{ opacity: 0.3 + p * 0.5 }}
+      />
+      {/* stjärnor i mörkare lägen */}
+      {p > 0.55 && (
+        <div className="pointer-events-none absolute inset-0">
+          {[15, 55, 105, 175, 235, 280, 35, 200].map((x, i) => (
+            <motion.div
+              key={i}
+              className="absolute h-1 w-1 rounded-full bg-white"
+              style={{ left: x, top: 18 + ((i * 23) % 60) }}
+              animate={{ opacity: [(p - 0.55) * 2, (p - 0.55) * 1.2, (p - 0.55) * 2] }}
+              transition={{ duration: 2 + i * 0.3, repeat: Infinity }}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
