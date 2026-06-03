@@ -266,7 +266,7 @@ const SEEDS: Seed[] = [
     category: "quick-pause",
     kind: "short",
     minutes: 1,
-    animation: "anchor-drop",
+    animation: "pebbles",
     metric: "oro",
     steps: [
       ["En sak du ser", 12],
