@@ -1,99 +1,81 @@
-# Mindfullare övningar: riktiga instruktioner + bygg om animationerna
+# Lottie-animationer i andrummet (prototyp)
 
-## Vad som är fel idag
+## Mål
 
-1. **Texten säger nästan inget.** `cueFor()` i `src/routes/ovning.$id.tsx` klipper varje stegrubrik till **ett** ord. "En sak du ser" blir **"En"**. Den fulla rubriken finns under men i pytteliten stil. Användaren ser ett ord + en sten som faller och fattar inget.
-2. **Stegen är för glesa.** Ett steg på 10–20 sek visar samma rubrik hela tiden — inget händer i texten, inget driver framåt.
-3. **Animationerna är hoppiga och otydliga.** Du bekräftade att det gäller alla, inte bara tre. Genomgående problem jag ser i `src/components/animations/index.tsx`:
-   - Många använder `animate={{...}}` med egen `transition` *ovanpå* sekundkontrollen — då glider de mot ett mål med eget tempo istället för att följa övningens klocka. Resultatet: rycker, hinner inte ifatt, eller fortsätter när stegtexten redan bytts.
-   - Andra mappar `stepIndex % N` utan `phase`-fallback — vid steg som inte är "in/ut/håll/vila" hoppar de fel.
-   - Flera kroppsanimationer (jaw, axlar, mage) visar en kroppsdel utan kontext eller etikett — "jaha, hakan?".
-   - Steg-byten ger teleport-effekt eftersom inget element bär över state mellan steg.
+Ersätta de hemmagjorda SVG-animationerna med riktiga, polerade Lottie-animationer från LottieFiles gratisbibliotek där det finns bra matchningar. Behålla vår egen SVG-primitiv för andningsövningar där vi måste styra tempot exakt.
 
-## Lösning
+## Förutsättningar (verifierade)
 
-### 1. Inför "subtitle script" per steg
+- `@lottiefiles/dotlottie-react` är MIT-licensierat, gratis, installeras via bun.
+- LottieFiles har tusentals gratis filer under två licenser:
+  - **Lottie Simple License** — fri, ingen attribution.
+  - **Free License** — fri, kräver attribution.
+- För denna prototyp använder vi gratisfiler och listar skaparna på en liten credits-sida.
 
-Utvidga `ExerciseStep`:
+## Plan
 
-```ts
-interface ExerciseStep {
-  label: string;         // kort rubrik, små bokstäver under
-  seconds: number;
-  script?: string[];     // 2–8 korta fraser, 1–3 ord, visas i tur och ordning
-}
-```
+### 1. Installera och skapa en Lottie-wrapper
 
-Spelaren visar `script[floor(stepProgress * script.length)]` — som undertexter till en lugn röst. Mjuk 200 ms fade mellan fraser. Saknas `script` används `label`.
+- `bun add @lottiefiles/dotlottie-react`
+- Ny komponent `src/components/animations/LottiePlayer.tsx`:
+  - Props: `src` (URL till .lottie-fil), `mode: "loop" | "once-per-step" | "clock-driven"`, `stepProgress`, `stepIndex`.
+  - `loop`: bara autoplay loop (för ambient: ljus, sand, regn, moln som driver förbi).
+  - `once-per-step`: spelar en gång per stegbyte (för metaforer: ballong släpps, sten faller, dörr öppnas).
+  - `clock-driven`: `setFrame(stepProgress * totalFrames)` varje render — animationen drivs av övningens klocka (för andning där tempot måste matcha).
 
-Ta bort `cueFor()`. Den stora texten är nästa fras i scriptet. Rubriken visas litet under som "kapitelnamn".
+### 2. Hosting
 
-### 2. Skriv om alla 50 övningar
+- Ladda ner valda .lottie-filer och lägg upp via `lovable-assets create` så vi inte är beroende av LottieFiles CDN.
+- Spara pointers i `src/assets/lottie/{namn}.lottie.asset.json`.
 
-Varje steg får ett script som verkligen guidar. Exempel:
+### 3. Mappa övningar till Lottie
 
-**"Tre saker du ser" — innan:**
-```
-["En sak du ser", 12]
-```
-**Efter:**
-```
-{ label: "En sak du ser", seconds: 18, script: [
-  "Titta upp.", "Låt blicken vila.",
-  "Hitta en sak.", "Vad är det?",
-  "Säg det tyst.", "Stanna där."
-]}
-```
+Utöka `ExerciseStep` / Exercise i `src/lib/exercises.ts` med valfritt `lottie?: { src, mode }`. Om `lottie` finns används `LottiePlayer`, annars fallback till vår nuvarande `AnimationFor`. På så sätt kan vi byta gradvis — inget brott i en stor diff.
 
-**"Paus för käken":** scriptet förklarar *varför* vi tittar på käken — inte bara "Lägg märke till käken".
+### 4. Vad vi ersätter och vad vi behåller
 
-Längder justeras så scriptet ryms (≈2–4 sek per fras). Jag går igenom alla 50 övningar i `src/lib/exercises.ts`.
+**Ersätter med Lottie (där fina gratisfiler finns):**
+- Ljus som brinner, ljusslocknande, eld/glöd
+- Moln som driver, löv som faller, regn
+- Stjärnor/konstellation, sol som går upp/ner
+- Ballong som släpps, sten som faller/sjunker
+- Sand som rinner i timglas
+- Trafikljus, dörröppning, post/inkorg
+- Spiral, pendel, ankare
 
-### 3. Bygg om animationerna från grunden — gemensamma principer
+**Behåller vår egen SVG-primitiv (klock-styrt eller pedagogisk text):**
+- Box-andning (vi styr exakt vilken sida pricken är på)
+- Andnings-orb (radie = stepProgress)
+- Kroppsfigur med fokuszoner (käke, axlar, mage) med text bredvid
+- "Tre saker du ser/hör/känner"-räknare
 
-Skriv om hela `src/components/animations/index.tsx` runt tre regler:
+### 5. Credits
 
-- **Klockan styr, inte easing.** Allt visuellt drivs av `stepProgress` (0→1) och `stepIndex` direkt via `style={{ transform: ... }}` eller SVG-attribut. Inga `animate`-mål med egen `transition` som krockar med övningens tempo.
-- **Inget hoppar mellan steg.** Element bär över sin slutposition från föregående steg och fortsätter mjukt. För cykler (andning, ruta) är slutet av steg N = början av steg N+1 i samma punkt.
-- **Animationen *visar* instruktionen.** Det som händer i bilden ska matcha det undertexten säger just nu — andas in → något fylls/växer, andas ut → samma sak töms/minskar i samma tempo.
+Liten sida `src/routes/credits.tsx` som listar Lottie-skaparna vi använt under Free License, länkad från footer.
 
-### 4. Konkret omarbetning per animationstyp
+### 6. Leverans i etapper
 
-Jag grupperar de ~45 typerna i ~12 robusta primitiver och låter resten vara alias:
+Eftersom det här är jobb per övning föreslår jag:
 
-- **Andning (box-breath, breath-wave, breath-blob, belly-hand):** en enda mjuk pulserande cirkel/form vars radie = `stepProgress` på "in", `1-stepProgress` på "ut", konstant på "håll/vila". `BoxBreath` får en prick som glider *en* sida per andningsfas, härlett från `phase` med `stepIndex`-fallback.
-- **Kroppsfokus (body-scan, jaw-release, shoulder-drop, footprints, warm-hand, opening-hand, stretch-up):** en stiliserad kroppssiluett där fokusområdet pulsar mjukt och **ordet** ("käke", "axlar", "mage") står bredvid pricken. Fokus glider mellan zoner kontinuerligt (inget teleporterande ljus).
-- **Tankar passerar (passing-traffic, drifting-clouds, drifting-leaves, passing-thoughts):** en horisont där ett objekt per steg glider in från höger och ut till vänster, drivet linjärt av `stepProgress`. Inga staplade objekt med olika opacitet — bara ett i taget, mjukt.
-- **Tid/förlopp (sand-clock, candle, ember, battery-fill, volume-slider, horizon, morning-sun):** en mätare/form som fylls/töms linjärt av `progress` (hela övningens), inte stegvis.
-- **Val/handling (traffic-light, path-fork, steering-wheel, closing-laptop, closing-tabs, mailbox, inbox-priority, note-to-self, dropping-bags, release-balloon, deflate, measuring-tape, lifting-stone):** en metafor som genomför *en* handling per steg, synkad till `stepProgress`. T.ex. ballong släpps vid 0.5, stiger till toppen vid 1.
-- **Övriga (spiral, orbit, pendulum, anchor-drop, focus-lens, sorting-shelf, constellation, unknotting, walking-path, pebbles, first-step, doorway, typing-cursor, inner-voice, warm-beam, compassion-heart):** samma mall — *en* tydlig rörelse som följer klockan.
-
-Varje primitiv får en kort **etikett-rad** under bilden där det är pedagogiskt nödvändigt ("käke", "1 av 3", "in", "ut").
-
-### 5. Spelaren
-
-- Ta bort `cueFor` + den gigantiska enords-rubriken.
-- Visa `script`-fras stort (max ~24 tecken/rad, två rader), `label` mindre under.
-- Lägg till en liten "X av Y"-räknare så användaren ser sin progress mellan steg.
-- I `intro`: kort hjälptext *"Följ texten — den byter med några sekunders mellanrum."*
+- **Etapp 1:** Wrapper + `lottie`-fältet i exercises + 5 övningar konverterade (ljus, ballong, moln, sten, sand) — du utvärderar känslan.
+- **Etapp 2:** Resten av övningarna där en bra fri Lottie finns.
+- **Etapp 3:** Eventuell finputs (credits-sida, fallback-states).
 
 ## Filer som ändras
 
-- `src/lib/exercises.ts` — utöka `ExerciseStep` med `script`, skriv om alla 50 övningars steg.
-- `src/components/animations/index.tsx` — full omskrivning, ~12 primitiver + alias.
-- `src/routes/ovning.$id.tsx` — ny subtitle-rendering, stegräknare, intro-hjälptext, bort med `cueFor`.
+- `package.json` — ny dep `@lottiefiles/dotlottie-react`
+- `src/components/animations/LottiePlayer.tsx` — ny
+- `src/assets/lottie/*.lottie.asset.json` — nya pointers (5 st i etapp 1)
+- `src/lib/exercises.ts` — `lottie`-fält på Exercise, fyll i för 5 övningar
+- `src/routes/ovning.$id.tsx` — välj Lottie eller fallback
 
 ## Vad jag inte gör
 
-- Ingen röst/ljudguide.
-- Inga nya övningar — bara förbättring av de 50 som finns.
-- Inga ändringar i kategorisidor, historik, auth eller datamodell utöver `script`-fältet.
+- Inga premium-Lottie-filer.
+- Ingen ändring av övningstexter / scripts — det jobbet är redan klart.
+- Ingen total ersättning av andningsanimationerna — vår klock-styrning är bättre där.
 
-## Leveransförslag
+## Säg till om
 
-Det här är ganska mycket. Två rimliga vägar:
-
-- **A. Allt i ett svep** — jag levererar spelare + alla animationer + alla 50 övningars script i en omgång. Stor diff, men du ser hela resultatet på en gång.
-- **B. I etapper** — (1) spelare + subtitle-motor + 5 övningar att utvärdera, (2) alla animationer omskrivna, (3) resterande övningars script.
-
-Säg vilket du föredrar så kör jag.
+- du vill köra etapp 1 nu (jag väljer 5 filer och visar resultatet), eller
+- du vill se mig välja Lottie-filer först och godkänna varje innan jag bygger in dem.
