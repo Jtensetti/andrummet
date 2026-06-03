@@ -26,6 +26,43 @@ const themeBg: Record<Category, string> = {
 
 type Phase = "intro" | "before" | "running" | "after" | "done";
 
+/**
+ * Kort "vad du gör nu" — en eller två ord. Plockas från labeln när det går,
+ * faller annars tillbaka på första 1–2 orden.
+ */
+function cueFor(label: string): string {
+  const l = label.trim();
+  if (!l) return "";
+  const lower = l.toLowerCase();
+  const map: Array<[RegExp, string]> = [
+    [/^andas\s*in/, "Andas in"],
+    [/^andas\s*ut/, "Andas ut"],
+    [/^håll/, "Håll"],
+    [/^vila|^paus/, "Vila"],
+    [/^stanna|^stå|^stopp/, "Stanna"],
+    [/^släpp|släpp/, "Släpp"],
+    [/^lägg märke|^märk|lägg märke/, "Märk"],
+    [/^känn|^känner/, "Känn"],
+    [/^välj/, "Välj"],
+    [/^skriv/, "Skriv"],
+    [/^se\b|^titta|^se dig/, "Se"],
+    [/^nämn|^säg/, "Säg"],
+    [/^lägg/, "Lägg"],
+    [/^dra/, "Dra"],
+    [/^gå\b/, "Gå"],
+    [/^öppna/, "Öppna"],
+    [/^stäng/, "Stäng"],
+    [/^sänk/, "Sänk"],
+    [/^andas/, "Andas"],
+  ];
+  for (const [re, cue] of map) if (re.test(lower)) return cue;
+  if (l.endsWith("?")) return "Reflektera";
+  // fallback: 1–2 första ord, max ~18 tecken
+  const words = l.split(/\s+/);
+  const short = words.slice(0, 2).join(" ");
+  return short.length > 22 ? words[0] : short;
+}
+
 function Player() {
   const { id } = Route.useParams();
   const ex = getExercise(id);
