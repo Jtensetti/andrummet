@@ -668,35 +668,59 @@ export function VolumeSlider({ stepIndex = 0, stepCount = 1, stepProgress = 0 }:
 // ─────────────────────────────────────────────────────────────
 export function Ember({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Props) {
   const safeCount = Math.max(1, stepCount);
-  const p = (stepIndex + clamp01(stepProgress)) / safeCount;
-  const flameScale = 1 - p * 0.75;
-  const flameOpacity = 1 - p * 0.85;
-  const emberOpacity = 0.25 + p * 0.75;
+  // diskret: flamhöjd = 1 - stepIndex/safeCount, glöd byggs upp diskret
+  const flameLevel = 1 - stepIndex / safeCount;
+  const emberLevel = stepIndex / safeCount;
+  // gnistor: släpps vid varje stegbyte
+  const sparkPhase = clamp01(stepProgress);
   return (
-    <div className="relative grid place-items-end" style={{ width: 260, height: 280 }}>
-      <div
-        className="absolute inset-x-0 bottom-0 h-20 rounded-full"
+    <div className="relative grid place-items-end" style={{ width: 280, height: 300 }}>
+      {/* glöd-bädd nere */}
+      <motion.div
+        className="absolute inset-x-6 bottom-2 h-16 rounded-full"
         style={{
           background:
-            "radial-gradient(ellipse at center, rgba(239,68,68,0.7) 0%, rgba(251,146,60,0.3) 50%, transparent 80%)",
-          opacity: emberOpacity,
-          filter: "blur(3px)",
+            "radial-gradient(ellipse at center, rgba(239,68,68,0.8) 0%, rgba(251,146,60,0.45) 45%, transparent 80%)",
+          filter: "blur(4px)",
         }}
+        animate={{ opacity: 0.2 + emberLevel * 0.8 }}
+        transition={{ duration: 0.6 }}
       />
+      {/* små glödklumpar som tänds en per steg */}
+      <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-2">
+        {Array.from({ length: safeCount }).map((_, i) => {
+          const lit = i < stepIndex;
+          return (
+            <div
+              key={i}
+              className="h-3 w-5 rounded-full"
+              style={{
+                background: lit
+                  ? "radial-gradient(circle, #fde047 0%, #f97316 60%, #b91c1c 100%)"
+                  : "rgba(120,30,30,0.4)",
+                boxShadow: lit ? "0 0 8px rgba(251,146,60,0.7)" : "none",
+              }}
+            />
+          );
+        })}
+      </div>
+      {/* flamma som krymper diskret */}
       <motion.svg
         viewBox="0 0 100 120"
         className="relative h-56 w-44"
-        animate={{ scaleY: flameScale, opacity: flameOpacity }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
+        animate={{ scaleY: 0.2 + flameLevel * 0.8, opacity: 0.15 + flameLevel * 0.85 }}
+        transition={{ duration: 0.7, ease: "easeOut" }}
         style={{ transformOrigin: "bottom" }}
       >
         <motion.path
           fill="url(#flameG)"
-          animate={{ d: [
-            "M50 110 Q 18 100 18 70 Q 18 50 36 38 Q 30 58 44 60 Q 38 42 52 22 Q 56 46 66 50 Q 60 38 74 36 Q 86 56 82 80 Q 82 100 50 110 Z",
-            "M50 110 Q 20 100 20 72 Q 22 52 38 42 Q 32 60 46 62 Q 40 44 52 26 Q 56 48 66 52 Q 62 40 74 38 Q 84 56 80 80 Q 80 100 50 110 Z",
-          ] }}
-          transition={{ duration: 2, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
+          animate={{
+            d: [
+              "M50 110 Q 18 100 18 70 Q 18 50 36 38 Q 30 58 44 60 Q 38 42 52 22 Q 56 46 66 50 Q 60 38 74 36 Q 86 56 82 80 Q 82 100 50 110 Z",
+              "M50 110 Q 20 100 20 72 Q 22 52 38 42 Q 32 60 46 62 Q 40 44 52 26 Q 56 48 66 52 Q 62 40 74 38 Q 84 56 80 80 Q 80 100 50 110 Z",
+            ],
+          }}
+          transition={{ duration: 1.8, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
         />
         <defs>
           <linearGradient id="flameG" x1="0" y1="1" x2="0" y2="0">
@@ -706,6 +730,21 @@ export function Ember({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Props)
           </linearGradient>
         </defs>
       </motion.svg>
+      {/* gnistor som flyger upp när ett nytt steg börjar */}
+      {sparkPhase < 0.4 && stepIndex > 0 && (
+        <div className="pointer-events-none absolute inset-0">
+          {[0.2, 0.5, 0.8].map((x, i) => (
+            <motion.div
+              key={i}
+              className="absolute h-1.5 w-1.5 rounded-full bg-amber-200"
+              style={{ left: `${x * 100}%`, bottom: 40 }}
+              initial={{ y: 0, opacity: 1 }}
+              animate={{ y: -100 - i * 20, opacity: 0 }}
+              transition={{ duration: 1.5, delay: i * 0.15 }}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
