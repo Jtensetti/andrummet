@@ -509,16 +509,16 @@ export function Unknotting({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: P
 // ─────────────────────────────────────────────────────────────
 export function WalkingPath({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Props) {
   const safeCount = Math.max(1, stepCount);
-  // Stegmål längs en mjuk båge
   const waypoints = Array.from({ length: safeCount + 1 }, (_, i) => {
     const t = i / safeCount;
-    return { x: 20 + t * 270, y: 180 - t * 130 };
+    return { x: 20 + t * 280, y: 180 - t * 130 };
   });
   const a = waypoints[stepIndex];
   const b = waypoints[Math.min(stepIndex + 1, safeCount)];
   const t = clamp01(stepProgress);
   const x = a.x + (b.x - a.x) * t;
   const y = a.y + (b.y - a.y) * t;
+  const bob = Math.sin(t * Math.PI * 4) * 3; // gångrörelse
   return (
     <div className="relative overflow-hidden rounded-3xl" style={{ width: 320, height: 220 }}>
       <div className="absolute inset-0">
@@ -528,27 +528,34 @@ export function WalkingPath({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: 
       </div>
       <svg viewBox="0 0 320 220" className="absolute inset-0">
         <path
-          d="M 20 180 Q 100 140 160 130 T 300 60"
+          d="M 20 180 Q 100 140 160 130 T 300 50"
           fill="none"
           stroke="rgba(255,255,255,0.5)"
           strokeWidth="3"
           strokeDasharray="6 8"
         />
-        {waypoints.map((w, i) => (
-          <circle
-            key={i}
-            cx={w.x}
-            cy={w.y}
-            r={i <= stepIndex ? 4 : 3}
-            fill={i <= stepIndex ? "white" : "rgba(255,255,255,0.5)"}
-          />
-        ))}
+        {waypoints.map((w, i) => {
+          const passed = i <= stepIndex;
+          return (
+            <g key={i}>
+              {passed && i > 0 && (
+                <circle cx={w.x} cy={w.y} r={8} fill="rgba(255,255,255,0.25)" />
+              )}
+              <circle
+                cx={w.x}
+                cy={w.y}
+                r={i <= stepIndex ? 4.5 : 3}
+                fill={passed ? "white" : "rgba(255,255,255,0.55)"}
+              />
+            </g>
+          );
+        })}
       </svg>
       <motion.div
-        className="absolute h-6 w-6 rounded-full bg-white shadow-[0_0_20px_8px_rgba(255,255,255,0.55)]"
-        animate={{ left: `${x}px`, top: `${y}px` }}
-        transition={{ duration: 0.5, ease: "easeInOut" }}
-        style={{ marginLeft: -12, marginTop: -12 }}
+        className="absolute h-7 w-7 rounded-full bg-white shadow-[0_0_24px_8px_rgba(255,255,255,0.55)]"
+        animate={{ left: `${x}px`, top: `${y + bob}px` }}
+        transition={{ duration: 0.25, ease: "linear" }}
+        style={{ marginLeft: -14, marginTop: -14 }}
       />
     </div>
   );
