@@ -296,12 +296,12 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
                   transition={{ duration: 0.4 }}
-                  className="flex max-w-md flex-col items-center gap-2 text-center"
+                  className="flex max-w-md flex-col items-center gap-3 text-center"
                 >
-                  <p className="text-xs font-extrabold uppercase tracking-[0.25em] opacity-70">
+                  <p className="text-5xl font-black leading-none tracking-tight md:text-6xl">
                     {cueFor(ex.steps[stepIdx]?.label ?? "")}
                   </p>
-                  <h2 className="text-2xl font-extrabold leading-tight md:text-3xl">
+                  <h2 className="text-base font-semibold leading-snug opacity-80 md:text-lg">
                     {ex.steps[stepIdx]?.label}
                   </h2>
                 </motion.div>
