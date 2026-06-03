@@ -110,6 +110,7 @@ type Seed = {
   kind: ExerciseKind;
   minutes: number;
   animation: AnimationKind;
+  lottie?: LottieSpec;
   metric: RatingMetric;
   requiresRating?: boolean;
   steps: StepTuple[];
