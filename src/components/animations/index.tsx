@@ -454,36 +454,49 @@ export function Mailbox({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Prop
 // 11. UNKNOTTING — en knut släpper per steg
 // ─────────────────────────────────────────────────────────────
 export function Unknotting({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Props) {
-  // Knotpaths: helt trasslig → helt rak. Vi har 4 nivåer; mappa stegen linjärt.
-  const knots = [
-    "M20 110 C 70 20, 90 200, 150 110 C 210 20, 230 200, 280 110",
-    "M20 110 C 75 50, 90 170, 150 110 C 210 50, 225 170, 280 110",
-    "M20 110 C 80 85, 90 135, 150 110 C 210 85, 220 135, 280 110",
-    "M20 110 C 100 105, 200 115, 280 110",
-  ];
+  // En knut per steg. Knutarna sitter på linjen och "släpper" diskret.
   const safeCount = Math.max(1, stepCount);
-  const pos = (stepIndex + clamp01(stepProgress)) / safeCount;
-  const idxF = pos * (knots.length - 1);
-  const i = Math.min(knots.length - 2, Math.floor(idxF));
+  const W = 320;
+  const H = 220;
+  const knots = Array.from({ length: safeCount }, (_, i) => {
+    const t = (i + 1) / (safeCount + 1);
+    return { x: 20 + t * (W - 40), i };
+  });
   return (
-    <div className="relative" style={{ width: 300, height: 220 }}>
-      <svg viewBox="0 0 300 220" className="absolute inset-0">
-        <motion.path
-          fill="none"
+    <div className="relative" style={{ width: W, height: H }}>
+      <svg viewBox={`0 0 ${W} ${H}`} className="absolute inset-0">
+        {/* baslinje (rep) */}
+        <line
+          x1={20}
+          y1={H / 2}
+          x2={W - 20}
+          y2={H / 2}
           stroke="white"
-          strokeWidth="5"
+          strokeWidth={5}
           strokeLinecap="round"
-          animate={{ d: knots[i + 1] }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          initial={{ d: knots[i] }}
+          opacity={0.85}
         />
+        {knots.map((k) => {
+          const isReleased = k.i < stepIndex;
+          const isCurrent = k.i === stepIndex;
+          const t = isCurrent ? clamp01(stepProgress) : isReleased ? 1 : 0;
+          // knut: knot-radie krymper från 18 → 0, opacity fade
+          const r = 18 * (1 - t);
+          const op = 1 - t * 0.9;
+          return (
+            <motion.g key={k.i} animate={{ opacity: op }} transition={{ duration: 0.4 }}>
+              <circle cx={k.x} cy={H / 2} r={r} fill="white" />
+              <circle cx={k.x} cy={H / 2} r={r * 0.55} fill="rgba(0,0,0,0.25)" />
+            </motion.g>
+          );
+        })}
       </svg>
       <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1.5">
         {Array.from({ length: safeCount }).map((_, k) => (
           <div
             key={k}
-            className="h-1.5 w-1.5 rounded-full"
-            style={{ background: k <= stepIndex ? "white" : "rgba(255,255,255,0.3)" }}
+            className="h-1.5 w-4 rounded-full"
+            style={{ background: k < stepIndex ? "white" : "rgba(255,255,255,0.3)" }}
           />
         ))}
       </div>
