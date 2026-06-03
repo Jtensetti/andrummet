@@ -27,41 +27,18 @@ const themeBg: Record<Category, string> = {
 type Phase = "intro" | "before" | "running" | "after" | "done";
 
 /**
- * Kort "vad du gör nu" — helst ETT ord, max två. Plockas från labeln.
+ * Plocka en aktuell undertext-fras ur steg-scriptet utifrån stepProgress.
+ * Saknas script används labeln själv som enda fras.
  */
-function cueFor(label: string): string {
-  const l = label.trim();
-  if (!l) return "";
-  const lower = l.toLowerCase();
-  const oneWord: Array<[RegExp, string]> = [
-    [/andas\s*in/, "In"],
-    [/andas\s*ut/, "Ut"],
-    [/^håll/, "Håll"],
-    [/^vila|^paus/, "Vila"],
-    [/^stanna|^stå(\s|$)|^stopp/, "Stanna"],
-    [/släpp/, "Släpp"],
-    [/lägg märke|^märk/, "Märk"],
-    [/^känn/, "Känn"],
-    [/^välj/, "Välj"],
-    [/^skriv/, "Skriv"],
-    [/^se\b|^titta|^se dig/, "Se"],
-    [/^nämn|^säg/, "Säg"],
-    [/^dra/, "Dra"],
-    [/^sänk/, "Sänk"],
-    [/^öppna/, "Öppna"],
-    [/^stäng/, "Stäng"],
-    [/^gå\b/, "Gå"],
-    [/^lägg/, "Lägg"],
-    [/^mjuka/, "Mjuka"],
-    [/^skanna|^scanna/, "Skanna"],
-    [/^lyssna/, "Lyssna"],
-    [/^räkna/, "Räkna"],
-    [/^andas/, "Andas"],
-  ];
-  for (const [re, cue] of oneWord) if (re.test(lower)) return cue;
-  if (l.endsWith("?")) return "Reflektera";
-  const first = l.split(/\s+/)[0];
-  return first.length > 14 ? first.slice(0, 12) + "…" : first;
+function subtitleFor(
+  step: { label: string; script?: string[] } | undefined,
+  stepProgress: number,
+): { text: string; index: number; total: number } {
+  if (!step) return { text: "", index: 0, total: 1 };
+  const script = step.script && step.script.length > 0 ? step.script : [step.label];
+  const total = script.length;
+  const idx = Math.min(total - 1, Math.max(0, Math.floor(stepProgress * total)));
+  return { text: script[idx], index: idx, total };
 }
 
 function Player() {
