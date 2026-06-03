@@ -898,7 +898,7 @@ const SEEDS: Seed[] = [
     category: "compassion",
     kind: "short",
     minutes: 3,
-    animation: "volume-slider",
+    animation: "opening-hand",
     metric: "stress",
     steps: [
       ["Vad säger du till dig själv just nu?", 30],
