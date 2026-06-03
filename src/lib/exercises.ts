@@ -47,6 +47,8 @@ export interface Exercise {
   kind: ExerciseKind;
   minutes: number;
   animation: AnimationKind;
+  /** Valfri Lottie-animation. Om satt används den istället för SVG-primitiven. */
+  lottie?: LottieSpec;
   steps: ExerciseStep[];
   metric: RatingMetric;
   requiresRating: boolean;
