@@ -241,24 +241,32 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
               </div>
             </div>
 
-            {/* central animation + en instruktion */}
-            <div className="flex flex-1 flex-col items-center justify-center gap-10">
+            {/* central animation + cue + label */}
+            <div className="flex flex-1 flex-col items-center justify-center gap-8">
               <AnimationFor
                 kind={ex.animation}
                 phase={ex.steps[stepIdx]?.label ?? ""}
                 progress={progress}
+                stepIndex={stepIdx}
+                stepCount={ex.steps.length}
+                stepProgress={stepProgress}
               />
               <AnimatePresence mode="wait">
-                <motion.h2
+                <motion.div
                   key={stepIdx}
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.5 }}
-                  className="max-w-md text-center text-3xl font-extrabold leading-tight md:text-4xl"
+                  transition={{ duration: 0.4 }}
+                  className="flex max-w-md flex-col items-center gap-2 text-center"
                 >
-                  {ex.steps[stepIdx]?.label}
-                </motion.h2>
+                  <p className="text-xs font-extrabold uppercase tracking-[0.25em] opacity-70">
+                    {cueFor(ex.steps[stepIdx]?.label ?? "")}
+                  </p>
+                  <h2 className="text-2xl font-extrabold leading-tight md:text-3xl">
+                    {ex.steps[stepIdx]?.label}
+                  </h2>
+                </motion.div>
               </AnimatePresence>
             </div>
 
