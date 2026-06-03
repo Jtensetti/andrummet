@@ -61,7 +61,7 @@ function Page() {
           {Object.entries(byCategory).map(([cat, n]) => (
             <li key={cat} className="flex items-center gap-3 text-sm">
               <span className="w-32 shrink-0 font-bold">
-                {CATEGORY_LABELS[cat as never]}
+                {CATEGORY_LABELS[cat as Category]}
               </span>
               <div className="h-3 flex-1 overflow-hidden rounded-full bg-muted">
                 <div
