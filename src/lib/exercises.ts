@@ -130,6 +130,7 @@ function build(s: Seed): Exercise {
     kind: s.kind,
     minutes: s.minutes,
     animation: s.animation,
+    lottie: s.lottie,
     metric: s.metric,
     requiresRating: s.requiresRating ?? s.kind === "short",
     steps: s.steps.map((t) => ({
