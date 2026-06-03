@@ -33,17 +33,21 @@ const TILE_BG: Record<Category, string> = {
 };
 
 function Home() {
-  const hour = new Date().getHours();
-  const greeting =
-    hour < 5
-      ? "Sen natt"
-      : hour < 10
-        ? "God morgon"
-        : hour < 17
-          ? "Hej"
-          : hour < 22
-            ? "God kväll"
-            : "Sen kväll";
+  const [greeting, setGreeting] = useState<string>("Hej");
+  useEffect(() => {
+    const hour = new Date().getHours();
+    setGreeting(
+      hour < 5
+        ? "Sen natt"
+        : hour < 10
+          ? "God morgon"
+          : hour < 17
+            ? "Hej"
+            : hour < 22
+              ? "God kväll"
+              : "Sen kväll",
+    );
+  }, []);
 
   return (
     <div className="mx-auto max-w-4xl px-5 pt-4 md:px-10 md:pt-10">
