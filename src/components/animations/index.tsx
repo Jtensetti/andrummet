@@ -2059,5 +2059,27 @@ export function AnimationFor({
       return <VolumeSlider {...p} />;
     case "pulse":
       return <AnchorDrop {...p} />;
+
+    // tredje vågen
+    case "belly-hand":
+      return <BellyHand {...p} />;
+    case "shoulder-drop":
+      return <ShoulderDrop {...p} />;
+    case "jaw-release":
+      return <JawRelease {...p} />;
+    case "footprints":
+      return <Footprints {...p} />;
+    case "doorway":
+      return <Doorway {...p} />;
+    case "first-step":
+      return <FirstStep {...p} />;
+    case "typing-cursor":
+      return <TypingCursor {...p} />;
+    case "morning-sun":
+      return <MorningSun {...p} />;
+    case "stretch-up":
+      return <StretchUp {...p} />;
+    case "inbox-priority":
+      return <InboxPriority {...p} />;
   }
 }
