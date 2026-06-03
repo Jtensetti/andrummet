@@ -88,11 +88,16 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
     () => ex.steps.reduce((s, x) => s + x.seconds, 0),
     [ex.steps],
   );
+  const stepSeconds = ex.steps[stepIdx]?.seconds ?? 1;
+  const stepElapsed = stepSeconds - stepRemaining;
+  const stepProgress = Math.min(
+    1,
+    Math.max(0, stepElapsed / Math.max(1, stepSeconds)),
+  );
   const elapsed = useMemo(
     () =>
-      ex.steps.slice(0, stepIdx).reduce((s, x) => s + x.seconds, 0) +
-      ((ex.steps[stepIdx]?.seconds ?? 0) - stepRemaining),
-    [ex.steps, stepIdx, stepRemaining],
+      ex.steps.slice(0, stepIdx).reduce((s, x) => s + x.seconds, 0) + stepElapsed,
+    [ex.steps, stepIdx, stepElapsed],
   );
   const progress = Math.min(1, elapsed / Math.max(1, totalSeconds));
 
