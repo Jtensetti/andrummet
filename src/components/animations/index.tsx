@@ -450,32 +450,62 @@ export function Mailbox({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Prop
 // ─────────────────────────────────────────────────────────────
 // SEKUNDÄRA (egen rytm — uppdateras nästa pass)
 // ─────────────────────────────────────────────────────────────
-export function Unknotting() {
+// ─────────────────────────────────────────────────────────────
+// 11. UNKNOTTING — en knut släpper per steg
+// ─────────────────────────────────────────────────────────────
+export function Unknotting({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Props) {
+  // Knotpaths: helt trasslig → helt rak. Vi har 4 nivåer; mappa stegen linjärt.
+  const knots = [
+    "M20 110 C 70 20, 90 200, 150 110 C 210 20, 230 200, 280 110",
+    "M20 110 C 75 50, 90 170, 150 110 C 210 50, 225 170, 280 110",
+    "M20 110 C 80 85, 90 135, 150 110 C 210 85, 220 135, 280 110",
+    "M20 110 C 100 105, 200 115, 280 110",
+  ];
+  const safeCount = Math.max(1, stepCount);
+  const pos = (stepIndex + clamp01(stepProgress)) / safeCount;
+  const idxF = pos * (knots.length - 1);
+  const i = Math.min(knots.length - 2, Math.floor(idxF));
   return (
     <div className="relative" style={{ width: 300, height: 220 }}>
       <svg viewBox="0 0 300 220" className="absolute inset-0">
         <motion.path
           fill="none"
           stroke="white"
-          strokeWidth="4"
+          strokeWidth="5"
           strokeLinecap="round"
-          animate={{
-            d: [
-              "M20 110 C 80 30, 80 190, 150 110 C 220 30, 220 190, 280 110",
-              "M20 110 C 80 60, 80 160, 150 110 C 220 60, 220 160, 280 110",
-              "M20 110 C 80 95, 80 125, 150 110 C 220 95, 220 125, 280 110",
-              "M20 110 C 100 105, 200 115, 280 110",
-            ],
-          }}
-          transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
+          animate={{ d: knots[i + 1] }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          initial={{ d: knots[i] }}
         />
       </svg>
+      <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1.5">
+        {Array.from({ length: safeCount }).map((_, k) => (
+          <div
+            key={k}
+            className="h-1.5 w-1.5 rounded-full"
+            style={{ background: k <= stepIndex ? "white" : "rgba(255,255,255,0.3)" }}
+          />
+        ))}
+      </div>
     </div>
   );
 }
 
-export function WalkingPath({ progress }: Props) {
-  const p = typeof progress === "number" ? clamp01(progress) : undefined;
+// ─────────────────────────────────────────────────────────────
+// 12. WALKING-PATH — figuren går till nästa milstolpe per steg
+// ─────────────────────────────────────────────────────────────
+export function WalkingPath({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Props) {
+  const safeCount = Math.max(1, stepCount);
+  // Stegmål längs en mjuk båge
+  const waypoints = Array.from({ length: safeCount + 1 }, (_, i) => {
+    const t = i / safeCount;
+    return { x: 20 + t * 270, y: 180 - t * 130 };
+  });
+  const a = waypoints[stepIndex];
+  const b = waypoints[Math.min(stepIndex + 1, safeCount)];
+  const t = clamp01(stepProgress);
+  const x = a.x + (b.x - a.x) * t;
+  const y = a.y + (b.y - a.y) * t;
   return (
     <div className="relative overflow-hidden rounded-3xl" style={{ width: 320, height: 220 }}>
       <div className="absolute inset-0">
@@ -487,94 +517,130 @@ export function WalkingPath({ progress }: Props) {
         <path
           d="M 20 180 Q 100 140 160 130 T 300 60"
           fill="none"
-          stroke="rgba(255,255,255,0.6)"
+          stroke="rgba(255,255,255,0.5)"
           strokeWidth="3"
           strokeDasharray="6 8"
         />
+        {waypoints.map((w, i) => (
+          <circle
+            key={i}
+            cx={w.x}
+            cy={w.y}
+            r={i <= stepIndex ? 4 : 3}
+            fill={i <= stepIndex ? "white" : "rgba(255,255,255,0.5)"}
+          />
+        ))}
       </svg>
       <motion.div
-        className="absolute h-6 w-6 rounded-full bg-white shadow-[0_0_18px_6px_rgba(255,255,255,0.5)]"
-        {...(p !== undefined
-          ? {
-              animate: { left: `${20 + p * 270}px`, top: `${180 - p * 130}px` },
-              transition: { duration: 0.8, ease: "easeInOut" },
-            }
-          : {
-              animate: { left: [20, 300], top: [180, 60] },
-              transition: { duration: 22, repeat: Infinity, ease: "easeInOut" },
-            })}
+        className="absolute h-6 w-6 rounded-full bg-white shadow-[0_0_20px_8px_rgba(255,255,255,0.55)]"
+        animate={{ left: `${x}px`, top: `${y}px` }}
+        transition={{ duration: 0.5, ease: "easeInOut" }}
+        style={{ marginLeft: -12, marginTop: -12 }}
       />
     </div>
   );
 }
 
-export function BatteryFill({ progress }: Props) {
-  const p = typeof progress === "number" ? clamp01(progress) : 0.3;
+// ─────────────────────────────────────────────────────────────
+// 13. BATTERY-FILL — en stapel fylls per steg (diskreta block)
+// ─────────────────────────────────────────────────────────────
+export function BatteryFill({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Props) {
+  const safeCount = Math.max(1, stepCount);
+  const blocks = Array.from({ length: safeCount }, (_, i) => i);
   return (
-    <div className="relative grid place-items-center" style={{ width: 240, height: 260 }}>
-      <div className="relative h-56 w-32 rounded-3xl border-[6px] border-white/70">
+    <div className="relative grid place-items-center" style={{ width: 240, height: 280 }}>
+      <div className="relative h-64 w-32 rounded-3xl border-[6px] border-white/70 p-2">
         <div className="absolute -top-4 left-1/2 h-4 w-12 -translate-x-1/2 rounded-t-md bg-white/70" />
-        <motion.div
-          className="absolute inset-x-1 bottom-1 rounded-2xl bg-gradient-to-t from-emerald-400 to-emerald-200"
-          animate={{ height: `${10 + p * 90}%` }}
-          transition={{ duration: 1, ease: "easeOut" }}
-        />
+        <div className="flex h-full flex-col-reverse gap-1.5">
+          {blocks.map((i) => {
+            const isCurrent = i === stepIndex;
+            const filled = i < stepIndex;
+            const t = isCurrent ? clamp01(stepProgress) : filled ? 1 : 0;
+            return (
+              <motion.div
+                key={i}
+                className="flex-1 rounded-md bg-gradient-to-t from-emerald-400 to-emerald-200"
+                animate={{ opacity: 0.15 + t * 0.85, scaleY: 0.3 + t * 0.7 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+                style={{ transformOrigin: "bottom" }}
+              />
+            );
+          })}
+        </div>
       </div>
     </div>
   );
 }
 
-export function VolumeSlider({ stepIndex = 0, stepCount = 1, stepProgress = 0, progress }: Props) {
+// ─────────────────────────────────────────────────────────────
+// 14. VOLUME-SLIDER — knoppen dras ner ett snäpp per steg
+// ─────────────────────────────────────────────────────────────
+export function VolumeSlider({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Props) {
   const safeCount = Math.max(1, stepCount);
-  const stepBased = (stepIndex + clamp01(stepProgress)) / safeCount;
-  const p = typeof progress === "number" ? clamp01(progress) : stepBased;
+  const p = (stepIndex + clamp01(stepProgress)) / safeCount;
   return (
-    <div className="relative grid place-items-center" style={{ width: 280, height: 320 }}>
-      <div className="relative h-72 w-8 rounded-full bg-white/15">
+    <div className="relative grid place-items-center" style={{ width: 280, height: 340 }}>
+      <div className="relative h-80 w-10 rounded-full bg-white/15">
+        {/* skala-markörer */}
+        {Array.from({ length: safeCount + 1 }).map((_, i) => (
+          <div
+            key={i}
+            className="absolute -right-3 h-0.5 w-3 bg-white/40"
+            style={{ top: `${(i / safeCount) * 100}%` }}
+          />
+        ))}
         <div
           className="absolute inset-x-0 bottom-0 rounded-full bg-white/70"
-          style={{ height: `${(1 - p) * 90 + 10}%` }}
+          style={{ height: `${(1 - p) * 100}%` }}
         />
         <motion.div
-          className="absolute left-1/2 h-14 w-20 -translate-x-1/2 rounded-2xl bg-white shadow-xl"
-          animate={{ top: `${10 + p * 75}%` }}
+          className="absolute left-1/2 h-12 w-20 -translate-x-1/2 rounded-2xl bg-white shadow-xl"
+          animate={{ top: `calc(${p * 100}% - 24px)` }}
           transition={{ duration: 0.6, ease: "easeOut" }}
         />
       </div>
-      <div className="absolute right-1/4 flex h-72 flex-col justify-between text-[10px] font-bold text-white/60">
+      <div className="absolute right-1/4 flex h-80 flex-col justify-between text-[10px] font-bold text-white/60">
         <span>Högt</span>
-        <span>Mitt</span>
         <span>Lågt</span>
       </div>
     </div>
   );
 }
 
-export function Ember({ progress }: Props) {
-  const p = typeof progress === "number" ? clamp01(progress) : 0.5;
-  const flameOpacity = 1 - p * 0.7;
-  const emberOpacity = 0.3 + p * 0.7;
+// ─────────────────────────────────────────────────────────────
+// 15. EMBER — flamman sjunker till glöd per steg
+// ─────────────────────────────────────────────────────────────
+export function Ember({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Props) {
+  const safeCount = Math.max(1, stepCount);
+  const p = (stepIndex + clamp01(stepProgress)) / safeCount;
+  const flameScale = 1 - p * 0.75;
+  const flameOpacity = 1 - p * 0.85;
+  const emberOpacity = 0.25 + p * 0.75;
   return (
-    <div className="relative grid place-items-end" style={{ width: 260, height: 260 }}>
+    <div className="relative grid place-items-end" style={{ width: 260, height: 280 }}>
       <div
-        className="absolute inset-x-0 bottom-0 h-16 rounded-full"
+        className="absolute inset-x-0 bottom-0 h-20 rounded-full"
         style={{
           background:
             "radial-gradient(ellipse at center, rgba(239,68,68,0.7) 0%, rgba(251,146,60,0.3) 50%, transparent 80%)",
           opacity: emberOpacity,
-          filter: "blur(2px)",
+          filter: "blur(3px)",
         }}
       />
       <motion.svg
         viewBox="0 0 100 120"
-        className="relative h-48 w-40"
-        style={{ opacity: flameOpacity }}
-        animate={{ scaleY: [1, 1.12, 0.96, 1.05, 1] }}
-        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+        className="relative h-56 w-44"
+        animate={{ scaleY: flameScale, opacity: flameOpacity }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        style={{ transformOrigin: "bottom" }}
       >
-        <path
-          d="M50 110 Q 18 100 18 70 Q 18 50 36 38 Q 30 58 44 60 Q 38 42 52 22 Q 56 46 66 50 Q 60 38 74 36 Q 86 56 82 80 Q 82 100 50 110 Z"
+        <motion.path
           fill="url(#flameG)"
+          animate={{ d: [
+            "M50 110 Q 18 100 18 70 Q 18 50 36 38 Q 30 58 44 60 Q 38 42 52 22 Q 56 46 66 50 Q 60 38 74 36 Q 86 56 82 80 Q 82 100 50 110 Z",
+            "M50 110 Q 20 100 20 72 Q 22 52 38 42 Q 32 60 46 62 Q 40 44 52 26 Q 56 48 66 52 Q 62 40 74 38 Q 84 56 80 80 Q 80 100 50 110 Z",
+          ] }}
+          transition={{ duration: 2, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
         />
         <defs>
           <linearGradient id="flameG" x1="0" y1="1" x2="0" y2="0">
@@ -584,6 +650,280 @@ export function Ember({ progress }: Props) {
           </linearGradient>
         </defs>
       </motion.svg>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// 16. CANDLE — ljusets låga dämpas per steg (sömn / lugna ner)
+// ─────────────────────────────────────────────────────────────
+export function Candle({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Props) {
+  const safeCount = Math.max(1, stepCount);
+  const p = (stepIndex + clamp01(stepProgress)) / safeCount;
+  const flameH = 60 - p * 45;
+  const glow = 0.6 - p * 0.5;
+  return (
+    <div className="relative grid place-items-center" style={{ width: 220, height: 320 }}>
+      {/* glöd runt lågan */}
+      <motion.div
+        className="absolute h-40 w-40 rounded-full"
+        style={{
+          top: 40,
+          background:
+            "radial-gradient(circle, rgba(254,240,138,0.7) 0%, rgba(251,146,60,0.2) 40%, transparent 70%)",
+          filter: "blur(8px)",
+        }}
+        animate={{ opacity: glow, scale: 1 - p * 0.4 }}
+        transition={{ duration: 0.8 }}
+      />
+      {/* låga */}
+      <motion.div
+        className="absolute"
+        style={{ top: 80, left: "50%", marginLeft: -10 }}
+        animate={{ height: flameH }}
+        transition={{ duration: 0.6 }}
+      >
+        <motion.svg
+          viewBox="0 0 20 60"
+          style={{ width: 20, height: flameH }}
+          animate={{ scaleX: [1, 0.92, 1.05, 1], scaleY: [1, 1.05, 0.95, 1] }}
+          transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <path
+            d="M10 60 Q 0 50 2 32 Q 4 18 10 0 Q 16 18 18 32 Q 20 50 10 60 Z"
+            fill="url(#candleG)"
+          />
+          <defs>
+            <linearGradient id="candleG" x1="0" y1="1" x2="0" y2="0">
+              <stop offset="0%" stopColor="#f97316" />
+              <stop offset="100%" stopColor="#fef9c3" />
+            </linearGradient>
+          </defs>
+        </motion.svg>
+      </motion.div>
+      {/* ljusstake */}
+      <div
+        className="absolute left-1/2 -translate-x-1/2 rounded-md bg-white/85"
+        style={{ top: 160, width: 28, height: 120 }}
+      />
+      <div
+        className="absolute left-1/2 -translate-x-1/2 rounded-full bg-white/60"
+        style={{ top: 278, width: 80, height: 14 }}
+      />
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// 17. PEBBLES — en sten läggs i skålen per steg (grounding / räkna)
+// ─────────────────────────────────────────────────────────────
+export function Pebbles({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Props) {
+  const safeCount = Math.max(1, stepCount);
+  return (
+    <div className="relative" style={{ width: 320, height: 280 }}>
+      {/* skål */}
+      <div className="absolute bottom-0 left-1/2 h-24 w-56 -translate-x-1/2 overflow-hidden rounded-b-[120px] bg-white/15 border-t-2 border-white/40">
+        <div className="absolute inset-x-0 top-0 h-2 bg-white/30" />
+      </div>
+      {/* befintliga stenar i botten */}
+      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex w-48 flex-wrap justify-center gap-1.5">
+        {Array.from({ length: stepIndex }).map((_, i) => (
+          <div
+            key={i}
+            className="h-5 w-7 rounded-full"
+            style={{
+              background:
+                i % 3 === 0
+                  ? "#cbd5e1"
+                  : i % 3 === 1
+                    ? "#e2e8f0"
+                    : "#94a3b8",
+            }}
+          />
+        ))}
+      </div>
+      {/* nuvarande sten faller */}
+      {stepIndex < safeCount && (
+        <motion.div
+          className="absolute left-1/2 h-6 w-9 -translate-x-1/2 rounded-full bg-slate-200 shadow"
+          animate={{ top: -10 + clamp01(stepProgress) * 230, opacity: clamp01(stepProgress) < 0.95 ? 1 : 0.2 }}
+          transition={{ duration: 0.35, ease: "easeIn" }}
+        />
+      )}
+      {/* steg-räknare */}
+      <div className="absolute right-2 top-2 text-xs font-extrabold opacity-60">
+        {Math.min(stepIndex + 1, safeCount)} / {safeCount}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// 18. HORIZON — solen sjunker mot horisonten per steg (kvällsläge)
+// ─────────────────────────────────────────────────────────────
+export function Horizon({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Props) {
+  const safeCount = Math.max(1, stepCount);
+  const p = (stepIndex + clamp01(stepProgress)) / safeCount;
+  // himmel: dag → solnedgång → natt
+  const sky =
+    p < 0.5
+      ? `linear-gradient(180deg, oklch(0.85 0.05 230 / 0.5), oklch(0.78 0.1 60 / 0.5))`
+      : `linear-gradient(180deg, oklch(${0.55 - p * 0.3} 0.08 280 / 0.7), oklch(${0.45 - p * 0.25} 0.1 30 / 0.7))`;
+  const sunY = 30 + p * 150;
+  const sunOpacity = 1 - p * 0.3;
+  return (
+    <div
+      className="relative overflow-hidden rounded-3xl"
+      style={{ width: 320, height: 240, background: sky }}
+    >
+      {/* sol */}
+      <motion.div
+        className="absolute left-1/2 h-20 w-20 -translate-x-1/2 rounded-full"
+        style={{
+          background: "radial-gradient(circle, #fef08a 0%, #f97316 70%, transparent 100%)",
+          filter: "blur(1px)",
+        }}
+        animate={{ top: sunY, opacity: sunOpacity }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+      />
+      {/* horisontlinje */}
+      <div className="absolute inset-x-0 bottom-0 h-20 bg-black/30" />
+      <div className="absolute inset-x-0" style={{ bottom: 80, height: 1, background: "rgba(255,255,255,0.3)" }} />
+      {/* stjärnor när det blir mörkare */}
+      {p > 0.6 && (
+        <div className="absolute inset-0">
+          {[20, 60, 110, 180, 240, 280].map((x, i) => (
+            <div
+              key={i}
+              className="absolute h-1 w-1 rounded-full bg-white"
+              style={{ left: x, top: 20 + ((i * 19) % 80), opacity: (p - 0.6) * 2 }}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// 19. OPENING-HAND — knytnäve öppnas finger för finger per steg
+// ─────────────────────────────────────────────────────────────
+export function OpeningHand({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Props) {
+  const safeCount = Math.max(1, stepCount);
+  // 5 fingrar: mappa stegen över 5 fingrar oavsett antal steg
+  const fingers = [0, 1, 2, 3, 4].map((i) => {
+    const fingerProgress = (stepIndex + clamp01(stepProgress)) / safeCount;
+    // varje finger "öppnas" sekventiellt över hela animationen
+    const start = i / 5;
+    const end = (i + 1) / 5;
+    const local = clamp01((fingerProgress - start) / (end - start));
+    return local;
+  });
+  return (
+    <div className="relative grid place-items-center" style={{ width: 280, height: 280 }}>
+      <svg viewBox="0 0 200 220" className="h-72 w-64">
+        {/* handflata */}
+        <ellipse cx="100" cy="160" rx="55" ry="45" fill="white" opacity="0.95" />
+        {/* tumme */}
+        <motion.ellipse
+          cx="40"
+          cy="140"
+          rx="14"
+          ry="28"
+          fill="white"
+          opacity="0.95"
+          animate={{
+            rotate: -30 + fingers[0] * 30,
+            cy: 140 - fingers[0] * 10,
+          }}
+          transition={{ duration: 0.5 }}
+          style={{ transformOrigin: "40px 160px" }}
+        />
+        {/* 4 fingrar */}
+        {[
+          { x: 75, baseY: 120 },
+          { x: 100, baseY: 110 },
+          { x: 125, baseY: 115 },
+          { x: 150, baseY: 130 },
+        ].map((f, i) => {
+          const open = fingers[i + 1];
+          // stängd: kort + nedböjd; öppen: full längd uppåt
+          const length = 30 + open * 50;
+          const y = f.baseY + (1 - open) * 20;
+          return (
+            <motion.rect
+              key={i}
+              x={f.x - 10}
+              width={20}
+              rx={10}
+              fill="white"
+              opacity={0.95}
+              animate={{ y: y - length, height: length }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+            />
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// 20. WARM-HAND — hand på bröstet, mjuk puls per steg (medkänsla)
+// ─────────────────────────────────────────────────────────────
+export function WarmHand({ stepIndex = 0, stepProgress = 0 }: Props) {
+  const t = clamp01(stepProgress);
+  // puls: andas in växer, andas ut krymper
+  const scale = 1 + Math.sin(t * Math.PI) * 0.08;
+  return (
+    <div className="relative grid place-items-center" style={{ width: 280, height: 300 }}>
+      {/* värmestrålning */}
+      <motion.div
+        className="absolute h-48 w-48 rounded-full"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(254,215,170,0.6) 0%, rgba(254,202,202,0.3) 50%, transparent 80%)",
+          filter: "blur(8px)",
+        }}
+        animate={{ scale: scale * 1.1, opacity: 0.5 + t * 0.3 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+      />
+      {/* bröstkorg-siluett */}
+      <svg viewBox="0 0 200 240" className="absolute h-72 w-60">
+        <ellipse cx="100" cy="100" rx="55" ry="65" fill="rgba(255,255,255,0.18)" />
+      </svg>
+      {/* hand */}
+      <motion.svg
+        viewBox="0 0 100 100"
+        className="absolute h-32 w-32"
+        animate={{ scale }}
+        transition={{ duration: 0.6, ease: "easeInOut" }}
+      >
+        <ellipse cx="50" cy="62" rx="30" ry="26" fill="white" opacity="0.95" />
+        {[30, 42, 54, 66].map((x, i) => (
+          <rect
+            key={i}
+            x={x - 5}
+            y={20 + (i === 1 || i === 2 ? -2 : 2)}
+            width={10}
+            height={36}
+            rx={5}
+            fill="white"
+            opacity="0.95"
+          />
+        ))}
+        <ellipse cx="22" cy="58" rx="9" ry="16" fill="white" opacity="0.95" transform="rotate(-25 22 58)" />
+      </motion.svg>
+      {/* hjärtpuls-indikator (en prick per steg) */}
+      <div className="absolute bottom-2 flex gap-1">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div
+            key={i}
+            className="h-1.5 w-1.5 rounded-full"
+            style={{ background: i <= stepIndex % 5 ? "white" : "rgba(255,255,255,0.3)" }}
+          />
+        ))}
+      </div>
     </div>
   );
 }
