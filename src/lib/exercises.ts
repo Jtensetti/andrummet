@@ -248,7 +248,7 @@ const SEEDS: Seed[] = [
     category: "quick-pause",
     kind: "short",
     minutes: 1,
-    animation: "anchor-drop",
+    animation: "sand-clock",
     metric: "stress",
     steps: [
       ["Stanna", 10],
@@ -284,7 +284,7 @@ const SEEDS: Seed[] = [
     category: "quick-pause",
     kind: "short",
     minutes: 1,
-    animation: "volume-slider",
+    animation: "release-balloon",
     metric: "kroppsspänning",
     steps: [
       ["Släpp axlarna", 8],
@@ -385,7 +385,7 @@ const SEEDS: Seed[] = [
     category: "anxiety",
     kind: "reflective",
     minutes: 6,
-    animation: "drifting-clouds",
+    animation: "steering-wheel",
     metric: "oro",
     steps: [
       ["Du sitter vid ratten", 40],
@@ -466,7 +466,7 @@ const SEEDS: Seed[] = [
     category: "stress",
     kind: "short",
     minutes: 3,
-    animation: "volume-slider",
+    animation: "deflate",
     metric: "stress",
     steps: [
       ["Släpp axlarna", 20],
@@ -485,7 +485,7 @@ const SEEDS: Seed[] = [
     category: "stress",
     kind: "short",
     minutes: 3,
-    animation: "mailbox",
+    animation: "note-to-self",
     metric: "stress",
     steps: [
       ["Vad försöker du lösa nu?", 30],
@@ -544,7 +544,7 @@ const SEEDS: Seed[] = [
     category: "focus",
     kind: "short",
     minutes: 3,
-    animation: "sorting-shelf",
+    animation: "path-fork",
     metric: "fokus",
     steps: [
       ["Tre saker du gör NU", 40],
@@ -794,7 +794,7 @@ const SEEDS: Seed[] = [
     category: "reflection",
     kind: "reflective",
     minutes: 7,
-    animation: "walking-path",
+    animation: "measuring-tape",
     metric: "stress",
     requiresRating: false,
     steps: [
@@ -837,7 +837,7 @@ const SEEDS: Seed[] = [
     category: "reflection",
     kind: "reflective",
     minutes: 6,
-    animation: "sorting-shelf",
+    animation: "dropping-bags",
     metric: "stress",
     requiresRating: false,
     steps: [
@@ -880,7 +880,7 @@ const SEEDS: Seed[] = [
     category: "compassion",
     kind: "short",
     minutes: 3,
-    animation: "unknotting",
+    animation: "inner-voice",
     metric: "stress",
     steps: [
       ["Det här är svårt", 40],
@@ -1029,7 +1029,7 @@ const SEEDS: Seed[] = [
     category: "worklife",
     kind: "short",
     minutes: 3,
-    animation: "mailbox",
+    animation: "closing-laptop",
     metric: "stress",
     steps: [
       ["Vad blev klart idag?", 30],
