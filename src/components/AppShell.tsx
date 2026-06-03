@@ -28,9 +28,10 @@ export function AppShell({ children }: { children: ReactNode }) {
       {/* Desktop sidopanel — spegeln */}
       <aside className="hidden md:flex md:w-72 md:flex-col md:gap-6 md:border-r md:bg-card md:p-6">
         <div className="flex items-center gap-2">
-          <div className="h-9 w-9 rounded-full bg-gradient-to-br from-[var(--stress)] to-[var(--compassion)]" />
+          <div className="h-9 w-9 rounded-full bg-gradient-to-br from-[var(--breath)] to-[var(--compassion)]" />
           <span className="text-xl font-extrabold">Andrum</span>
         </div>
+
 
         <nav className="flex flex-col gap-1">
           <SideLink to="/" label="Hem" />

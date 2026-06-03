@@ -36,20 +36,29 @@
   --color-ring: var(--ring);
 
   /* Tema-färger per kategori */
-  --color-calm: var(--calm);
-  --color-calm-ink: var(--calm-ink);
-  --color-stress: var(--stress);
-  --color-stress-ink: var(--stress-ink);
-  --color-sleep: var(--sleep);
-  --color-sleep-ink: var(--sleep-ink);
+  --color-breath: var(--breath);
+  --color-breath-ink: var(--breath-ink);
+  --color-quick-pause: var(--quick-pause);
+  --color-quick-pause-ink: var(--quick-pause-ink);
   --color-anxiety: var(--anxiety);
   --color-anxiety-ink: var(--anxiety-ink);
+  --color-stress: var(--stress);
+  --color-stress-ink: var(--stress-ink);
   --color-focus: var(--focus);
   --color-focus-ink: var(--focus-ink);
+  --color-sleep: var(--sleep);
+  --color-sleep-ink: var(--sleep-ink);
+  --color-body: var(--body);
+  --color-body-ink: var(--body-ink);
+  --color-reflection: var(--reflection);
+  --color-reflection-ink: var(--reflection-ink);
   --color-compassion: var(--compassion);
   --color-compassion-ink: var(--compassion-ink);
-  --color-recovery: var(--recovery);
-  --color-recovery-ink: var(--recovery-ink);
+  --color-anger: var(--anger);
+  --color-anger-ink: var(--anger-ink);
+  --color-worklife: var(--worklife);
+  --color-worklife-ink: var(--worklife-ink);
+
 }
 
 @import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap");
@@ -78,33 +87,50 @@
   --input: oklch(0.92 0.02 80);
   --ring: oklch(0.72 0.18 50);
 
-  /* Lugn / Andning — blå + gul */
-  --calm: oklch(0.62 0.18 245);
-  --calm-ink: oklch(0.98 0.01 80);
+  /* Andas — djupblå med ljus accent */
+  --breath: oklch(0.55 0.16 235);
+  --breath-ink: oklch(0.98 0.01 80);
 
-  /* Stress / Reset — orange/gul */
-  --stress: oklch(0.78 0.18 65);
+  /* Snabb paus — varm sand */
+  --quick-pause: oklch(0.82 0.1 80);
+  --quick-pause-ink: oklch(0.25 0.05 60);
+
+  /* Hantera oro — turkos */
+  --anxiety: oklch(0.7 0.1 195);
+  --anxiety-ink: oklch(0.2 0.04 200);
+
+  /* Släppa tankar (stress) — orange */
+  --stress: oklch(0.76 0.16 60);
   --stress-ink: oklch(0.25 0.05 60);
-
-  /* Sömn — lila/mörkblå */
-  --sleep: oklch(0.42 0.12 290);
-  --sleep-ink: oklch(0.97 0.02 290);
-
-  /* Ångest — turkos */
-  --anxiety: oklch(0.72 0.1 195);
-  --anxiety-ink: oklch(0.22 0.04 200);
 
   /* Fokus — grön */
   --focus: oklch(0.7 0.14 150);
   --focus-ink: oklch(0.2 0.04 150);
 
+  /* Sömn — mörk lila */
+  --sleep: oklch(0.4 0.12 290);
+  --sleep-ink: oklch(0.97 0.02 290);
+
+  /* Lugna kroppen — mjuk grönblå */
+  --body: oklch(0.7 0.08 200);
+  --body-ink: oklch(0.2 0.03 200);
+
+  /* Reflektera — mjuk plommon */
+  --reflection: oklch(0.6 0.1 320);
+  --reflection-ink: oklch(0.98 0.01 320);
+
   /* Självmedkänsla — rosa */
   --compassion: oklch(0.82 0.11 5);
   --compassion-ink: oklch(0.3 0.06 5);
 
-  /* Återhämtning / Snabb — sand/grön */
-  --recovery: oklch(0.82 0.1 130);
-  --recovery-ink: oklch(0.25 0.04 130);
+  /* Ilska — varm tegel */
+  --anger: oklch(0.6 0.18 30);
+  --anger-ink: oklch(0.98 0.01 30);
+
+  /* Arbetsdag — neutral grön-grå */
+  --worklife: oklch(0.65 0.07 170);
+  --worklife-ink: oklch(0.2 0.03 170);
+
 }
 
 .dark {
