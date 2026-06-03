@@ -1,4 +1,5 @@
 import type { AnimationKind } from "@/components/animations";
+import type { LottieSpec } from "@/components/animations/LottiePlayer";
 
 export type Category =
   | "breath"
