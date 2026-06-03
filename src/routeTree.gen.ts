@@ -9,38 +9,135 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ReflektionRouteImport } from './routes/reflektion'
+import { Route as OvningarRouteImport } from './routes/ovningar'
+import { Route as MinVeckaRouteImport } from './routes/min-vecka'
+import { Route as InsikterRouteImport } from './routes/insikter'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as OvningIdRouteImport } from './routes/ovning.$id'
 
+const ReflektionRoute = ReflektionRouteImport.update({
+  id: '/reflektion',
+  path: '/reflektion',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OvningarRoute = OvningarRouteImport.update({
+  id: '/ovningar',
+  path: '/ovningar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MinVeckaRoute = MinVeckaRouteImport.update({
+  id: '/min-vecka',
+  path: '/min-vecka',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InsikterRoute = InsikterRouteImport.update({
+  id: '/insikter',
+  path: '/insikter',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OvningIdRoute = OvningIdRouteImport.update({
+  id: '/ovning/$id',
+  path: '/ovning/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/insikter': typeof InsikterRoute
+  '/min-vecka': typeof MinVeckaRoute
+  '/ovningar': typeof OvningarRoute
+  '/reflektion': typeof ReflektionRoute
+  '/ovning/$id': typeof OvningIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/insikter': typeof InsikterRoute
+  '/min-vecka': typeof MinVeckaRoute
+  '/ovningar': typeof OvningarRoute
+  '/reflektion': typeof ReflektionRoute
+  '/ovning/$id': typeof OvningIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/insikter': typeof InsikterRoute
+  '/min-vecka': typeof MinVeckaRoute
+  '/ovningar': typeof OvningarRoute
+  '/reflektion': typeof ReflektionRoute
+  '/ovning/$id': typeof OvningIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/insikter'
+    | '/min-vecka'
+    | '/ovningar'
+    | '/reflektion'
+    | '/ovning/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/insikter'
+    | '/min-vecka'
+    | '/ovningar'
+    | '/reflektion'
+    | '/ovning/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/insikter'
+    | '/min-vecka'
+    | '/ovningar'
+    | '/reflektion'
+    | '/ovning/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  InsikterRoute: typeof InsikterRoute
+  MinVeckaRoute: typeof MinVeckaRoute
+  OvningarRoute: typeof OvningarRoute
+  ReflektionRoute: typeof ReflektionRoute
+  OvningIdRoute: typeof OvningIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/reflektion': {
+      id: '/reflektion'
+      path: '/reflektion'
+      fullPath: '/reflektion'
+      preLoaderRoute: typeof ReflektionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ovningar': {
+      id: '/ovningar'
+      path: '/ovningar'
+      fullPath: '/ovningar'
+      preLoaderRoute: typeof OvningarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/min-vecka': {
+      id: '/min-vecka'
+      path: '/min-vecka'
+      fullPath: '/min-vecka'
+      preLoaderRoute: typeof MinVeckaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/insikter': {
+      id: '/insikter'
+      path: '/insikter'
+      fullPath: '/insikter'
+      preLoaderRoute: typeof InsikterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +145,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ovning/$id': {
+      id: '/ovning/$id'
+      path: '/ovning/$id'
+      fullPath: '/ovning/$id'
+      preLoaderRoute: typeof OvningIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  InsikterRoute: InsikterRoute,
+  MinVeckaRoute: MinVeckaRoute,
+  OvningarRoute: OvningarRoute,
+  ReflektionRoute: ReflektionRoute,
+  OvningIdRoute: OvningIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

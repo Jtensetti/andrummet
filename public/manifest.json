@@ -1,0 +1,17 @@
+{
+  "name": "Andrum",
+  "short_name": "Andrum",
+  "description": "Korta andnings- och mindfulnessövningar på svenska.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fdfaf3",
+  "theme_color": "#f59e0b",
+  "lang": "sv",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "any",
+      "type": "image/x-icon"
+    }
+  ]
+}
