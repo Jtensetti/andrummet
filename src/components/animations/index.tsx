@@ -944,56 +944,56 @@ export function Horizon({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Prop
 // ─────────────────────────────────────────────────────────────
 export function OpeningHand({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Props) {
   const safeCount = Math.max(1, stepCount);
-  // 5 fingrar: mappa stegen över 5 fingrar oavsett antal steg
+  // Diskret: vid steg i är fingrar 0..i-1 helt öppna; finger i öppnar nu;
+  // resten stängda. Vi mappar safeCount steg över 5 fingrar.
   const fingers = [0, 1, 2, 3, 4].map((i) => {
-    const fingerProgress = (stepIndex + clamp01(stepProgress)) / safeCount;
-    // varje finger "öppnas" sekventiellt över hela animationen
-    const start = i / 5;
-    const end = (i + 1) / 5;
-    const local = clamp01((fingerProgress - start) / (end - start));
-    return local;
+    const fingerStartStep = (i / 5) * safeCount;
+    const fingerEndStep = ((i + 1) / 5) * safeCount;
+    const now = stepIndex + clamp01(stepProgress);
+    if (now >= fingerEndStep) return 1;
+    if (now <= fingerStartStep) return 0;
+    return clamp01((now - fingerStartStep) / (fingerEndStep - fingerStartStep));
   });
   return (
-    <div className="relative grid place-items-center" style={{ width: 280, height: 280 }}>
-      <svg viewBox="0 0 200 220" className="h-72 w-64">
+    <div className="relative grid place-items-center" style={{ width: 280, height: 300 }}>
+      <svg viewBox="0 0 200 240" className="h-72 w-64">
         {/* handflata */}
-        <ellipse cx="100" cy="160" rx="55" ry="45" fill="white" opacity="0.95" />
+        <ellipse cx="100" cy="170" rx="58" ry="48" fill="white" opacity="0.95" />
         {/* tumme */}
         <motion.ellipse
-          cx="40"
-          cy="140"
-          rx="14"
-          ry="28"
+          cx="38"
+          cy="150"
+          rx="15"
+          ry="30"
           fill="white"
           opacity="0.95"
           animate={{
-            rotate: -30 + fingers[0] * 30,
-            cy: 140 - fingers[0] * 10,
+            rotate: -40 + fingers[0] * 45,
+            cy: 150 - fingers[0] * 12,
           }}
-          transition={{ duration: 0.5 }}
-          style={{ transformOrigin: "40px 160px" }}
+          transition={{ duration: 0.45, ease: "easeOut" }}
+          style={{ transformOrigin: "38px 175px" }}
         />
         {/* 4 fingrar */}
         {[
-          { x: 75, baseY: 120 },
-          { x: 100, baseY: 110 },
-          { x: 125, baseY: 115 },
-          { x: 150, baseY: 130 },
+          { x: 75, baseY: 130, maxLen: 78 },
+          { x: 100, baseY: 118, maxLen: 90 },
+          { x: 125, baseY: 122, maxLen: 84 },
+          { x: 150, baseY: 138, maxLen: 70 },
         ].map((f, i) => {
           const open = fingers[i + 1];
-          // stängd: kort + nedböjd; öppen: full längd uppåt
-          const length = 30 + open * 50;
-          const y = f.baseY + (1 - open) * 20;
+          const length = 28 + open * (f.maxLen - 28);
+          const y = f.baseY + (1 - open) * 25;
           return (
             <motion.rect
               key={i}
-              x={f.x - 10}
-              width={20}
-              rx={10}
+              x={f.x - 11}
+              width={22}
+              rx={11}
               fill="white"
               opacity={0.95}
               animate={{ y: y - length, height: length }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
+              transition={{ duration: 0.45, ease: "easeOut" }}
             />
           );
         })}
@@ -1003,37 +1003,42 @@ export function OpeningHand({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: 
 }
 
 // ─────────────────────────────────────────────────────────────
-// 20. WARM-HAND — hand på bröstet, mjuk puls per steg (medkänsla)
+// 20. WARM-HAND — hand på bröstet, ett hjärtslag per steg
 // ─────────────────────────────────────────────────────────────
-export function WarmHand({ stepIndex = 0, stepProgress = 0 }: Props) {
+export function WarmHand({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Props) {
+  const safeCount = Math.max(1, stepCount);
   const t = clamp01(stepProgress);
-  // puls: andas in växer, andas ut krymper
-  const scale = 1 + Math.sin(t * Math.PI) * 0.08;
+  // hjärtslag: två snabba pulser inom varje steg
+  const beat = Math.max(
+    Math.sin(t * Math.PI * 2) * 0.5 + 0.5,
+    Math.sin((t - 0.15) * Math.PI * 2) * 0.5 + 0.5,
+  );
+  const scale = 1 + beat * 0.07;
   return (
-    <div className="relative grid place-items-center" style={{ width: 280, height: 300 }}>
-      {/* värmestrålning */}
+    <div className="relative grid place-items-center" style={{ width: 280, height: 320 }}>
+      {/* värmestrålning som andas */}
       <motion.div
-        className="absolute h-48 w-48 rounded-full"
+        className="absolute h-52 w-52 rounded-full"
         style={{
           background:
-            "radial-gradient(circle, rgba(254,215,170,0.6) 0%, rgba(254,202,202,0.3) 50%, transparent 80%)",
-          filter: "blur(8px)",
+            "radial-gradient(circle, rgba(254,215,170,0.7) 0%, rgba(254,202,202,0.3) 50%, transparent 80%)",
+          filter: "blur(10px)",
         }}
-        animate={{ scale: scale * 1.1, opacity: 0.5 + t * 0.3 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
+        animate={{ scale: 1 + beat * 0.12, opacity: 0.45 + beat * 0.35 }}
+        transition={{ duration: 0.4, ease: "easeInOut" }}
       />
       {/* bröstkorg-siluett */}
       <svg viewBox="0 0 200 240" className="absolute h-72 w-60">
-        <ellipse cx="100" cy="100" rx="55" ry="65" fill="rgba(255,255,255,0.18)" />
+        <ellipse cx="100" cy="110" rx="60" ry="70" fill="rgba(255,255,255,0.2)" />
       </svg>
       {/* hand */}
       <motion.svg
         viewBox="0 0 100 100"
-        className="absolute h-32 w-32"
+        className="absolute h-36 w-36"
         animate={{ scale }}
-        transition={{ duration: 0.6, ease: "easeInOut" }}
+        transition={{ duration: 0.4, ease: "easeInOut" }}
       >
-        <ellipse cx="50" cy="62" rx="30" ry="26" fill="white" opacity="0.95" />
+        <ellipse cx="50" cy="62" rx="32" ry="28" fill="white" opacity="0.97" />
         {[30, 42, 54, 66].map((x, i) => (
           <rect
             key={i}
@@ -1043,18 +1048,24 @@ export function WarmHand({ stepIndex = 0, stepProgress = 0 }: Props) {
             height={36}
             rx={5}
             fill="white"
-            opacity="0.95"
+            opacity="0.97"
           />
         ))}
-        <ellipse cx="22" cy="58" rx="9" ry="16" fill="white" opacity="0.95" transform="rotate(-25 22 58)" />
+        <ellipse cx="22" cy="58" rx="9" ry="16" fill="white" opacity="0.97" transform="rotate(-25 22 58)" />
       </motion.svg>
-      {/* hjärtpuls-indikator (en prick per steg) */}
-      <div className="absolute bottom-2 flex gap-1">
-        {Array.from({ length: 5 }).map((_, i) => (
+      {/* hjärtslags-räknare (en per steg) */}
+      <div className="absolute bottom-3 flex gap-1.5">
+        {Array.from({ length: safeCount }).map((_, i) => (
           <div
             key={i}
-            className="h-1.5 w-1.5 rounded-full"
-            style={{ background: i <= stepIndex % 5 ? "white" : "rgba(255,255,255,0.3)" }}
+            className="h-2 w-2 rounded-full"
+            style={{
+              background: i < stepIndex
+                ? "white"
+                : i === stepIndex
+                  ? `rgba(255,255,255,${0.4 + beat * 0.6})`
+                  : "rgba(255,255,255,0.25)",
+            }}
           />
         ))}
       </div>
