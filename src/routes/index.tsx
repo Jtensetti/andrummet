@@ -3,6 +3,7 @@ import { FEELINGS } from "@/lib/exercises";
 import { useHistory } from "@/lib/history";
 import { motion } from "framer-motion";
 import { LifeBuoy } from "lucide-react";
+import type { ReactNode } from "react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -121,7 +122,7 @@ function Home() {
 }
 
 function TileDecor({ category }: { category: string }) {
-  const items: Record<string, JSX.Element> = {
+  const items: Record<string, ReactNode> = {
     calm: (
       <>
         <div className="absolute -right-6 -top-8 h-32 w-32 rounded-full bg-white/15" />

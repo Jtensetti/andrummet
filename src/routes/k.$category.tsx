@@ -91,7 +91,8 @@ const THEME: Record<
 };
 
 function CategoryPage() {
-  const { category } = Route.useLoaderData();
+  const data = Route.useLoaderData() as { category: Category };
+  const category = data.category;
   const t = THEME[category];
   const exercises = getByCategory(category);
   const quick = exercises.find((e) => e.minutes <= 2) ?? exercises[0];
