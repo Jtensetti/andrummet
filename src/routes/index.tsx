@@ -88,7 +88,7 @@ function Home() {
             <Link
               to="/k/$category"
               params={{ category: f.category }}
-              className={`group relative block aspect-[4/3] overflow-hidden rounded-3xl ${TILE_BG[f.category]} p-4 shadow-sm transition active:scale-[0.98] hover:shadow-md md:aspect-square md:p-5`}
+              className={`group relative block min-h-[140px] overflow-hidden rounded-3xl ${TILE_BG[f.category]} p-4 shadow-sm transition active:scale-[0.98] hover:shadow-md md:aspect-square md:min-h-0 md:p-5`}
             >
               <TileDecor category={f.category} />
               <div className="relative flex h-full flex-col justify-between">
