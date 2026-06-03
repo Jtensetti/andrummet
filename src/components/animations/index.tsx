@@ -1508,33 +1508,36 @@ export function AnimationFor({
     case "warm-hand":
       return <WarmHand {...p} />;
 
-    // legacy → mappa till närmaste
+    // promoverade: egna dedikerade animationer
+    case "sleep-waves":
+      return <SleepWaves {...p} />;
+    case "drifting-leaves":
+      return <DriftingLeaves {...p} />;
+    case "closing-tabs":
+      return <ClosingTabs {...p} />;
+    case "warm-beam":
+      return <WarmBeam {...p} />;
+    case "lifting-stone":
+      return <LiftingStone {...p} />;
+    case "constellation":
+      return <Constellation {...p} />;
+    case "spiral":
+      return <Spiral {...p} />;
+    case "orbit":
+      return <Orbit {...p} />;
+    case "pendulum":
+      return <Pendulum {...p} />;
+    case "compassion-heart":
+      return <CompassionHeart {...p} />;
+
+    // kvarvarande legacy
     case "breath-blob":
       return <BreathWave {...p} />;
     case "passing-thoughts":
-    case "drifting-leaves":
       return <PassingTraffic {...p} />;
     case "reset-shapes":
       return <VolumeSlider {...p} />;
-    case "sleep-waves":
-      return <BodyScan {...p} />;
-    case "compassion-heart":
-      return <WarmHand {...p} />;
     case "pulse":
       return <AnchorDrop {...p} />;
-    case "spiral":
-      return <BreathWave {...p} />;
-    case "orbit":
-      return <SortingShelf {...p} />;
-    case "pendulum":
-      return <TrafficLight {...p} />;
-    case "closing-tabs":
-      return <Mailbox {...p} />;
-    case "warm-beam":
-      return <BodyScan {...p} />;
-    case "lifting-stone":
-      return <AnchorDrop {...p} />;
-    case "constellation":
-      return <FocusLens {...p} />;
   }
 }
