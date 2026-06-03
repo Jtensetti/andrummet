@@ -1001,7 +1001,7 @@ export function AnimationFor({
     case "sleep-waves":
       return <BodyScan {...p} />;
     case "compassion-heart":
-      return <Unknotting />;
+      return <WarmHand {...p} />;
     case "pulse":
       return <AnchorDrop {...p} />;
     case "spiral":
