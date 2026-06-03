@@ -2521,5 +2521,27 @@ export function AnimationFor({
       return <StretchUp {...p} />;
     case "inbox-priority":
       return <InboxPriority {...p} />;
+
+    // fjärde vågen
+    case "release-balloon":
+      return <ReleaseBalloon {...p} />;
+    case "sand-clock":
+      return <SandClock {...p} />;
+    case "steering-wheel":
+      return <SteeringWheel {...p} />;
+    case "closing-laptop":
+      return <ClosingLaptop {...p} />;
+    case "note-to-self":
+      return <NoteToSelf {...p} />;
+    case "inner-voice":
+      return <InnerVoice {...p} />;
+    case "path-fork":
+      return <PathFork {...p} />;
+    case "deflate":
+      return <Deflate {...p} />;
+    case "measuring-tape":
+      return <MeasuringTape {...p} />;
+    case "dropping-bags":
+      return <DroppingBags {...p} />;
   }
 }
