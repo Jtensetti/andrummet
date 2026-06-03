@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useHistory } from "@/lib/history";
-import { CATEGORY_LABELS, METRIC_LABELS } from "@/lib/exercises";
+import { CATEGORY_LABELS, METRIC_LABELS, type Category, type RatingMetric } from "@/lib/exercises";
 
 export const Route = createFileRoute("/insikter")({
   head: () => ({ meta: [{ title: "Insikter – Andrum" }] }),
