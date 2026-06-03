@@ -567,10 +567,12 @@ export function WalkingPath({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: 
 export function BatteryFill({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Props) {
   const safeCount = Math.max(1, stepCount);
   const blocks = Array.from({ length: safeCount }, (_, i) => i);
+  const filledCount = stepIndex + clamp01(stepProgress);
+  const pct = Math.round((filledCount / safeCount) * 100);
   return (
-    <div className="relative grid place-items-center" style={{ width: 240, height: 280 }}>
-      <div className="relative h-64 w-32 rounded-3xl border-[6px] border-white/70 p-2">
-        <div className="absolute -top-4 left-1/2 h-4 w-12 -translate-x-1/2 rounded-t-md bg-white/70" />
+    <div className="relative grid place-items-center" style={{ width: 260, height: 320 }}>
+      <div className="relative h-72 w-32 rounded-3xl border-[6px] border-white/80 p-2">
+        <div className="absolute -top-4 left-1/2 h-4 w-14 -translate-x-1/2 rounded-t-md bg-white/80" />
         <div className="flex h-full flex-col-reverse gap-1.5">
           {blocks.map((i) => {
             const isCurrent = i === stepIndex;
@@ -579,14 +581,23 @@ export function BatteryFill({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: 
             return (
               <motion.div
                 key={i}
-                className="flex-1 rounded-md bg-gradient-to-t from-emerald-400 to-emerald-200"
-                animate={{ opacity: 0.15 + t * 0.85, scaleY: 0.3 + t * 0.7 }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
+                className="flex-1 rounded-md bg-gradient-to-t from-emerald-500 to-emerald-200"
+                animate={{
+                  opacity: 0.18 + t * 0.82,
+                  scaleY: 0.25 + t * 0.75,
+                  boxShadow: isCurrent && t > 0.05
+                    ? "0 0 18px rgba(110,231,183,0.65)"
+                    : "0 0 0 rgba(0,0,0,0)",
+                }}
+                transition={{ duration: 0.35, ease: "easeOut" }}
                 style={{ transformOrigin: "bottom" }}
               />
             );
           })}
         </div>
+      </div>
+      <div className="absolute bottom-0 text-2xl font-black tabular-nums text-white/85">
+        {pct}%
       </div>
     </div>
   );
