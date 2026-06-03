@@ -1978,6 +1978,435 @@ export function InboxPriority({ stepIndex = 0, stepProgress = 0 }: Props) {
 }
 
 // ─────────────────────────────────────────────────────────────
+// 41. RELEASE-BALLOON — något stiger uppåt och ut ur kroppen per steg
+// ─────────────────────────────────────────────────────────────
+export function ReleaseBalloon({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Props) {
+  const safeCount = Math.max(1, stepCount);
+  const colors = ["#fed7aa", "#fca5a5", "#fde68a", "#c4b5fd"];
+  return (
+    <div className="relative grid place-items-center overflow-hidden" style={{ width: 280, height: 240 }}>
+      <div className="absolute bottom-6 h-2 w-32 rounded-full bg-white/25" />
+      {Array.from({ length: safeCount }).map((_, i) => {
+        const released = i < stepIndex;
+        const releasing = i === stepIndex;
+        const t = releasing ? stepProgress : 0;
+        const yFromBottom = released ? 240 : releasing ? 30 + t * 200 : 30;
+        const opacity = released ? 0 : releasing ? 1 - t * 0.4 : 0.95;
+        const xJitter = (releasing ? Math.sin(t * Math.PI * 2) * 12 : 0) + (i - (safeCount - 1) / 2) * 22;
+        return (
+          <div
+            key={i}
+            className="absolute"
+            style={{
+              bottom: yFromBottom,
+              left: 140 + xJitter - 14,
+              opacity,
+              transition: "all 0.25s linear",
+            }}
+          >
+            <svg viewBox="0 0 28 40" width="28" height="40">
+              <ellipse cx="14" cy="14" rx="12" ry="14" fill={colors[i % colors.length]} opacity="0.9" />
+              <ellipse cx="11" cy="10" rx="3" ry="4" fill="white" opacity="0.5" />
+              {!released && <line x1="14" y1="28" x2="14" y2={38} stroke="rgba(255,255,255,0.5)" strokeWidth="0.8" />}
+            </svg>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// 42. SAND-CLOCK — timglas där sanden faller, steg = fjärdedelar
+// ─────────────────────────────────────────────────────────────
+export function SandClock({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Props) {
+  const safeCount = Math.max(1, stepCount);
+  const fallen = clamp01((stepIndex + stepProgress) / safeCount);
+  const upperH = (1 - fallen) * 60;
+  const lowerH = fallen * 60;
+  return (
+    <div className="relative grid place-items-center" style={{ width: 280, height: 240 }}>
+      <svg viewBox="0 0 160 220" className="h-56 w-44">
+        <path d="M30,20 L130,20 L130,40 Q130,90 80,110 Q30,90 30,40 Z" fill="rgba(255,255,255,0.18)" stroke="rgba(255,255,255,0.5)" strokeWidth="1.2" />
+        <path d="M30,200 L130,200 L130,180 Q130,130 80,110 Q30,130 30,180 Z" fill="rgba(255,255,255,0.18)" stroke="rgba(255,255,255,0.5)" strokeWidth="1.2" />
+        <rect x="22" y="14" width="116" height="8" rx="2" fill="rgba(255,255,255,0.5)" />
+        <rect x="22" y="200" width="116" height="8" rx="2" fill="rgba(255,255,255,0.5)" />
+        <path
+          d={`M${80 - upperH * 0.85},${100 - upperH} Q80,${95 - upperH * 0.95} ${80 + upperH * 0.85},${100 - upperH} L130,40 Q130,90 80,110 Q30,90 30,40 Z`}
+          fill="rgba(254,215,170,0.85)"
+        />
+        {fallen > 0 && fallen < 1 && <rect x="79" y="110" width="2" height="40" fill="rgba(254,215,170,0.85)" />}
+        <path
+          d={`M${80 - lowerH * 0.9},200 L${80 + lowerH * 0.9},200 L${80 + lowerH * 0.5},${200 - lowerH * 0.8} Q80,${190 - lowerH} ${80 - lowerH * 0.5},${200 - lowerH * 0.8} Z`}
+          fill="rgba(254,215,170,0.85)"
+        />
+      </svg>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// 43. STEERING-WHEEL — du vid ratten, ångest som passagerare
+// ─────────────────────────────────────────────────────────────
+export function SteeringWheel({ stepIndex = 0, stepProgress = 0 }: Props) {
+  const t = clamp01(stepProgress);
+  const passengerVisible = stepIndex >= 1 ? Math.min(1, (stepIndex - 1) * 0.5 + t * 0.5) : 0;
+  const passengerSeated = stepIndex >= 2;
+  const driving = stepIndex >= 3;
+  const wheelAngle = driving ? Math.sin(t * Math.PI * 2) * 8 : 0;
+  return (
+    <div className="relative grid place-items-center" style={{ width: 280, height: 240 }}>
+      <svg viewBox="0 0 280 220" className="h-full w-full">
+        <line x1="0" y1="180" x2="280" y2="180" stroke="rgba(255,255,255,0.25)" strokeDasharray="6 8" />
+        <g transform="translate(70,60)">
+          <circle cx="0" cy="0" r="14" fill="rgba(255,255,255,0.9)" />
+          <text x="0" y="4" textAnchor="middle" fontSize="10" fill="rgba(15,23,42,0.7)" fontWeight="700">DU</text>
+          <line x1="-12" y1="22" x2="-4" y2="50" stroke="rgba(255,255,255,0.8)" strokeWidth="5" strokeLinecap="round" />
+          <line x1="12" y1="22" x2="4" y2="50" stroke="rgba(255,255,255,0.8)" strokeWidth="5" strokeLinecap="round" />
+          <g style={{ transformOrigin: "0px 56px", transform: `rotate(${wheelAngle}deg)`, transition: "transform 0.3s" }}>
+            <circle cx="0" cy="56" r="18" fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth="3" />
+            <line x1="-14" y1="56" x2="14" y2="56" stroke="rgba(255,255,255,0.85)" strokeWidth="2" />
+            <line x1="0" y1="56" x2="0" y2="70" stroke="rgba(255,255,255,0.85)" strokeWidth="2" />
+          </g>
+        </g>
+        <g
+          transform={`translate(${passengerSeated ? 200 : 230 - passengerVisible * 30}, ${passengerSeated ? 70 : 90 - passengerVisible * 20})`}
+          opacity={passengerVisible}
+          style={{ transition: "all 0.4s ease" }}
+        >
+          <circle cx="0" cy="0" r="13" fill="rgba(252,165,165,0.85)" />
+          <text x="0" y="4" textAnchor="middle" fontSize="8" fill="rgba(15,23,42,0.7)" fontWeight="700">ORO</text>
+          {driving && (
+            <motion.g animate={{ opacity: [0.4, 0.9, 0.4] }} transition={{ duration: 1.2, repeat: Infinity }}>
+              <line x1="14" y1="-6" x2="22" y2="-10" stroke="rgba(252,165,165,0.9)" strokeWidth="1.5" />
+              <line x1="14" y1="0" x2="24" y2="0" stroke="rgba(252,165,165,0.9)" strokeWidth="1.5" />
+              <line x1="14" y1="6" x2="22" y2="10" stroke="rgba(252,165,165,0.9)" strokeWidth="1.5" />
+            </motion.g>
+          )}
+        </g>
+        {driving && (
+          <motion.path
+            d="M210,180 L250,180 M242,172 L250,180 L242,188"
+            stroke="rgba(254,215,170,0.9)"
+            strokeWidth="2"
+            fill="none"
+            strokeLinecap="round"
+            animate={{ x: [0, 8, 0], opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 1.8, repeat: Infinity }}
+          />
+        )}
+      </svg>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// 44. CLOSING-LAPTOP — laptop som fälls igen, gradvis per steg
+// ─────────────────────────────────────────────────────────────
+export function ClosingLaptop({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Props) {
+  const safeCount = Math.max(1, stepCount);
+  const close = clamp01((stepIndex + stepProgress) / safeCount);
+  const angle = -90 + close * 90;
+  const screenOpacity = 1 - close * 0.85;
+  return (
+    <div className="relative grid place-items-center" style={{ width: 280, height: 240 }}>
+      <svg viewBox="0 0 240 180" className="h-44 w-72">
+        <path d="M40,140 L200,140 L220,160 L20,160 Z" fill="rgba(255,255,255,0.35)" stroke="rgba(255,255,255,0.6)" strokeWidth="1" />
+        <rect x="100" y="146" width="40" height="3" rx="1" fill="rgba(15,23,42,0.25)" />
+        <g style={{ transformOrigin: "120px 140px", transform: `rotate(${angle}deg)`, transition: "transform 0.5s ease" }}>
+          <rect x="40" y="40" width="160" height="100" rx="3" fill="rgba(15,23,42,0.7)" stroke="rgba(255,255,255,0.6)" strokeWidth="1.2" />
+          <rect x="46" y="46" width="148" height="88" rx="2" fill="rgba(30,27,75,0.85)" opacity={screenOpacity} />
+          <g opacity={screenOpacity}>
+            <rect x="54" y="56" width="60" height="3" rx="1" fill="rgba(255,255,255,0.4)" />
+            <rect x="54" y="64" width="90" height="3" rx="1" fill="rgba(255,255,255,0.3)" />
+            <rect x="54" y="72" width="70" height="3" rx="1" fill="rgba(255,255,255,0.3)" />
+            <rect x="54" y="84" width="100" height="3" rx="1" fill="rgba(255,255,255,0.25)" />
+            <rect x="54" y="92" width="50" height="3" rx="1" fill="rgba(255,255,255,0.25)" />
+          </g>
+        </g>
+      </svg>
+      {close > 0.5 && (
+        <motion.div
+          className="absolute bottom-6 text-2xl text-white/60"
+          animate={{ opacity: [0.4, 0.9, 0.4] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        >
+          ⌄
+        </motion.div>
+      )}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// 45. NOTE-TO-SELF — post-it skrivs, sätts på "sen"-tavla
+// ─────────────────────────────────────────────────────────────
+export function NoteToSelf({ stepIndex = 0, stepProgress = 0 }: Props) {
+  const t = clamp01(stepProgress);
+  const writing = stepIndex === 1 ? t : stepIndex > 1 ? 1 : 0;
+  const placed = stepIndex >= 2;
+  const placing = stepIndex === 2 ? t : 0;
+  const noteX = placed ? 90 : 240 - placing * 150;
+  const noteY = placed ? 80 : 120 - placing * 40;
+  const noteRot = placed ? -6 : -6 + placing * -6;
+  return (
+    <div className="relative grid place-items-center" style={{ width: 280, height: 240 }}>
+      <svg viewBox="0 0 320 240" className="h-full w-full">
+        <rect x="20" y="40" width="160" height="120" rx="6" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.4)" strokeDasharray="3 4" />
+        <text x="100" y="32" textAnchor="middle" fontSize="11" fill="rgba(255,255,255,0.75)" fontWeight="600" letterSpacing="2">
+          SEN
+        </text>
+        <rect x="40" y="60" width="40" height="36" rx="2" fill="rgba(254,215,170,0.25)" transform="rotate(-3 60 78)" />
+        <rect x="100" y="100" width="40" height="36" rx="2" fill="rgba(254,215,170,0.2)" transform="rotate(4 120 118)" />
+        <g transform={`translate(${noteX}, ${noteY}) rotate(${noteRot})`} style={{ transition: "all 0.5s ease" }}>
+          <rect x="-22" y="-20" width="44" height="40" rx="2" fill="rgba(254,215,170,0.95)" />
+          <line x1="-16" y1="-10" x2={-16 + writing * 28} y2="-10" stroke="rgba(15,23,42,0.5)" strokeWidth="1.4" />
+          <line x1="-16" y1="-2" x2={-16 + writing * 22} y2="-2" stroke="rgba(15,23,42,0.5)" strokeWidth="1.4" />
+          <line x1="-16" y1="6" x2={-16 + writing * 16} y2="6" stroke="rgba(15,23,42,0.5)" strokeWidth="1.4" />
+          {placed && <circle cx="0" cy="-16" r="3" fill="rgba(252,165,165,0.95)" />}
+        </g>
+        {stepIndex === 4 && (
+          <motion.ellipse
+            cx="160"
+            cy="220"
+            rx="20"
+            ry="6"
+            fill="rgba(255,255,255,0.35)"
+            animate={{ ry: [4, 10, 4], opacity: [0.3, 0.7, 0.3] }}
+            transition={{ duration: 2.5, repeat: Infinity }}
+          />
+        )}
+      </svg>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// 46. INNER-VOICE — pratbubblan blir mjukare per steg
+// ─────────────────────────────────────────────────────────────
+export function InnerVoice({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Props) {
+  const safeCount = Math.max(1, stepCount);
+  const softness = clamp01((stepIndex + stepProgress) / safeCount);
+  const radius = 8 + softness * 22;
+  const bubbleColor = `rgba(${252 - softness * 60}, ${165 + softness * 50}, ${165 + softness * 50}, 0.85)`;
+  const spikes = Math.max(0, Math.round((1 - softness) * 12));
+  const spikePath = (() => {
+    if (spikes === 0) return "";
+    const pts: string[] = [];
+    for (let i = 0; i < spikes; i++) {
+      const a = (i / spikes) * Math.PI * 2;
+      const r = 55;
+      const x = 100 + Math.cos(a) * r;
+      const y = 70 + Math.sin(a) * r;
+      const x2 = 100 + Math.cos(a) * (r + 8);
+      const y2 = 70 + Math.sin(a) * (r + 8);
+      pts.push(`M${x},${y} L${x2},${y2}`);
+    }
+    return pts.join(" ");
+  })();
+  return (
+    <div className="relative grid place-items-center" style={{ width: 280, height: 240 }}>
+      <svg viewBox="0 0 200 200" className="h-56 w-56">
+        <circle cx="100" cy="160" r="22" fill="rgba(255,255,255,0.4)" />
+        <line x1="100" y1="138" x2="100" y2="125" stroke="rgba(255,255,255,0.5)" strokeWidth="1.4" />
+        <path d={spikePath} stroke={bubbleColor} strokeWidth="2" fill="none" opacity={1 - softness} />
+        <rect x={40} y={20} width={120} height={100} rx={radius} fill={bubbleColor} style={{ transition: "all 0.5s ease" }} />
+        <path d="M88,118 L100,138 L106,118 Z" fill={bubbleColor} />
+        <rect x="56" y="42" width={80 - softness * 30} height="4" rx="2" fill="rgba(15,23,42,0.4)" />
+        <rect x="56" y="56" width={70 - softness * 20} height="4" rx="2" fill="rgba(15,23,42,0.4)" />
+        <rect x="56" y="70" width={90 - softness * 30} height="4" rx="2" fill="rgba(15,23,42,0.4)" />
+        <g opacity={softness} transform="translate(140,40)">
+          <path d="M0,4 C-5,-1 -10,-4 -3,-7 C0,-9 0,-5 0,-3 C0,-5 0,-9 3,-7 C10,-4 5,-1 0,4 Z" fill="rgba(255,255,255,0.95)" />
+        </g>
+      </svg>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// 47. PATH-FORK — tre stigar, en lyser upp som "vald"
+// ─────────────────────────────────────────────────────────────
+export function PathFork({ stepIndex = 0, stepProgress = 0 }: Props) {
+  const labels = ["NU", "VÄNTA", "ALDRIG"];
+  const highlight = stepIndex < 3 ? stepIndex : 0;
+  const chosen = stepIndex >= 3;
+  const walking = stepIndex >= 4 ? stepProgress : 0;
+  return (
+    <div className="relative grid place-items-center" style={{ width: 280, height: 240 }}>
+      <svg viewBox="0 0 280 220" className="h-full w-full">
+        <circle cx="140" cy="190" r="6" fill="white" />
+        {[
+          { x: 60, y: 40 },
+          { x: 140, y: 30 },
+          { x: 220, y: 40 },
+        ].map((p, i) => {
+          const active = i === highlight && !chosen;
+          const isChosen = chosen && i === 0;
+          const dim = chosen && i !== 0;
+          const opacity = isChosen ? 1 : active ? 0.9 : dim ? 0.2 : 0.45;
+          const strokeW = isChosen ? 3 : active ? 2.4 : 1.4;
+          return (
+            <g key={i} opacity={opacity} style={{ transition: "all 0.4s ease" }}>
+              <path
+                d={`M140,190 Q${(140 + p.x) / 2},${(190 + p.y) / 2 + 20} ${p.x},${p.y}`}
+                fill="none"
+                stroke={isChosen ? "rgba(254,215,170,0.95)" : "white"}
+                strokeWidth={strokeW}
+                strokeLinecap="round"
+                strokeDasharray={isChosen ? undefined : "4 5"}
+              />
+              <circle cx={p.x} cy={p.y} r={isChosen ? 9 : 6} fill={isChosen ? "rgba(254,215,170,0.95)" : "rgba(255,255,255,0.6)"} />
+              <text x={p.x} y={p.y - 14} textAnchor="middle" fontSize="10" fontWeight="700" fill="rgba(255,255,255,0.9)" letterSpacing="1.5">
+                {labels[i]}
+              </text>
+            </g>
+          );
+        })}
+        {chosen && (
+          <circle
+            cx={140 + (60 - 140) * walking}
+            cy={190 + (40 - 190) * walking + Math.sin(walking * Math.PI) * -20}
+            r="5"
+            fill="white"
+          />
+        )}
+      </svg>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// 48. DEFLATE — spänd kropp som mjuknar och släpper ut
+// ─────────────────────────────────────────────────────────────
+export function Deflate({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Props) {
+  const safeCount = Math.max(1, stepCount);
+  const softness = clamp01((stepIndex + stepProgress) / safeCount);
+  const torsoRx = 50 - softness * 12;
+  const torsoRy = 70 - softness * 14;
+  const tension = 1 - softness;
+  return (
+    <div className="relative grid place-items-center" style={{ width: 280, height: 260 }}>
+      <svg viewBox="0 0 200 240" className="h-64 w-56">
+        <circle cx="100" cy="120" r={70 + softness * 14} fill="rgba(254,215,170,0.18)" />
+        <ellipse cx="100" cy="42" rx={20 - softness * 2} ry={22 - softness * 2} fill="rgba(255,255,255,0.85)" style={{ transition: "all 0.4s ease" }} />
+        <path
+          d={`M${100 - torsoRx - 6},${78 + softness * 8} Q100,${72 + softness * 6} ${100 + torsoRx + 6},${78 + softness * 8}`}
+          stroke="rgba(255,255,255,0.85)"
+          strokeWidth={10 - softness * 2}
+          fill="none"
+          strokeLinecap="round"
+          style={{ transition: "all 0.4s ease" }}
+        />
+        <ellipse cx="100" cy="140" rx={torsoRx} ry={torsoRy} fill="rgba(255,255,255,0.78)" style={{ transition: "all 0.4s ease" }} />
+        <g opacity={tension * 0.7} style={{ transition: "opacity 0.4s" }}>
+          <path d="M70,110 Q80,115 70,120" stroke="rgba(252,165,165,0.85)" strokeWidth="1.4" fill="none" />
+          <path d="M130,110 Q120,115 130,120" stroke="rgba(252,165,165,0.85)" strokeWidth="1.4" fill="none" />
+          <path d="M70,150 Q80,155 70,160" stroke="rgba(252,165,165,0.85)" strokeWidth="1.4" fill="none" />
+          <path d="M130,150 Q120,155 130,160" stroke="rgba(252,165,165,0.85)" strokeWidth="1.4" fill="none" />
+        </g>
+        <motion.g animate={{ y: [-6, -18, -6], opacity: [0.3, 0.7, 0.3] }} transition={{ duration: 3, repeat: Infinity }}>
+          <ellipse cx="100" cy="20" rx={6 + softness * 6} ry="3" fill="rgba(255,255,255,0.5)" />
+          <ellipse cx="112" cy="10" rx={4 + softness * 4} ry="2" fill="rgba(255,255,255,0.4)" />
+        </motion.g>
+      </svg>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// 49. MEASURING-TAPE — måttstock i handen, läggs ner per steg
+// ─────────────────────────────────────────────────────────────
+export function MeasuringTape({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Props) {
+  const safeCount = Math.max(1, stepCount);
+  const down = clamp01((stepIndex + stepProgress) / safeCount);
+  const angle = -90 + down * 90;
+  const restGlow = Math.max(0, down - 0.6) * 2.5;
+  return (
+    <div className="relative grid place-items-center" style={{ width: 280, height: 240 }}>
+      <svg viewBox="0 0 280 220" className="h-full w-full">
+        <line x1="20" y1="180" x2="260" y2="180" stroke="rgba(255,255,255,0.3)" />
+        <g transform="translate(80,100)">
+          <circle cx="0" cy="0" r="12" fill="rgba(255,255,255,0.75)" />
+        </g>
+        <g style={{ transformOrigin: "80px 100px", transform: `rotate(${angle}deg)`, transition: "transform 0.5s ease" }}>
+          <rect x="80" y="96" width="160" height="10" rx="2" fill="rgba(254,215,170,0.9)" stroke="rgba(15,23,42,0.4)" strokeWidth="0.8" />
+          {Array.from({ length: 16 }).map((_, i) => {
+            const tall = i % 5 === 0;
+            return (
+              <line
+                key={i}
+                x1={88 + i * 10}
+                y1={tall ? 96 : 99}
+                x2={88 + i * 10}
+                y2={tall ? 106 : 103}
+                stroke="rgba(15,23,42,0.55)"
+                strokeWidth={tall ? 1.2 : 0.7}
+              />
+            );
+          })}
+          <text x="100" y="113" fontSize="6" fill="rgba(15,23,42,0.7)">10</text>
+          <text x="150" y="113" fontSize="6" fill="rgba(15,23,42,0.7)">20</text>
+          <text x="200" y="113" fontSize="6" fill="rgba(15,23,42,0.7)">30</text>
+        </g>
+        {restGlow > 0 && <ellipse cx="160" cy="180" rx={70 * restGlow} ry={8 * restGlow} fill="rgba(254,215,170,0.4)" />}
+      </svg>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// 50. DROPPING-BAGS — figur med kassar, släpper en per steg
+// ─────────────────────────────────────────────────────────────
+export function DroppingBags({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Props) {
+  const safeCount = Math.max(1, stepCount);
+  const colors = ["#fca5a5", "#fed7aa", "#c4b5fd", "#a7f3d0", "#fde68a"];
+  const lift = clamp01(stepIndex / safeCount);
+  const headY = 60 - lift * 8;
+  return (
+    <div className="relative grid place-items-center" style={{ width: 280, height: 260 }}>
+      <svg viewBox="0 0 280 240" className="h-full w-full">
+        <line x1="20" y1="200" x2="260" y2="200" stroke="rgba(255,255,255,0.25)" />
+        <g>
+          <circle cx="140" cy={headY} r="14" fill="rgba(255,255,255,0.9)" style={{ transition: "cy 0.4s" }} />
+          <path
+            d={`M122,${headY + 18} Q140,${headY + 14} 158,${headY + 18} L158,${headY + 90} Q140,${headY + 100} 122,${headY + 90} Z`}
+            fill="rgba(255,255,255,0.8)"
+            style={{ transition: "d 0.4s" }}
+          />
+          <rect x="128" y={headY + 90} width="8" height={70 + lift * 6} rx="3" fill="rgba(255,255,255,0.75)" />
+          <rect x="144" y={headY + 90} width="8" height={70 + lift * 6} rx="3" fill="rgba(255,255,255,0.75)" />
+        </g>
+        {Array.from({ length: safeCount }).map((_, i) => {
+          const dropped = i < stepIndex;
+          const dropping = i === stepIndex;
+          const t = dropping ? stepProgress : 0;
+          const side = i % 2 === 0 ? -1 : 1;
+          const offset = Math.floor(i / 2);
+          const handX = 140 + side * (32 + offset * 6);
+          const handY = 95;
+          const groundX = 60 + i * 30;
+          const groundY = 200 - 14;
+          const x = dropped ? groundX : dropping ? handX + (groundX - handX) * t : handX;
+          const y = dropped ? groundY : dropping ? handY + (groundY - handY) * t + Math.sin(t * Math.PI) * 6 : handY;
+          const rot = dropped ? (i % 2 === 0 ? -12 : 14) : dropping ? t * 20 : 0;
+          return (
+            <g key={i} style={{ transition: "all 0.25s ease" }}>
+              <g transform={`translate(${x - 14}, ${y - 12}) rotate(${rot} 14 12)`}>
+                <path d="M6,4 Q14,-6 22,4" stroke="rgba(255,255,255,0.85)" strokeWidth="1.6" fill="none" />
+                <rect x="2" y="4" width="24" height="22" rx="2" fill={colors[i % colors.length]} opacity="0.92" />
+              </g>
+            </g>
+          );
+        })}
+        {stepIndex > 0 && (
+          <ellipse cx="160" cy="200" rx={20 + stepIndex * 18} ry="6" fill="rgba(254,215,170,0.3)" />
+        )}
+      </svg>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
 // Router
 // ─────────────────────────────────────────────────────────────
 export function AnimationFor({
