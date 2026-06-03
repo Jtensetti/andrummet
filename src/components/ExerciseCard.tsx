@@ -41,7 +41,7 @@ export function ExerciseCard({ ex, size = "md" }: { ex: Exercise; size?: "sm" | 
 
 function Decor({ category }: { category: string }) {
   // Mjuka geometriska former i bakgrunden — varierar per tema
-  const map: Record<string, JSX.Element> = {
+  const map: Record<string, ReactNode> = {
     calm: (
       <>
         <div className="absolute -right-6 -top-8 h-32 w-32 rounded-full bg-white/15" />
