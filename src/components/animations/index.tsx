@@ -1458,6 +1458,515 @@ export function CompassionHeart({ stepIndex = 0, stepCount = 1, stepProgress = 0
 }
 
 // ─────────────────────────────────────────────────────────────
+// 31. BELLY-HAND — handen på magen lyfts/sänks med andetaget
+// ─────────────────────────────────────────────────────────────
+export function BellyHand({ stepIndex = 0, stepProgress = 0, phase = "" }: Props) {
+  const breath = detectBreath(phase);
+  // tolkning: "in" → handen åker upp; "ut" → handen åker ner
+  const t = clamp01(stepProgress);
+  const rise = breath === "in" ? t : breath === "ut" ? 1 - t : 0.4;
+  const handY = 120 - rise * 22;
+  const bellyScale = 1 + rise * 0.12;
+  return (
+    <div className="relative grid place-items-center" style={{ width: 280, height: 240 }}>
+      {/* siluett — bröstet ovanför, magen nedanför */}
+      <svg viewBox="0 0 200 220" className="absolute h-56 w-56">
+        <path d="M50,30 Q100,20 150,30 L155,90 Q100,100 45,90 Z" fill="rgba(255,255,255,0.18)" />
+        <ellipse cx="100" cy="135" rx="55" ry={36 * bellyScale} fill="rgba(255,255,255,0.28)" style={{ transition: "all 0.25s ease" }} />
+      </svg>
+      {/* hand */}
+      <svg viewBox="0 0 80 80" className="absolute h-20 w-20" style={{ top: handY + 30, transition: "top 0.25s ease" }}>
+        <ellipse cx="40" cy="50" rx="26" ry="22" fill="white" opacity="0.95" />
+        {[24, 34, 44, 54].map((x, i) => (
+          <rect key={i} x={x - 4} y={18 + (i === 1 || i === 2 ? -2 : 2)} width={8} height={28} rx={4} fill="white" opacity="0.95" />
+        ))}
+        <ellipse cx="16" cy="46" rx="7" ry="12" fill="white" opacity="0.95" transform="rotate(-25 16 46)" />
+      </svg>
+      {/* riktningsmarkör */}
+      <div className="absolute right-4 top-1/2 -translate-y-1/2 text-2xl text-white/60">
+        {breath === "in" ? "↑" : breath === "ut" ? "↓" : "·"}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// 32. SHOULDER-DROP — axlarna åker upp och sedan tydligt ner per steg
+// ─────────────────────────────────────────────────────────────
+export function ShoulderDrop({ stepIndex = 0, stepProgress = 0 }: Props) {
+  // 0:upp 1:ner 2:märk 3:upp 4:ner 5:hänger — generisk: jämna=upp, udda=ner, sista=hänger lågt
+  const t = clamp01(stepProgress);
+  const isUp = stepIndex % 2 === 0;
+  // shoulderY: 60 = normal, 40 = upp, 78 = ner
+  const targetY = isUp ? 40 + (1 - t) * 20 : 78 - (1 - t) * 18;
+  return (
+    <div className="relative grid place-items-center" style={{ width: 280, height: 240 }}>
+      <svg viewBox="0 0 200 220" className="h-56 w-56">
+        {/* huvud */}
+        <ellipse cx="100" cy="40" rx="22" ry="24" fill="rgba(255,255,255,0.22)" />
+        {/* nacke */}
+        <rect x="92" y="58" width="16" height="14" fill="rgba(255,255,255,0.2)" />
+        {/* axlar — rör sig vertikalt */}
+        <path
+          d={`M40,${targetY + 20} Q100,${targetY} 160,${targetY + 20} L160,${targetY + 40} Q100,${targetY + 28} 40,${targetY + 40} Z`}
+          fill="rgba(255,255,255,0.28)"
+          style={{ transition: "d 0.3s ease" }}
+        />
+        {/* torso */}
+        <path d={`M55,${targetY + 38} Q100,${targetY + 50} 145,${targetY + 38} L145,180 Q100,190 55,180 Z`} fill="rgba(255,255,255,0.18)" style={{ transition: "d 0.3s ease" }} />
+        {/* riktningspilar */}
+        <text x="170" y={targetY + 30} fill="rgba(255,255,255,0.55)" fontSize="18" fontWeight="300">
+          {isUp ? "↑" : "↓"}
+        </text>
+      </svg>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// 33. JAW-RELEASE — munnen öppnas, tungan släpper, utandning
+// ─────────────────────────────────────────────────────────────
+export function JawRelease({ stepIndex = 0, stepProgress = 0 }: Props) {
+  // steg-tolkning: 0 märk käken, 1 öppna munnen, 2 tunga ner, 3 andas ut
+  const t = clamp01(stepProgress);
+  const mouthOpen = stepIndex >= 1 ? Math.min(1, 0.3 + (stepIndex - 1) * 0.4 + t * 0.3) : 0.05;
+  const tongueDown = stepIndex >= 2 ? Math.min(1, (stepIndex - 2) * 0.6 + t * 0.4) : 0;
+  const exhaling = stepIndex >= 3;
+  return (
+    <div className="relative grid place-items-center" style={{ width: 280, height: 240 }}>
+      <svg viewBox="0 0 200 200" className="h-56 w-56">
+        {/* ansikte */}
+        <ellipse cx="100" cy="100" rx="68" ry="78" fill="rgba(255,255,255,0.18)" />
+        {/* näsa-antydan */}
+        <ellipse cx="100" cy="95" rx="6" ry="10" fill="rgba(255,255,255,0.12)" />
+        {/* mun — ellips som höjs när den öppnas */}
+        <ellipse
+          cx="100"
+          cy="135"
+          rx={24}
+          ry={4 + mouthOpen * 16}
+          fill="rgba(15,23,42,0.55)"
+          style={{ transition: "ry 0.4s ease" }}
+        />
+        {/* tunga */}
+        <ellipse
+          cx="100"
+          cy={135 + tongueDown * 8}
+          rx={16}
+          ry={3 + tongueDown * 3}
+          fill="rgba(252,165,165,0.85)"
+          opacity={mouthOpen * 0.9}
+          style={{ transition: "all 0.4s ease" }}
+        />
+        {/* utandning som dimma */}
+        {exhaling && (
+          <motion.ellipse
+            cx="100"
+            cy={180}
+            rx="40"
+            ry="14"
+            fill="rgba(255,255,255,0.35)"
+            animate={{ cy: [165, 200], opacity: [0.6, 0], rx: [30, 55] }}
+            transition={{ duration: 2.2, repeat: Infinity, ease: "easeOut" }}
+          />
+        )}
+      </svg>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// 34. FOOTPRINTS — fötter mot golvet, vikten hittar hälen
+// ─────────────────────────────────────────────────────────────
+export function Footprints({ stepIndex = 0, stepProgress = 0 }: Props) {
+  // 0: hela foten 1: vikt i hälarna 2: tårna mjuka 3: andas ut nedåt
+  const t = clamp01(stepProgress);
+  const heelWeight = stepIndex >= 1 ? Math.min(1, (stepIndex - 1) * 0.5 + t * 0.5) : 0.2;
+  const toesRelaxed = stepIndex >= 2 ? Math.min(1, (stepIndex - 2) * 0.5 + t * 0.5) : 0;
+  const exhale = stepIndex >= 3;
+  const heelOpacity = 0.25 + heelWeight * 0.7;
+  const toeOpacity = 0.25 + (1 - toesRelaxed) * 0.5;
+  const groundPulse = 1 + heelWeight * 0.08;
+  return (
+    <div className="relative grid place-items-center" style={{ width: 280, height: 240 }}>
+      {/* golvring */}
+      <div
+        className="absolute h-44 w-56 rounded-full"
+        style={{
+          top: 80,
+          background: "radial-gradient(ellipse, rgba(254,215,170,0.35), transparent 70%)",
+          transform: `scale(${groundPulse})`,
+          transition: "transform 0.4s ease",
+        }}
+      />
+      <svg viewBox="0 0 200 180" className="absolute h-44 w-56" style={{ top: 60 }}>
+        {[60, 140].map((cx, i) => (
+          <g key={i}>
+            {/* hälen */}
+            <ellipse cx={cx} cy={120} rx={24} ry={18} fill={`rgba(255,255,255,${heelOpacity})`} style={{ transition: "fill 0.3s" }} />
+            {/* fotvalv */}
+            <ellipse cx={cx} cy={88} rx={20} ry={26} fill="rgba(255,255,255,0.45)" />
+            {/* tårna */}
+            <g opacity={toeOpacity} style={{ transition: "opacity 0.3s" }}>
+              {[-12, -4, 4, 12].map((dx, j) => (
+                <circle key={j} cx={cx + dx} cy={62} r={4} fill="white" />
+              ))}
+            </g>
+          </g>
+        ))}
+        {/* nedåt-pilar vid utandning */}
+        {exhale && (
+          <motion.g animate={{ opacity: [0.3, 0.8, 0.3], y: [0, 6, 0] }} transition={{ duration: 2.5, repeat: Infinity }}>
+            <path d="M60,150 L60,166 M55,160 L60,168 L65,160" stroke="white" strokeWidth="1.5" fill="none" />
+            <path d="M140,150 L140,166 M135,160 L140,168 L145,160" stroke="white" strokeWidth="1.5" fill="none" />
+          </motion.g>
+        )}
+      </svg>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// 35. DOORWAY — figur stannar utanför en dörr, går in på sista steget
+// ─────────────────────────────────────────────────────────────
+export function Doorway({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Props) {
+  const safeCount = Math.max(1, stepCount);
+  const isLast = stepIndex === safeCount - 1;
+  const doorOpen = isLast ? stepProgress : 0;
+  const figureX = isLast ? stepProgress * 30 : 0;
+  const figureOpacity = isLast ? 1 - stepProgress * 0.7 : 1;
+  return (
+    <div className="relative grid place-items-center" style={{ width: 280, height: 240 }}>
+      <svg viewBox="0 0 240 200" className="h-56 w-72">
+        {/* dörrkarm */}
+        <rect x="130" y="30" width="80" height="160" rx="2" fill="rgba(255,255,255,0.18)" />
+        <rect x="138" y="38" width="64" height="148" rx="1" fill="rgba(15,23,42,0.35)" />
+        {/* dörr — svänger upp */}
+        <g style={{ transformOrigin: "138px 112px", transform: `rotateY(${doorOpen * 75}deg)`, transition: "transform 0.4s ease" }}>
+          <rect x="138" y="38" width="64" height="148" rx="1" fill="rgba(254,215,170,0.55)" />
+          <circle cx="194" cy="112" r="2" fill="rgba(15,23,42,0.5)" />
+        </g>
+        {/* ljus från dörröppning när öppen */}
+        {doorOpen > 0.05 && (
+          <ellipse cx="170" cy="112" rx={40 * doorOpen} ry={70 * doorOpen} fill="rgba(254,215,170,0.4)" />
+        )}
+        {/* figur utanför */}
+        <g transform={`translate(${70 + figureX}, 80)`} opacity={figureOpacity} style={{ transition: "all 0.4s ease" }}>
+          <circle cx="0" cy="0" r="12" fill="rgba(255,255,255,0.85)" />
+          <path d="M-14,16 Q0,12 14,16 L14,60 Q0,68 -14,60 Z" fill="rgba(255,255,255,0.85)" />
+          <rect x="-10" y="60" width="8" height="40" rx="3" fill="rgba(255,255,255,0.85)" />
+          <rect x="2" y="60" width="8" height="40" rx="3" fill="rgba(255,255,255,0.85)" />
+        </g>
+        {/* andnings-glöd kring figuren */}
+        <motion.circle
+          cx={70 + figureX}
+          cy="100"
+          r="40"
+          fill="none"
+          stroke="rgba(254,215,170,0.4)"
+          strokeWidth="1"
+          animate={{ r: [38, 50, 38], opacity: [0.4, 0.7, 0.4] }}
+          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+        />
+      </svg>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// 36. FIRST-STEP — en trappa, första trappsteget lyser starkast
+// ─────────────────────────────────────────────────────────────
+export function FirstStep({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Props) {
+  const safeCount = Math.max(1, stepCount);
+  return (
+    <div className="relative grid place-items-center" style={{ width: 280, height: 240 }}>
+      <svg viewBox="0 0 280 220" className="h-full w-full">
+        {/* hela trappan i bakgrunden — ljusare för aktuellt steg */}
+        {Array.from({ length: safeCount }).map((_, i) => {
+          const reached = i < stepIndex;
+          const current = i === stepIndex;
+          const baseY = 200 - i * 22;
+          const w = 200 - i * 18;
+          const x = (280 - w) / 2;
+          const opacity = current ? 0.35 + stepProgress * 0.55 : reached ? 0.65 : 0.18;
+          return (
+            <g key={i}>
+              <rect x={x} y={baseY - 16} width={w} height={16} rx={2} fill={`rgba(255,255,255,${opacity})`} style={{ transition: "fill 0.3s" }} />
+              {/* skugga under steget */}
+              <rect x={x} y={baseY} width={w} height={3} fill="rgba(0,0,0,0.15)" />
+            </g>
+          );
+        })}
+        {/* glödande prick som markerar "här är du nu" */}
+        {(() => {
+          const baseY = 200 - stepIndex * 22 - 8;
+          const w = 200 - stepIndex * 18;
+          const x = 140;
+          return (
+            <g>
+              <circle cx={x} cy={baseY - 14} r={14} fill="rgba(254,215,170,0.2)" />
+              <circle cx={x} cy={baseY - 14} r={7} fill="white" />
+            </g>
+          );
+        })()}
+      </svg>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// 37. TYPING-CURSOR — blinkande markör; första ordet ramas in per steg
+// ─────────────────────────────────────────────────────────────
+export function TypingCursor({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Props) {
+  const safeCount = Math.max(1, stepCount);
+  // skapar en abstrakt "rad text" där en grå platta byts mot en ljus per steg
+  return (
+    <div className="relative grid place-items-center" style={{ width: 280, height: 240 }}>
+      <div className="flex flex-col gap-2 rounded-2xl bg-white/10 p-5" style={{ width: 230 }}>
+        {/* dokument-header */}
+        <div className="mb-2 flex gap-1.5">
+          <div className="h-2 w-2 rounded-full bg-white/30" />
+          <div className="h-2 w-2 rounded-full bg-white/30" />
+          <div className="h-2 w-2 rounded-full bg-white/30" />
+        </div>
+        {Array.from({ length: safeCount }).map((_, i) => {
+          const typed = i < stepIndex;
+          const typing = i === stepIndex;
+          const t = typing ? stepProgress : 0;
+          const widthPct = typed ? 100 : typing ? 8 + t * 84 : 0;
+          return (
+            <div key={i} className="flex h-3 items-center gap-1">
+              <div
+                className="h-2 rounded-full"
+                style={{
+                  width: `${widthPct}%`,
+                  background: typed ? "rgba(255,255,255,0.85)" : "rgba(254,215,170,0.85)",
+                  transition: "width 0.25s linear, background 0.3s",
+                  maxWidth: `${80 + ((i * 17) % 40)}%`,
+                }}
+              />
+              {typing && (
+                <motion.div
+                  className="h-3 w-[2px] bg-white"
+                  animate={{ opacity: [1, 0, 1] }}
+                  transition={{ duration: 0.8, repeat: Infinity }}
+                />
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// 38. MORNING-SUN — solen går upp, en stråle tänds per steg
+// ─────────────────────────────────────────────────────────────
+export function MorningSun({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Props) {
+  const safeCount = Math.max(1, stepCount);
+  const rise = clamp01((stepIndex + stepProgress) / safeCount);
+  const sunY = 170 - rise * 60;
+  return (
+    <div className="relative grid place-items-center overflow-hidden rounded-3xl" style={{ width: 280, height: 220 }}>
+      {/* himmel som ljusnar */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background: `linear-gradient(180deg, rgba(254,215,170,${0.15 + rise * 0.4}) 0%, rgba(252,165,165,${0.1 + rise * 0.25}) 60%, rgba(30,27,75,${0.3 - rise * 0.2}) 100%)`,
+          transition: "background 0.4s",
+        }}
+      />
+      {/* horisontlinje */}
+      <div className="absolute left-0 right-0 top-[170px] h-px bg-white/30" />
+      <svg viewBox="0 0 280 220" className="absolute inset-0 h-full w-full">
+        {/* strålar — en per "lit" steg */}
+        {Array.from({ length: safeCount }).map((_, i) => {
+          const lit = i <= stepIndex;
+          if (!lit) return null;
+          const litProgress = i === stepIndex ? stepProgress : 1;
+          const angle = -85 + (i / Math.max(safeCount - 1, 1)) * 170;
+          const rad = (angle * Math.PI) / 180;
+          const len = 50 + litProgress * 30;
+          return (
+            <line
+              key={i}
+              x1="140"
+              y1={sunY}
+              x2={140 + Math.cos(rad) * len}
+              y2={sunY + Math.sin(rad) * len}
+              stroke="rgba(254,215,170,0.7)"
+              strokeWidth="1.4"
+              strokeLinecap="round"
+              opacity={i === stepIndex ? 0.4 + litProgress * 0.6 : 0.9}
+            />
+          );
+        })}
+        {/* glöd kring solen */}
+        <circle cx="140" cy={sunY} r={32 + rise * 8} fill="rgba(254,215,170,0.25)" />
+        {/* solen själv */}
+        <circle cx="140" cy={sunY} r="18" fill="white" />
+      </svg>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// 39. STRETCH-UP — figur reser sig, sträcker, andas ut
+// ─────────────────────────────────────────────────────────────
+export function StretchUp({ stepIndex = 0, stepProgress = 0 }: Props) {
+  // 0: stå upp 1: släpp axlarna 2: tre långa utandningar 3: vad behöver nästa möte
+  const t = clamp01(stepProgress);
+  const standing = stepIndex >= 0 ? Math.min(1, 0.4 + (stepIndex === 0 ? t * 0.6 : 0.6)) : 0;
+  const armsUp = stepIndex >= 1 ? (stepIndex === 1 ? t : 1) : 0;
+  // armarna: tillbaka ner när axlarna släpper (steg 1) — men för enkelhet sträcker uppåt
+  return (
+    <div className="relative grid place-items-center" style={{ width: 280, height: 260 }}>
+      <svg viewBox="0 0 200 240" className="h-64 w-56">
+        {/* huvud */}
+        <circle cx="100" cy={50 - standing * 8} r="14" fill="rgba(255,255,255,0.9)" style={{ transition: "cy 0.4s ease" }} />
+        {/* torso */}
+        <path
+          d={`M82,${68 - standing * 6} Q100,${64 - standing * 6} 118,${68 - standing * 6} L118,${150 - standing * 6} Q100,${158 - standing * 6} 82,${150 - standing * 6} Z`}
+          fill="rgba(255,255,255,0.8)"
+          style={{ transition: "d 0.4s ease" }}
+        />
+        {/* armar — sträcker uppåt */}
+        <g style={{ transition: "all 0.4s ease" }}>
+          <line
+            x1="82"
+            y1={72 - standing * 6}
+            x2={82 - armsUp * 12}
+            y2={72 - standing * 6 - armsUp * 50}
+            stroke="rgba(255,255,255,0.8)"
+            strokeWidth="9"
+            strokeLinecap="round"
+          />
+          <line
+            x1="118"
+            y1={72 - standing * 6}
+            x2={118 + armsUp * 12}
+            y2={72 - standing * 6 - armsUp * 50}
+            stroke="rgba(255,255,255,0.8)"
+            strokeWidth="9"
+            strokeLinecap="round"
+          />
+        </g>
+        {/* ben */}
+        <rect x="88" y={150 - standing * 6} width="8" height={70 + standing * 10} rx={3} fill="rgba(255,255,255,0.75)" style={{ transition: "all 0.4s ease" }} />
+        <rect x="104" y={150 - standing * 6} width="8" height={70 + standing * 10} rx={3} fill="rgba(255,255,255,0.75)" style={{ transition: "all 0.4s ease" }} />
+        {/* utandningar — tre puffar för steg 2 */}
+        {stepIndex === 2 && (
+          <motion.g animate={{ opacity: [0.6, 1, 0.6] }} transition={{ duration: 1.5, repeat: Infinity }}>
+            <ellipse cx="140" cy="60" rx="8" ry="5" fill="rgba(255,255,255,0.4)" />
+            <ellipse cx="155" cy="50" rx="10" ry="6" fill="rgba(255,255,255,0.3)" />
+            <ellipse cx="172" cy="42" rx="12" ry="7" fill="rgba(255,255,255,0.22)" />
+          </motion.g>
+        )}
+        {/* riktningspil vid steg 3 */}
+        {stepIndex === 3 && (
+          <motion.path
+            d="M150,120 L180,120 M172,112 L180,120 L172,128"
+            stroke="rgba(254,215,170,0.9)"
+            strokeWidth="2"
+            fill="none"
+            strokeLinecap="round"
+            animate={{ x: [0, 6, 0] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+          />
+        )}
+      </svg>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// 40. INBOX-PRIORITY — mejl sorteras: akut / vänta / imorgon
+// ─────────────────────────────────────────────────────────────
+export function InboxPriority({ stepIndex = 0, stepProgress = 0 }: Props) {
+  // 0 stäng inkorgen, 1 akut idag, 2 akut för annan, 3 kan vänta, 4 öppna - gör en sak
+  const buckets = [
+    { label: "NU", color: "rgba(252,165,165,0.85)" },
+    { label: "ANDRAS", color: "rgba(254,215,170,0.85)" },
+    { label: "IMORGON", color: "rgba(196,181,253,0.75)" },
+  ];
+  // Vilken bucket är aktiv per steg
+  const activeBucket = stepIndex === 1 ? 0 : stepIndex === 2 ? 1 : stepIndex === 3 ? 2 : -1;
+  const inboxClosed = stepIndex === 0;
+  return (
+    <div className="relative grid place-items-center" style={{ width: 280, height: 240 }}>
+      <div className="flex flex-col items-center gap-3">
+        {/* inkorg */}
+        <div
+          className="relative rounded-xl border border-white/30 px-4 py-2"
+          style={{
+            width: 180,
+            background: inboxClosed ? "rgba(15,23,42,0.4)" : "rgba(255,255,255,0.16)",
+            transition: "all 0.4s ease",
+          }}
+        >
+          <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-wider text-white/70">
+            <span>Inkorg</span>
+            <span>{inboxClosed ? "✕" : "•"}</span>
+          </div>
+          {/* ett mejl som flyger ut till aktiv bucket */}
+          {!inboxClosed &&
+            Array.from({ length: 3 }).map((_, i) => {
+              const sent = i < activeBucket;
+              const sending = i === activeBucket;
+              const t = sending ? stepProgress : 0;
+              const opacity = sent ? 0 : 1 - t * 0.8;
+              const x = sending ? -40 + t * 80 : 0;
+              const y = sending ? t * 40 : 0;
+              return (
+                <div
+                  key={i}
+                  className="my-1 h-2 rounded-full bg-white/60"
+                  style={{
+                    transform: `translate(${x}px, ${y}px)`,
+                    opacity,
+                    transition: "all 0.3s linear",
+                  }}
+                />
+              );
+            })}
+          {stepIndex === 4 && (
+            <motion.div
+              className="absolute -right-2 -top-2 h-3 w-3 rounded-full"
+              style={{ background: "rgba(254,215,170,1)" }}
+              animate={{ scale: [1, 1.4, 1] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            />
+          )}
+        </div>
+        {/* tre buckets */}
+        <div className="flex gap-3">
+          {buckets.map((b, i) => {
+            const active = i === activeBucket;
+            const filled = i < activeBucket || (i === activeBucket && stepProgress > 0.5);
+            return (
+              <div
+                key={i}
+                className="rounded-lg px-3 py-2 text-center"
+                style={{
+                  background: active ? b.color : `${b.color.replace(/[\d.]+\)/, "0.25)")}`,
+                  transform: active ? "scale(1.08)" : "scale(1)",
+                  transition: "all 0.3s ease",
+                  minWidth: 56,
+                }}
+              >
+                <div className="text-[9px] font-semibold tracking-wider text-white/90">{b.label}</div>
+                <div className="mt-1 h-1.5 w-full rounded-full" style={{ background: filled ? "white" : "rgba(255,255,255,0.3)" }} />
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
 // Router
 // ─────────────────────────────────────────────────────────────
 export function AnimationFor({
