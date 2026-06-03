@@ -2,13 +2,13 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { Home, Sparkles, Play, PencilLine, BarChart3 } from "lucide-react";
 import type { ReactNode } from "react";
 
-const items = [
+const items: { to: string; label: string; icon: typeof Home; primary?: boolean }[] = [
   { to: "/", label: "Hem", icon: Home },
   { to: "/ovningar", label: "Övningar", icon: Sparkles },
   { to: "/start", label: "Starta", icon: Play, primary: true },
   { to: "/reflektion", label: "Reflektion", icon: PencilLine },
   { to: "/min-vecka", label: "Min vecka", icon: BarChart3 },
-] as const;
+];
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
