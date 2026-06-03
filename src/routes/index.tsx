@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { FEELINGS, MORE_CATEGORIES, CATEGORY_LABELS, type Category } from "@/lib/exercises";
 import { motion } from "framer-motion";
 import { Timer } from "lucide-react";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
