@@ -1,19 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { X, Pause, Play } from "lucide-react";
+import { X, Pause, Play, ArrowLeft } from "lucide-react";
 import { getExercise, METRIC_LABELS } from "@/lib/exercises";
 import { addEntry } from "@/lib/history";
-import {
-  BreathBlob,
-  BoxBreath,
-  PassingThoughts,
-  BodyScan,
-  ResetShapes,
-  SleepWaves,
-  CompassionHeart,
-  PulseCircle,
-} from "@/components/animations";
+import { AnimationFor } from "@/components/animations";
 
 export const Route = createFileRoute("/ovning/$id")({
   component: Player,
@@ -29,7 +20,7 @@ const themeBg: Record<string, string> = {
   recovery: "bg-[var(--recovery)] text-[var(--recovery-ink)]",
 };
 
-type Phase = "before" | "running" | "after" | "done";
+type Phase = "intro" | "before" | "running" | "after" | "done";
 
 function Player() {
   const { id } = Route.useParams();
@@ -39,8 +30,8 @@ function Player() {
       <div className="grid min-h-screen place-items-center bg-background">
         <div className="text-center">
           <p className="font-bold">Övningen hittades inte.</p>
-          <Link to="/ovningar" className="mt-3 inline-block text-sm underline">
-            Tillbaka till övningar
+          <Link to="/" className="mt-3 inline-block text-sm underline">
+            Tillbaka hem
           </Link>
         </div>
       </div>
@@ -52,7 +43,7 @@ function Player() {
 function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }) {
   const navigate = useNavigate();
 
-  const [phase, setPhase] = useState<Phase>("before");
+  const [phase, setPhase] = useState<Phase>(ex.metaphor ? "intro" : "before");
   const [stepIdx, setStepIdx] = useState(0);
   const [stepRemaining, setStepRemaining] = useState(ex.steps[0]?.seconds ?? 0);
   const [paused, setPaused] = useState(false);
@@ -66,7 +57,6 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
     tickRef.current = window.setInterval(() => {
       setStepRemaining((s) => {
         if (s > 1) return s - 1;
-        // gå vidare
         setStepIdx((i) => {
           const next = i + 1;
           if (next >= ex.steps.length) {
@@ -116,7 +106,7 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
   return (
     <div className={`relative min-h-[100dvh] ${themeBg[ex.category]}`}>
       <button
-        onClick={() => navigate({ to: "/ovningar" })}
+        onClick={() => navigate({ to: "/k/$category", params: { category: ex.category } })}
         aria-label="Avsluta"
         className="absolute right-4 top-4 z-20 grid h-10 w-10 place-items-center rounded-full bg-black/10 backdrop-blur"
       >
@@ -124,6 +114,39 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
       </button>
 
       <AnimatePresence mode="wait">
+        {phase === "intro" && ex.metaphor && (
+          <motion.div
+            key="intro"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="mx-auto flex min-h-[100dvh] max-w-md flex-col justify-center px-6 py-12"
+          >
+            <p className="text-xs font-bold uppercase tracking-widest opacity-75">
+              Bilden bakom övningen
+            </p>
+            <h1 className="mt-2 text-3xl font-extrabold leading-tight md:text-4xl">
+              {ex.title}
+            </h1>
+            <p className="mt-5 text-lg leading-relaxed opacity-95">
+              {ex.metaphor.intro}
+            </p>
+
+            <div className="mt-8 flex justify-center">
+              <div className="rounded-3xl bg-black/10 p-6">
+                <AnimationFor kind={ex.metaphor.illustration ?? ex.animation} phase="andas in" />
+              </div>
+            </div>
+
+            <button
+              onClick={() => setPhase("before")}
+              className="mt-10 rounded-full bg-black/85 px-6 py-4 text-base font-extrabold text-white active:scale-[0.98]"
+            >
+              Jag är med
+            </button>
+          </motion.div>
+        )}
+
         {phase === "before" && (
           <motion.div
             key="before"
@@ -157,6 +180,14 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
             >
               Hoppa över skattning
             </button>
+            {ex.metaphor && (
+              <button
+                onClick={() => setPhase("intro")}
+                className="mt-4 inline-flex items-center justify-center gap-1 text-xs font-semibold opacity-60"
+              >
+                <ArrowLeft className="h-3 w-3" /> Tillbaka till bilden
+              </button>
+            )}
           </motion.div>
         )}
 
@@ -179,10 +210,10 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
             </div>
 
             <div className="flex flex-1 flex-col items-center justify-center gap-10">
-              <h2 className="text-center text-5xl font-extrabold leading-tight md:text-6xl">
+              <h2 className="text-center text-4xl font-extrabold leading-tight md:text-5xl">
                 {ex.steps[stepIdx]?.label}
               </h2>
-              <AnimationFor ex={ex} phase={ex.steps[stepIdx]?.label ?? ""} />
+              <AnimationFor kind={ex.animation} phase={ex.steps[stepIdx]?.label ?? ""} />
               <p className="text-sm font-semibold opacity-70">
                 Steg {stepIdx + 1} av {ex.steps.length}
               </p>
@@ -263,10 +294,11 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
                 Se min vecka
               </Link>
               <Link
-                to="/ovningar"
+                to="/k/$category"
+                params={{ category: ex.category }}
                 className="rounded-full bg-black/10 px-6 py-3 text-sm font-bold"
               >
-                Tillbaka till övningar
+                Tillbaka
               </Link>
             </div>
           </motion.div>
@@ -274,34 +306,6 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
       </AnimatePresence>
     </div>
   );
-}
-
-function AnimationFor({
-  ex,
-  phase,
-}: {
-  ex: ReturnType<typeof getExercise>;
-  phase: string;
-}) {
-  if (!ex) return null;
-  switch (ex.animation) {
-    case "breath-blob":
-      return <BreathBlob phase={phase} />;
-    case "box-breath":
-      return <BoxBreath phase={phase} />;
-    case "passing-thoughts":
-      return <PassingThoughts />;
-    case "body-scan":
-      return <BodyScan />;
-    case "reset-shapes":
-      return <ResetShapes />;
-    case "sleep-waves":
-      return <SleepWaves />;
-    case "compassion-heart":
-      return <CompassionHeart />;
-    case "pulse":
-      return <PulseCircle />;
-  }
 }
 
 function RatingRow({
