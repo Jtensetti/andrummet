@@ -1464,7 +1464,7 @@ export function BellyHand({ stepIndex = 0, stepProgress = 0, phase = "" }: Props
   const breath = detectBreath(phase);
   // tolkning: "in" → handen åker upp; "ut" → handen åker ner
   const t = clamp01(stepProgress);
-  const rise = breath === "in" ? t : breath === "ut" ? 1 - t : 0.4;
+  const rise = breath === "in" ? t : breath === "out" ? 1 - t : 0.4;
   const handY = 120 - rise * 22;
   const bellyScale = 1 + rise * 0.12;
   return (
@@ -1484,7 +1484,7 @@ export function BellyHand({ stepIndex = 0, stepProgress = 0, phase = "" }: Props
       </svg>
       {/* riktningsmarkör */}
       <div className="absolute right-4 top-1/2 -translate-y-1/2 text-2xl text-white/60">
-        {breath === "in" ? "↑" : breath === "ut" ? "↓" : "·"}
+        {breath === "in" ? "↑" : breath === "out" ? "↓" : "·"}
       </div>
     </div>
   );
