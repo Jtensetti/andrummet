@@ -280,8 +280,11 @@ function InsiktTab({ history }: { history: HistoryEntry[] }) {
                   </span>
                   <div className="h-3 flex-1 overflow-hidden rounded-full bg-muted">
                     <div
-                      className={`h-full bg-[var(--${cat})]`}
-                      style={{ width: `${(n / maxCat) * 100}%` }}
+                      className="h-full rounded-full"
+                      style={{
+                        width: `${(n / maxCat) * 100}%`,
+                        background: `var(--${cat})`,
+                      }}
                     />
                   </div>
                   <span className="w-10 text-right text-muted-foreground">{n}</span>
