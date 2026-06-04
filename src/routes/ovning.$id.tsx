@@ -10,6 +10,7 @@ import { BoxBreath, type BoxPhase } from "@/components/animations/BoxBreath";
 import { BreathWave, type WavePhase } from "@/components/animations/BreathWave";
 import { Grounding54321, type Sense } from "@/components/animations/Grounding54321";
 import { BodyScan } from "@/components/animations/BodyScan";
+import { LeavesOnStream } from "@/components/animations/LeavesOnStream";
 
 export const Route = createFileRoute("/ovning/$id")({
   component: Player,
@@ -480,6 +481,50 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
                         </AnimatePresence>
                         <p className="mt-1 text-xs font-semibold uppercase tracking-widest opacity-60">
                           Bara märk · du behöver inte fixa något
+                        </p>
+                      </div>
+                    </>
+                  );
+                })()
+              ) : ex.id === "lov-pa-en-flod" ? (
+                (() => {
+                  const step = ex.steps[stepIdx];
+                  const script = step?.script ?? [step?.label ?? ""];
+                  const phraseIdx = Math.min(
+                    script.length - 1,
+                    Math.max(0, Math.floor(stepProgress * script.length)),
+                  );
+                  const phrase = script[phraseIdx];
+                  return (
+                    <>
+                      <LeavesOnStream stepIndex={stepIdx} stepProgress={stepProgress} />
+                      <div className="flex max-w-md flex-col items-center gap-3 text-center">
+                        <AnimatePresence mode="wait">
+                          <motion.p
+                            key={`lof-${stepIdx}`}
+                            initial={{ opacity: 0, y: 6 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -6 }}
+                            transition={{ duration: 0.3 }}
+                            className="text-3xl font-extrabold leading-tight tracking-tight md:text-4xl"
+                          >
+                            {step?.label}
+                          </motion.p>
+                        </AnimatePresence>
+                        <AnimatePresence mode="wait">
+                          <motion.p
+                            key={`lof-p-${stepIdx}-${phraseIdx}`}
+                            initial={{ opacity: 0, y: 4 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -4 }}
+                            transition={{ duration: 0.4 }}
+                            className="min-h-[1.5rem] text-base font-semibold opacity-90"
+                          >
+                            {phrase}
+                          </motion.p>
+                        </AnimatePresence>
+                        <p className="mt-1 text-xs font-semibold uppercase tracking-widest opacity-60">
+                          Tankar kommer · tankar går · du sitter kvar
                         </p>
                       </div>
                     </>
