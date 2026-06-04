@@ -7,6 +7,7 @@ import { addEntry } from "@/lib/history";
 import { AnimationFor } from "@/components/animations";
 import { LottiePlayer } from "@/components/animations/LottiePlayer";
 import { BoxBreath, type BoxPhase } from "@/components/animations/BoxBreath";
+import { BreathWave, type WavePhase } from "@/components/animations/BreathWave";
 
 export const Route = createFileRoute("/ovning/$id")({
   component: Player,
