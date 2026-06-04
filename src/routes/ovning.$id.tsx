@@ -7,6 +7,7 @@ import { addEntry } from "@/lib/history";
 import { AnimationFor } from "@/components/animations";
 import { LottiePlayer } from "@/components/animations/LottiePlayer";
 import { BoxBreath, type BoxPhase } from "@/components/animations/BoxBreath";
+import { BreathWave, type WavePhase } from "@/components/animations/BreathWave";
 
 export const Route = createFileRoute("/ovning/$id")({
   component: Player,
@@ -339,6 +340,52 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
                         </div>
                         <p className="mt-1 text-xs font-semibold uppercase tracking-widest opacity-60">
                           Följ pricken runt rutan · näsan in, munnen ut
+                        </p>
+                      </div>
+                    </>
+                  );
+                })()
+              ) : ex.id === "lang-utandning" ? (
+                (() => {
+                  const phase = (stepIdx % 2) as WavePhase;
+                  const word = phase === 0 ? "Andas in" : "Andas ut";
+                  const count = Math.min(
+                    stepSeconds,
+                    Math.floor(stepElapsed) + 1,
+                  );
+                  return (
+                    <>
+                      <BreathWave phaseIndex={phase} phaseProgress={stepProgress} />
+                      <div className="flex max-w-md flex-col items-center gap-3 text-center">
+                        <AnimatePresence mode="wait">
+                          <motion.p
+                            key={`bw-${stepIdx}`}
+                            initial={{ opacity: 0, y: 6 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -6 }}
+                            transition={{ duration: 0.25 }}
+                            className="text-4xl font-extrabold leading-tight tracking-tight md:text-5xl"
+                          >
+                            {word}
+                          </motion.p>
+                        </AnimatePresence>
+                        <div
+                          className="flex flex-wrap items-center justify-center gap-2 text-lg font-bold tabular-nums"
+                          aria-live="polite"
+                        >
+                          {Array.from({ length: stepSeconds }, (_, i) => i + 1).map(
+                            (n) => (
+                              <span
+                                key={n}
+                                className={n <= count ? "opacity-100" : "opacity-30"}
+                              >
+                                {n}
+                              </span>
+                            ),
+                          )}
+                        </div>
+                        <p className="mt-1 text-xs font-semibold uppercase tracking-widest opacity-60">
+                          Näsan in · munnen ut · längre ut än in
                         </p>
                       </div>
                     </>

@@ -242,11 +242,16 @@ const SEEDS: Seed[] = [
     short: "Längre ut än in. Nervsystemet svalnar.",
     category: "breath",
     kind: "short",
-    minutes: 2,
+    minutes: 1,
     animation: "breath-wave",
     metric: "stress",
-    steps: WAVE(5),
+    steps: WAVE(6),
     closing: "Den långa utandningen var själva poängen.",
+    metaphor: {
+      intro:
+        "Andas in i fyra. Ut i sju. Utandningen är längre — det är där lugnet kommer.",
+      illustration: "breath-wave",
+    },
   },
   {
     id: "andas-som-en-vag",
