@@ -658,6 +658,31 @@ const SEEDS: Seed[] = [
     closing: "Du satte ner den. Det räknas.",
     reflectionPrompt: "Vad lade du ner just nu?",
   },
+  {
+    id: "lov-pa-en-flod",
+    title: "Löv på en flod",
+    short: "Lägg tanken på ett löv. Låt det driva förbi.",
+    category: "stress",
+    kind: "short",
+    minutes: 4,
+    animation: "drifting-leaves",
+    metric: "stress",
+    steps: [
+      ["Sätt dig vid floden", 20, ["Föreställ dig", "en lugn flod", "du sitter på stranden", "vattnet rör sig sakta", "förbi dig"]],
+      ["Vad snurrar?", 40, ["Märk en tanke", "som snurrar", "i huvudet just nu", "den första som dyker upp", "räcker", "döm den inte"]],
+      ["Lägg den på ett löv", 40, ["Föreställ dig ett löv", "som flyter förbi", "lägg tanken på lövet", "några ord räcker", "tyst", "som en lapp"]],
+      ["Låt lövet flyta", 40, ["Knuffa inte", "håll inte fast", "låt lövet driva", "med strömmen", "iväg", "bra"]],
+      ["Nästa tanke, nästa löv", 50, ["En ny tanke kommer", "ett nytt löv", "lägg den där", "låt det flyta", "om och om", "i din egen takt"]],
+      ["Du sitter kvar vid floden", 50, ["Tankarna kommer", "tankarna går", "du sitter kvar", "vid floden", "stilla", "du är inte tankarna"]],
+    ],
+    closing: "Tankarna fortsatte komma. Du fortsatte släppa dem.",
+    metaphor: {
+      intro: "Föreställ dig en lugn flod. Varje tanke som dyker upp lägger du på ett löv som flyter förbi. Du behöver inte stoppa floden. Du behöver inte hoppa i. Du bara sitter och tittar.",
+      illustration: "drifting-leaves",
+    },
+  },
+
+
 
   // ─── FOKUSERA ─────────────────────────────────────────────
   {
