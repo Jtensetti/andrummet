@@ -50,7 +50,7 @@ export function EmberCooling({
   stepCount: number;
 }) {
   const [t, setT] = useState(0);
-  const raf = useRef<number>();
+  const raf = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     const start = performance.now();
