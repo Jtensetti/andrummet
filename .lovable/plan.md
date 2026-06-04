@@ -1,63 +1,64 @@
-# Plan: Gör 5-4-3-2-1 grounding perfekt
+# Plan: Gör body scan perfekt — riktig kroppssilhuett
 
-Klassisk grounding-övning för ångest. Användaren letar konkreta saker i rummet — sinne för sinne, nedräkning från 5 till 1. Inget tekniskt klurigt; det viktiga är att man **förstår exakt vad man ska göra** i varje sekund.
-
-## Övningen
-
-- **Ny övning**, ID: `grounding-54321`, kategori: `anxiety` ("Hantera oro").
-- Fem steg, ett per sinne:
-  1. **5 saker du ser** — 5 × 8 s = 40 s
-  2. **4 saker du hör** — 4 × 8 s = 32 s
-  3. **3 saker du känner** — 3 × 10 s = 30 s (kräver lite mer tid)
-  4. **2 saker du luktar** — 2 × 12 s = 24 s
-  5. **1 sak du smakar** — 1 × 15 s = 15 s
-- Totalt ~2:20. `minutes: 3`.
+Vi använder den befintliga övningen `kroppsskanning-huvud-till-fot` (7 min, 7 steg från pannan till fötterna). Den har redan bra text och pedagogik — det vi gör är att ge den en riktig, **konkret kroppssilhuett som faktiskt ser ut som en kropp**, där den aktuella zonen lyser upp och pulserar mjukt i takt med klockan.
 
 ## Vad animationen visar
 
-En **stor cirkel med sinnes-ikon** i mitten (öga, öra, hand, näsa, mun — enkla SVG-glyfer) och **5/4/3/2/1 punkter runt om** som tänds en i taget allt eftersom man hittar nästa sak.
+En stor, ren SVG-silhuett av en människa framifrån — huvud, hals, axlar, bröstkorg, mage, höfter, lår, vader, fötter. Stiliserad, ingen anatomi, ingen genus-koppling. Bara en form man genast känner igen som "kropp".
 
-- Vid stegets start är alla prickar släckta utom en glödande "aktiv" prick.
-- När tiden för en sak (8/10/12/15 s) går ut tänds nästa prick och nedräknaren ändras.
-- När alla prickar lyser → fasen är klar → byter till nästa sinne.
+Varje steg motsvarar en **zon** på kroppen:
 
-Den aktiva pricken pulserar mjukt så man ser "jag jobbar på sak nr 3 nu".
+1. Pannan → en mjuk lysande fläck på övre huvudet
+2. Käken → fläck över käkparti
+3. Hals & axlar → fläck över hals + axlinje
+4. Bröstkorg → ovansidan av bålen
+5. Mage → nedre delen av bålen
+6. Höfter & ben → höft- och lårparti
+7. Fötter → fötter + ankel
 
-Drivs av samma frame-klocka — `stepProgress` × `itemsInStep` ger aktivt index, inga tidsglapp.
+**Beteende per zon under stegets gång:**
+- Vid start: zonen tänds långsamt (fade-in ~1 sek).
+- Under merparten av tiden: zonen lyser stadigt med mjuk in/ut-puls (~3 sek per cykel) — som ett varmt ljus som vandrar med andetaget.
+- Sista 10 %: zonen tonar ner mjukt så det blir tydligt att uppmärksamheten "släpper" den och vandrar vidare till nästa.
+
+Tidigare zoner förblir lätt antydda (väldigt svag glöd) så man ser kartan över var man varit. Resten av kroppen är en tunn kontur.
+
+Allt drivs av `stepIdx` (vilken zon) + `stepProgress` (puls + fade-in/out). Inga `<motion>`-transitions — beräknad opacity per frame, exakt synkat med övningsklockan.
 
 ## Text-mönster
 
+Samma lugna mönster som tidigare övningar:
+
 ```text
-[stort ord / sinne]                  ← byts vid stegbyte
-5 saker du ser
+[stor zon-rubrik]            ← byts vid stegbyte
+Pannan / Käken / Hals & axlar / …
 
-[stor numerär]                       ← "1 av 5", växer under stegets gång
-Sak 1 av 5
+[liten hjälpfras]            ← roterar inom steget, 1 fras per ~8 s
+Lägg märke till pannan · Är den spänd? · Är den slät? · Fixa inget — bara märk
 
-[liten hjälptext]                    ← sinnes-specifik, byts per steg
-Låt blicken vandra. Säg sakerna tyst för dig själv.
+[fast bottenrad]             ← står still hela övningen
+Bara märk. Du behöver inte fixa något.
 ```
 
-Övre raden står still i hela steget. Mellanraden tickar upp när man går vidare till nästa sak. Hjälptexten byts bara mellan steg, inte mitt i.
+Hjälpfrasen hämtas från stegets befintliga `script[]` (de finns redan). Den byter inte ord-för-ord; den byter när nästa rad i scriptet är dags utifrån stegets tid.
 
 ## Vad jag bygger
 
-1. **Ny komponent** `src/components/animations/Grounding54321.tsx`
-   - Props: `total` (5/4/3/2/1), `activeIndex` (0…total-1), `itemProgress` (0→1 inom aktuell sak), `sense` ("see" | "hear" | "feel" | "smell" | "taste").
-   - Cirkel + sinnes-ikon i mitten, prickar runt om, glöd för aktiv prick.
+1. **Ny komponent** `src/components/animations/BodyScan.tsx`
+   - SVG-silhuett (huvud-cirkel + hals + bål + armar + ben + fötter, mjuka rundade former).
+   - Definierar 7 zoner som överliggande former med beräknad opacity.
+   - Props: `zoneIndex` (0–6), `zoneProgress` (0→1).
 
 2. **Ändring i `src/routes/ovning.$id.tsx`**
-   - Tredje special-case bredvid `andas-i-en-ruta` och `lang-utandning`.
-   - Beräknar `itemsInStep`, `activeIndex = floor(stepProgress * itemsInStep)`, `itemProgress = (stepProgress * itemsInStep) % 1`.
-   - Visar sinnesnamn (stor rubrik), "Sak X av N" (mellanstor), hjälptext (liten).
+   - Fjärde special-case (`ex.id === "kroppsskanning-huvud-till-fot"`).
+   - Renderar `BodyScan` + zon-rubrik + roterande hjälpfras + bottenrad.
 
 3. **Datatouch i `src/lib/exercises.ts`**
-   - Lägg till `grounding-54321` i SEEDS.
-   - Använd `animation: "focus-lens"` som fallback-kind (komponenten är ändå special-case i route).
-   - Övriga övningar (inkl. den befintliga "Tre saker du ser") lämnas orörda.
+   - Lämnar steg och tider i fred — de är redan bra.
+   - Lägger till en `metaphor.intro` så användaren ser bilden innan start.
 
 ## Vad jag *inte* gör
 
-- Rör inte "Tre saker du ser" — den får finnas kvar som en snabbare variant.
+- Ingen 3D, ingen anatomi, inga muskler eller skelett.
+- Inga andra övningar rörs.
 - Inga nya bibliotek.
-- Ingen sinne-specifik bakgrundsbild eller ljud — håller det grafiskt och rent.

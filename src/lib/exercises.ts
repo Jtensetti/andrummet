@@ -846,6 +846,11 @@ const SEEDS: Seed[] = [
     ],
     closing: "Du skannade utan att fixa. Det är hela övningen.",
     reflectionPrompt: "Var höll kroppen mest?",
+    metaphor: {
+      intro:
+        "Uppmärksamheten vandrar genom kroppen — pannan, käken, halsen, bröstet, magen, höfter, fötter. Du fixar inget. Du lyser bara upp ett område i taget och märker vad som finns där.",
+      illustration: "body-scan",
+    },
   },
   {
     id: "kanna-fotterna",
