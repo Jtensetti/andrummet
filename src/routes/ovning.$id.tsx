@@ -10,6 +10,7 @@ import { BoxBreath, type BoxPhase } from "@/components/animations/BoxBreath";
 import { BreathWave, type WavePhase } from "@/components/animations/BreathWave";
 import { Grounding54321, type Sense } from "@/components/animations/Grounding54321";
 import { BodyScan } from "@/components/animations/BodyScan";
+import { LeavesOnStream } from "@/components/animations/LeavesOnStream";
 
 export const Route = createFileRoute("/ovning/$id")({
   component: Player,
