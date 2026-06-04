@@ -392,6 +392,54 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
                     </>
                   );
                 })()
+              ) : ex.id === "grounding-54321" ? (
+                (() => {
+                  const senses: Sense[] = ["see", "hear", "feel", "smell", "taste"];
+                  const totals = [5, 4, 3, 2, 1];
+                  const helpers = [
+                    "Låt blicken vandra. Säg sakerna tyst för dig själv.",
+                    "Stäng ögonen om du vill. Även tystnad räknas.",
+                    "Märk kroppen mot stolen, golvet, kläderna.",
+                    "Andas in genom näsan. Inget alls är också ett svar.",
+                    "Vad finns kvar i munnen? Stanna med det.",
+                  ];
+                  const sense = senses[stepIdx] ?? "see";
+                  const total = totals[stepIdx] ?? 1;
+                  const helper = helpers[stepIdx] ?? "";
+                  const raw = stepProgress * total;
+                  const activeIndex = Math.min(total - 1, Math.floor(raw));
+                  const itemProgress = raw - activeIndex;
+                  return (
+                    <>
+                      <Grounding54321
+                        total={total}
+                        activeIndex={activeIndex}
+                        itemProgress={itemProgress}
+                        sense={sense}
+                      />
+                      <div className="flex max-w-md flex-col items-center gap-3 text-center">
+                        <AnimatePresence mode="wait">
+                          <motion.p
+                            key={`g54-${stepIdx}`}
+                            initial={{ opacity: 0, y: 6 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -6 }}
+                            transition={{ duration: 0.25 }}
+                            className="text-3xl font-extrabold leading-tight tracking-tight md:text-4xl"
+                          >
+                            {ex.steps[stepIdx]?.label}
+                          </motion.p>
+                        </AnimatePresence>
+                        <p className="text-base font-bold tabular-nums opacity-90">
+                          Sak {activeIndex + 1} av {total}
+                        </p>
+                        <p className="mt-1 text-xs font-semibold uppercase tracking-widest opacity-60">
+                          {helper}
+                        </p>
+                      </div>
+                    </>
+                  );
+                })()
               ) : (
                 <>
                   {ex.lottie ? (
