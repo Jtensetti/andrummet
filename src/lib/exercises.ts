@@ -218,6 +218,31 @@ const WAVE = (rounds = 4): StepTuple[] =>
   ])).flat();
 
 const SEEDS: Seed[] = [
+  // ─── ÅNGEST / GROUNDING ───────────────────────────────────
+  {
+    id: "grounding-54321",
+    title: "5-4-3-2-1",
+    short: "Fem sinnen. Tillbaka till rummet, sak för sak.",
+    category: "anxiety",
+    kind: "short",
+    minutes: 3,
+    animation: "focus-lens",
+    metric: "oro",
+    steps: [
+      ["5 saker du SER", 40, ["Låt blicken vandra", "namnge det du ser", "en sak i taget"]],
+      ["4 saker du HÖR", 32, ["Stäng ögonen om du vill", "vad hör du nu?", "även det tysta räknas"]],
+      ["3 saker du KÄNNER", 30, ["Märk kroppen mot underlaget", "tyget mot huden", "luftens temperatur"]],
+      ["2 saker du LUKTAR", 24, ["Andas in genom näsan", "vad finns där?", "inget alls är också ett svar"]],
+      ["1 sak du SMAKAR", 15, ["Smaka i munnen", "vad finns kvar där?", "stanna med det en stund"]],
+    ],
+    closing: "Du är tillbaka i rummet. Oron fick vänta en stund.",
+    metaphor: {
+      intro:
+        "När oron drar iväg — kom tillbaka via sinnena. Fem saker du ser. Sen fyra du hör. Och så vidare ner till en. Säg dem tyst för dig själv.",
+      illustration: "focus-lens",
+    },
+  },
+
   // ─── ANDAS ────────────────────────────────────────────────
   {
     id: "andas-i-en-ruta",
