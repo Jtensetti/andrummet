@@ -225,13 +225,14 @@ const SEEDS: Seed[] = [
     short: "Fyra sidor, fyra andetag. Du följer banan.",
     category: "breath",
     kind: "short",
-    minutes: 2,
+    minutes: 4,
     animation: "box-breath",
     metric: "stress",
-    steps: BOX(3),
+    steps: BOX(15),
     closing: "Rutan höll i dig. Du behövde inte tänka tempot.",
     metaphor: {
-      intro: "Andetaget får en bana. Du följer pricken — en sida i taget.",
+      intro:
+        "Andetaget får en bana: in, håll, ut, vila — fyra sekunder per sida. Du följer pricken runt rutan.",
       illustration: "box-breath",
     },
   },

@@ -6,6 +6,7 @@ import { getExercise, METRIC_LABELS, type Category } from "@/lib/exercises";
 import { addEntry } from "@/lib/history";
 import { AnimationFor } from "@/components/animations";
 import { LottiePlayer } from "@/components/animations/LottiePlayer";
+import { BoxBreath, type BoxPhase } from "@/components/animations/BoxBreath";
 
 export const Route = createFileRoute("/ovning/$id")({
   component: Player,
@@ -262,44 +263,105 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
 
             {/* central animation + undertext + steg-rubrik */}
             <div className="flex flex-1 flex-col items-center justify-center gap-8">
-              {ex.lottie ? (
-                <LottiePlayer
-                  spec={ex.lottie}
-                  stepProgress={stepProgress}
-                  stepIndex={stepIdx}
-                />
+              {ex.id === "andas-i-en-ruta" ? (
+                (() => {
+                  const phase = (stepIdx % 4) as BoxPhase;
+                  const word =
+                    phase === 0
+                      ? "Andas in"
+                      : phase === 1
+                        ? "Håll"
+                        : phase === 2
+                          ? "Andas ut"
+                          : "Vila";
+                  const count = Math.min(
+                    stepSeconds,
+                    Math.floor(stepElapsed) + 1,
+                  );
+                  return (
+                    <>
+                      <BoxBreath phaseIndex={phase} phaseProgress={stepProgress} />
+                      <div className="flex max-w-md flex-col items-center gap-3 text-center">
+                        <AnimatePresence mode="wait">
+                          <motion.p
+                            key={`bb-${stepIdx}`}
+                            initial={{ opacity: 0, y: 6 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -6 }}
+                            transition={{ duration: 0.25 }}
+                            className="text-4xl font-extrabold leading-tight tracking-tight md:text-5xl"
+                          >
+                            {word}
+                          </motion.p>
+                        </AnimatePresence>
+                        <div
+                          className="flex items-center gap-2 text-lg font-bold tabular-nums"
+                          aria-live="polite"
+                        >
+                          {Array.from({ length: stepSeconds }, (_, i) => i + 1).map(
+                            (n) => (
+                              <span
+                                key={n}
+                                className={
+                                  n <= count
+                                    ? "opacity-100"
+                                    : "opacity-30"
+                                }
+                              >
+                                {n}
+                              </span>
+                            ),
+                          )}
+                        </div>
+                        <p className="mt-1 text-xs font-semibold uppercase tracking-widest opacity-60">
+                          Följ pricken runt rutan · näsan in, munnen ut
+                        </p>
+                      </div>
+                    </>
+                  );
+                })()
               ) : (
-                <AnimationFor
-                  kind={ex.animation}
-                  phase={ex.steps[stepIdx]?.label ?? ""}
-                  progress={progress}
-                  stepIndex={stepIdx}
-                  stepCount={ex.steps.length}
-                  stepProgress={stepProgress}
-                />
+                <>
+                  {ex.lottie ? (
+                    <LottiePlayer
+                      spec={ex.lottie}
+                      stepProgress={stepProgress}
+                      stepIndex={stepIdx}
+                    />
+                  ) : (
+                    <AnimationFor
+                      kind={ex.animation}
+                      phase={ex.steps[stepIdx]?.label ?? ""}
+                      progress={progress}
+                      stepIndex={stepIdx}
+                      stepCount={ex.steps.length}
+                      stepProgress={stepProgress}
+                    />
+                  )}
+                  {(() => {
+                    const sub = subtitleFor(ex.steps[stepIdx], stepProgress);
+                    return (
+                      <div className="flex max-w-md flex-col items-center gap-3 text-center">
+                        <AnimatePresence mode="wait">
+                          <motion.p
+                            key={`${stepIdx}-${sub.index}`}
+                            initial={{ opacity: 0, y: 6 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -6 }}
+                            transition={{ duration: 0.25 }}
+                            className="min-h-[3.5rem] text-3xl font-extrabold leading-tight tracking-tight md:text-4xl"
+                          >
+                            {sub.text}
+                          </motion.p>
+                        </AnimatePresence>
+                        <p className="text-[11px] font-bold uppercase tracking-widest opacity-60">
+                          Steg {stepIdx + 1} / {ex.steps.length} · {ex.steps[stepIdx]?.label}
+                        </p>
+                      </div>
+                    );
+                  })()}
+                </>
               )}
-              {(() => {
-                const sub = subtitleFor(ex.steps[stepIdx], stepProgress);
-                return (
-                  <div className="flex max-w-md flex-col items-center gap-3 text-center">
-                    <AnimatePresence mode="wait">
-                      <motion.p
-                        key={`${stepIdx}-${sub.index}`}
-                        initial={{ opacity: 0, y: 6 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -6 }}
-                        transition={{ duration: 0.25 }}
-                        className="min-h-[3.5rem] text-3xl font-extrabold leading-tight tracking-tight md:text-4xl"
-                      >
-                        {sub.text}
-                      </motion.p>
-                    </AnimatePresence>
-                    <p className="text-[11px] font-bold uppercase tracking-widest opacity-60">
-                      Steg {stepIdx + 1} / {ex.steps.length} · {ex.steps[stepIdx]?.label}
-                    </p>
-                  </div>
-                );
-              })()}
             </div>
 
 
