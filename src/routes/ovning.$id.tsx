@@ -11,6 +11,7 @@ import { BreathWave, type WavePhase } from "@/components/animations/BreathWave";
 import { Grounding54321, type Sense } from "@/components/animations/Grounding54321";
 import { BodyScan } from "@/components/animations/BodyScan";
 import { LeavesOnStream } from "@/components/animations/LeavesOnStream";
+import { EmberCooling } from "@/components/animations/EmberCooling";
 
 export const Route = createFileRoute("/ovning/$id")({
   component: Player,
