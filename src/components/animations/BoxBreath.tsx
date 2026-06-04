@@ -1,18 +1,16 @@
-import { motion } from "framer-motion";
-
-export type BoxPhase = 0 | 1 | 2 | 3; // 0=in, 1=hold, 2=ut, 3=vila
+export type BoxPhase = 0 | 1 | 2 | 3; // 0=in, 1=håll, 2=ut, 3=vila
 
 interface Props {
   /** 0=Andas in, 1=Håll, 2=Andas ut, 3=Vila */
   phaseIndex: BoxPhase;
-  /** 0→1 inom aktuell fas */
+  /** 0→1 inom aktuell fas (drivs av övningens klocka, ~60 fps) */
   phaseProgress: number;
 }
 
 /**
  * Box-andning: en lysande punkt vandrar runt en kvadrat, en sida per fas.
  * Komponenten är "dum" — den drivs helt av phaseIndex + phaseProgress
- * från övningens klocka, så text, räknare och animation kan inte glida isär.
+ * från övningens klocka. Inga egna transitions, varje frame är exakt rätt.
  */
 export function BoxBreath({ phaseIndex, phaseProgress }: Props) {
   const size = 220;
@@ -22,7 +20,6 @@ export function BoxBreath({ phaseIndex, phaseProgress }: Props) {
   const t = Math.max(0, Math.min(1, phaseProgress));
 
   // Punktens position längs aktuell sida.
-  // 0: topp v→h, 1: höger n→s, 2: botten h→v, 3: vänster s→n
   let x = a;
   let y = a;
   if (phaseIndex === 0) {
@@ -39,7 +36,7 @@ export function BoxBreath({ phaseIndex, phaseProgress }: Props) {
     y = b - (b - a) * t;
   }
 
-  // Fyllnivå (0→1): växer under in, står still under håll-1, sjunker under ut, står still under vila.
+  // Fyllnivå (0→1): växer under in, full under håll, sjunker under ut, tom under vila.
   let fill = 0;
   if (phaseIndex === 0) fill = t;
   else if (phaseIndex === 1) fill = 1;
@@ -47,8 +44,6 @@ export function BoxBreath({ phaseIndex, phaseProgress }: Props) {
   else fill = 0;
 
   const fillTop = b - (b - a) * fill;
-
-  const pulse = phaseIndex === 1 || phaseIndex === 3;
 
   return (
     <div className="grid place-items-center">
@@ -69,12 +64,12 @@ export function BoxBreath({ phaseIndex, phaseProgress }: Props) {
 
         {/* fyllning som följer andetaget */}
         <g clipPath="url(#bb-clip)">
-          <motion.rect
+          <rect
             x={a}
+            y={fillTop}
             width={b - a}
+            height={b - fillTop}
             fill="url(#bb-fill)"
-            animate={{ y: fillTop, height: b - fillTop }}
-            transition={{ ease: "linear", duration: 0.25 }}
           />
         </g>
 
@@ -92,38 +87,10 @@ export function BoxBreath({ phaseIndex, phaseProgress }: Props) {
           strokeWidth={2}
         />
 
-        {/* glödande punkt */}
-        <motion.circle
-          cx={x}
-          cy={y}
-          r={10}
-          fill="currentColor"
-          animate={{
-            cx: x,
-            cy: y,
-            scale: pulse ? [1, 1.15, 1] : 1,
-            opacity: pulse ? [0.85, 1, 0.85] : 1,
-          }}
-          transition={{
-            cx: { ease: "linear", duration: 0.25 },
-            cy: { ease: "linear", duration: 0.25 },
-            scale: pulse
-              ? { duration: 1.6, repeat: Infinity, ease: "easeInOut" }
-              : { duration: 0.2 },
-            opacity: pulse
-              ? { duration: 1.6, repeat: Infinity, ease: "easeInOut" }
-              : { duration: 0.2 },
-          }}
-        />
-        <motion.circle
-          cx={x}
-          cy={y}
-          r={18}
-          fill="currentColor"
-          opacity={0.18}
-          animate={{ cx: x, cy: y }}
-          transition={{ ease: "linear", duration: 0.25 }}
-        />
+        {/* glödhalo */}
+        <circle cx={x} cy={y} r={18} fill="currentColor" opacity={0.18} />
+        {/* pricken */}
+        <circle cx={x} cy={y} r={10} fill="currentColor" />
       </svg>
     </div>
   );

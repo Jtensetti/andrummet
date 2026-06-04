@@ -72,41 +72,64 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
 
   const [phase, setPhase] = useState<Phase>(initialPhase);
   const [stepIdx, setStepIdx] = useState(0);
-  const [stepRemaining, setStepRemaining] = useState(ex.steps[0]?.seconds ?? 0);
+  /** Förfluten tid i aktuellt steg, i millisekunder. Drivs av requestAnimationFrame. */
+  const [stepElapsedMs, setStepElapsedMs] = useState(0);
   const [paused, setPaused] = useState(false);
   const [ratingBefore, setRatingBefore] = useState<number | null>(null);
   const [ratingAfter, setRatingAfter] = useState<number | null>(null);
   const [reflection, setReflection] = useState("");
-  const tickRef = useRef<number | null>(null);
+  const rafRef = useRef<number | null>(null);
+  const lastFrameRef = useRef<number | null>(null);
 
+  // Smooth klocka via requestAnimationFrame.
+  // Vi uppdaterar stepElapsedMs varje frame så att animation, räknare och
+  // textbyten kan följa exakt samma timing — inte rycka i 1-sekundssprång.
   useEffect(() => {
-    if (phase !== "running" || paused) return;
-    tickRef.current = window.setInterval(() => {
-      setStepRemaining((s) => {
-        if (s > 1) return s - 1;
-        setStepIdx((i) => {
-          const next = i + 1;
-          if (next >= ex.steps.length) {
+    if (phase !== "running" || paused) {
+      lastFrameRef.current = null;
+      return;
+    }
+    const loop = (now: number) => {
+      const last = lastFrameRef.current ?? now;
+      const delta = now - last;
+      lastFrameRef.current = now;
+      setStepElapsedMs((prev) => {
+        const stepMs = (ex.steps[stepIdx]?.seconds ?? 1) * 1000;
+        const next = prev + delta;
+        if (next >= stepMs) {
+          const overflow = next - stepMs;
+          const nextIdx = stepIdx + 1;
+          if (nextIdx >= ex.steps.length) {
             setPhase(ex.requiresRating ? "after" : "done");
-            return i;
+            return stepMs;
           }
-          setStepRemaining(ex.steps[next].seconds);
-          return next;
-        });
-        return 0;
+          setStepIdx(nextIdx);
+          return overflow;
+        }
+        return next;
       });
-    }, 1000);
-    return () => {
-      if (tickRef.current) window.clearInterval(tickRef.current);
+      rafRef.current = window.requestAnimationFrame(loop);
     };
-  }, [phase, paused, ex.steps, ex.requiresRating]);
+    rafRef.current = window.requestAnimationFrame(loop);
+    return () => {
+      if (rafRef.current) window.cancelAnimationFrame(rafRef.current);
+      lastFrameRef.current = null;
+    };
+  }, [phase, paused, ex.steps, ex.requiresRating, stepIdx]);
+
+  // Nollställ stegklockan när stegindex byts (efter overflow-hopp ovan
+  // sätter loopen tillbaka ett kort värde; här försäkrar vi 0 vid faktiskt byte).
+  useEffect(() => {
+    setStepElapsedMs(0);
+  }, [stepIdx]);
 
   const totalSeconds = useMemo(
     () => ex.steps.reduce((s, x) => s + x.seconds, 0),
     [ex.steps],
   );
   const stepSeconds = ex.steps[stepIdx]?.seconds ?? 1;
-  const stepElapsed = stepSeconds - stepRemaining;
+  const stepElapsed = stepElapsedMs / 1000;
+  const stepRemaining = Math.max(0, stepSeconds - stepElapsed);
   const stepProgress = Math.min(
     1,
     Math.max(0, stepElapsed / Math.max(1, stepSeconds)),
@@ -117,6 +140,7 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
     [ex.steps, stepIdx, stepElapsed],
   );
   const progress = Math.min(1, elapsed / Math.max(1, totalSeconds));
+  void stepRemaining;
 
   function finish(beforeVal: number | null, afterVal: number | null, text: string) {
     addEntry({
