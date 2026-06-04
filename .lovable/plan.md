@@ -1,61 +1,59 @@
-# Plan: Gör box-andningen perfekt — som mall för resten
+# Plan: Gör "Lång utandning" perfekt
 
-Du har rätt. Vi skalar ner. En övning. Allt synkat. Sedan kopierar vi mönstret.
+Samma mönster som box-andningen — egen SVG-komponent driven av övningens klocka, ord per fas + räknare. Inget Lottie.
 
-## Val
+## Övningen
 
-- **Övning:** Box-andning 4-4-4-4 (4 min, 15 cykler).
-- **Animation:** Ren SVG, ingen Lottie, ingen Rive. Vi driver varje frame med övningens klocka, så animation och text *kan inte* glida isär. Lottie passar inte här — Lottie-filer har eget tempo och looper, och det är just det som har gjort att "andas in in in" känns konstigt.
-- **Text:** Stort ord per fas (`Andas in` / `Håll` / `Andas ut` / `Håll`) + tydlig räknare `1 · 2 · 3 · 4` som tickar i takt med animationen.
+- ID: `lang-utandning` (kategori "Andas").
+- Tempo: **4 sek in / 7 sek ut**, 6 cykler ≈ 66 sek ~ 1 min. (Det är klassiska "4-7-8-light" utan håll-fasen, som passar appens stillsamma ton.)
 
-## Vad animationen visar (och varför)
+## Vad animationen visar
 
-En kvadrat (boxen). En lysande punkt vandrar längs kvadratens fyra sidor — en sida per fas, 4 sekunder per sida.
+En **horisontal våg** som rullar in och ut längs en bottenlinje.
 
-- Topp vänster → topp höger: **Andas in** (punkten åker upp/höger, boxen "fylls" med en mjuk gradient nerifrån)
-- Topp höger → botten höger: **Håll** (punkten åker ner, fyllningen står still, lätt puls)
-- Botten höger → botten vänster: **Andas ut** (punkten åker vänster, fyllningen sjunker)
-- Botten vänster → topp vänster: **Håll** (punkten åker upp, tomt, lätt puls)
+- **Andas in (4 s):** vågen reser sig långsamt — amplituden växer från 0 till full, en lysande punkt åker uppåt på vågens framkant.
+- **Andas ut (7 s):** vågen sjunker tillbaka mot linjen — långsammare än den steg, så det syns och känns att utandningen är längre. Punkten åker ned och glider åt sidan.
 
-Allt drivs av samma `stepProgress` som styr räknaren och textbytet → 0 % drift.
+Visuellt tydligt **att utandningen tar längre tid** — det är hela poängen med övningen, så animationen ska berätta det utan ord.
+
+Allt drivs av `phaseIndex` (0=in, 1=ut) + `phaseProgress` (0→1) från samma frame-klocka som nu gör box-andningen mjuk.
 
 ## Text-mönster
 
 ```text
-[stort ord]        ← byts vid fasbyte
-Andas in
+[stort ord]                ← byts vid fasbyte
+Andas in   /   Andas ut
 
-[räknare]          ← uppdateras varje sekund, synkat med punkten
-1 · 2 · 3 · 4
+[räknare]                  ← lika många prickar/siffror som faslängden
+1 · 2 · 3 · 4              (under in)
+1 · 2 · 3 · 4 · 5 · 6 · 7  (under ut)
 
-[liten hjälptext]  ← står stilla genom hela övningen
-Följ punkten runt boxen. Näsan in, munnen ut.
+[liten hjälptext]          ← står still hela övningen
+Näsan in. Munnen ut. Längre ut än in.
 ```
 
-Inga undertext-listor som hoppar mitt i en fas. Ordet byts bara när fasen byts.
+Räknaren är samma princip som box-andningen: prickar/siffror som tänds en per sekund och syns alla samtidigt — så man ser hur lång fasen är.
 
 ## Vad jag bygger
 
-1. Ny komponent `src/components/animations/BoxBreath.tsx`
-   - Props: `phaseIndex` (0–3), `phaseProgress` (0–1), `secondsPerSide` (default 4).
-   - Renderar SVG: kvadrat med rundade hörn, mjuk fyllning som följer in/ut, punkt på rätt sida vid `phaseProgress`.
-   - Inga loopar inuti komponenten — den är "dum", drivs utifrån.
+1. **Ny komponent** `src/components/animations/BreathWave.tsx`
+   - Props: `phaseIndex` (0=in, 1=ut), `phaseProgress` (0→1).
+   - Renderar en SVG-våg (sinus-path) längs en horisontal linje. Amplitud + en glödande punkt drivs av `phaseProgress`.
+   - "Dum" komponent — inga egna transitions, exakt rätt varje frame.
 
-2. Ändring i `src/routes/ovning.$id.tsx`
-   - För box-andnings-övningen: rendera `BoxBreath` direkt med exercise-klockan, *inte* `LottiePlayer` eller den generella `AnimationFor`-fallbacken.
-   - Visa ord + räknare + hjälptext enligt mönstret ovan, *inte* `subtitleFor`-listan.
+2. **Ändring i `src/routes/ovning.$id.tsx`**
+   - Lägg till `ex.id === "lang-utandning"` som en andra special-case bredvid box-andningen.
+   - Visar `BreathWave` + ord + räknare (samma layout som box).
 
-3. Datatouch i `src/lib/exercises.ts`
-   - Hitta box-andnings-övningen, sätt `lottie = undefined` och se till att stegen är exakt 4 sekunder var × 15 cykler.
-   - Inga andra övningar rörs.
+3. **Datatouch i `src/lib/exercises.ts`**
+   - Sätt `WAVE(6)` (redan 5 idag — bara liten justering).
+   - `minutes: 1` så etiketten matchar 6 × 11 s.
+   - Övriga övningar lämnas orörda.
 
-## Vad jag *inte* gör nu
+## Vad jag *inte* gör
 
 - Rör inte de andra övningarna eller deras Lottie-mappning.
 - Inga nya bibliotek.
-- Ingen credits-sida, ingen Rive, ingen video.
-- Inga ändringar av historik/skattning.
+- Ingen 4-7-8 med håll-fas (vi kan lägga till den som egen övning senare om du vill).
 
-## Efter det här
-
-När du tycker box-andningen sitter perfekt använder vi exakt samma recept (egen liten SVG-komponent + ord + räknare, driven av övningens klocka) på en övning till. En i taget.
+När den känns rätt kör vi nästa med samma recept.
