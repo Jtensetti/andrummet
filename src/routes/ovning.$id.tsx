@@ -8,6 +8,7 @@ import { AnimationFor } from "@/components/animations";
 import { LottiePlayer } from "@/components/animations/LottiePlayer";
 import { BoxBreath, type BoxPhase } from "@/components/animations/BoxBreath";
 import { BreathWave, type WavePhase } from "@/components/animations/BreathWave";
+import { Grounding54321, type Sense } from "@/components/animations/Grounding54321";
 
 export const Route = createFileRoute("/ovning/$id")({
   component: Player,
