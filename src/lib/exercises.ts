@@ -120,6 +120,55 @@ type Seed = {
   reflectionPrompt?: string;
 };
 
+// Centrala Lottie-filer (gratis från lottie.host). Mappas per AnimationKind
+// så att alla övningar som använder en viss animation automatiskt får
+// motsvarande Lottie. Per-seed `lottie` har högre prioritet.
+const LOTTIE_BY_KIND: Partial<Record<AnimationKind, LottieSpec>> = {
+  // Andning
+  "box-breath": { src: "https://lottie.host/c027e0da-afcd-4db3-b8ad-b0eb95ad2f81/Vabha4lcVQ.lottie", mode: "loop" },
+  "breath-wave": { src: "https://lottie.host/c027e0da-afcd-4db3-b8ad-b0eb95ad2f81/Vabha4lcVQ.lottie", mode: "loop" },
+  "belly-hand": { src: "https://lottie.host/c027e0da-afcd-4db3-b8ad-b0eb95ad2f81/Vabha4lcVQ.lottie", mode: "loop" },
+  // Eld / värme
+  "candle": { src: "https://lottie.host/d9cc2ea7-d22e-4e2a-9008-2a2f3832254e/ppT95Xjeh2.lottie", mode: "loop" },
+  "ember": { src: "https://lottie.host/d9cc2ea7-d22e-4e2a-9008-2a2f3832254e/ppT95Xjeh2.lottie", mode: "loop" },
+  "warm-beam": { src: "https://lottie.host/d9cc2ea7-d22e-4e2a-9008-2a2f3832254e/ppT95Xjeh2.lottie", mode: "loop" },
+  "morning-sun": { src: "https://lottie.host/d9cc2ea7-d22e-4e2a-9008-2a2f3832254e/ppT95Xjeh2.lottie", mode: "loop" },
+  // Moln / lugn
+  "drifting-clouds": { src: "https://lottie.host/e3f8b4b5-a1d6-4a3b-bf13-b49dabf3a478/Nf1am485QU.lottie", mode: "loop" },
+  "doorway": { src: "https://lottie.host/e3f8b4b5-a1d6-4a3b-bf13-b49dabf3a478/Nf1am485QU.lottie", mode: "loop" },
+  // Tankar/fokus (meditativ hjärna)
+  "focus-lens": { src: "https://lottie.host/83f4dded-8638-43ff-a2a8-fef45118b279/bo1eaLwYAt.lottie", mode: "loop" },
+  "body-scan": { src: "https://lottie.host/83f4dded-8638-43ff-a2a8-fef45118b279/bo1eaLwYAt.lottie", mode: "loop" },
+  "constellation": { src: "https://lottie.host/83f4dded-8638-43ff-a2a8-fef45118b279/bo1eaLwYAt.lottie", mode: "loop" },
+  "inner-voice": { src: "https://lottie.host/83f4dded-8638-43ff-a2a8-fef45118b279/bo1eaLwYAt.lottie", mode: "loop" },
+  "note-to-self": { src: "https://lottie.host/83f4dded-8638-43ff-a2a8-fef45118b279/bo1eaLwYAt.lottie", mode: "loop" },
+  "typing-cursor": { src: "https://lottie.host/83f4dded-8638-43ff-a2a8-fef45118b279/bo1eaLwYAt.lottie", mode: "loop" },
+  // Rörelse framåt (pappersplan)
+  "first-step": { src: "https://lottie.host/0ffde977-cd24-4d03-9c71-c3097adc9923/wVe55jmePn.lottie", mode: "loop" },
+  "walking-path": { src: "https://lottie.host/0ffde977-cd24-4d03-9c71-c3097adc9923/wVe55jmePn.lottie", mode: "loop" },
+  "footprints": { src: "https://lottie.host/0ffde977-cd24-4d03-9c71-c3097adc9923/wVe55jmePn.lottie", mode: "loop" },
+  "path-fork": { src: "https://lottie.host/0ffde977-cd24-4d03-9c71-c3097adc9923/wVe55jmePn.lottie", mode: "loop" },
+  // Mjuk sträckning / katt med garn
+  "stretch-up": { src: "https://lottie.host/dc5842d7-f483-4635-8626-9450bbeec0ab/xmo6Cepk2f.lottie", mode: "loop" },
+  "jaw-release": { src: "https://lottie.host/dc5842d7-f483-4635-8626-9450bbeec0ab/xmo6Cepk2f.lottie", mode: "loop" },
+  "shoulder-drop": { src: "https://lottie.host/dc5842d7-f483-4635-8626-9450bbeec0ab/xmo6Cepk2f.lottie", mode: "loop" },
+  "opening-hand": { src: "https://lottie.host/dc5842d7-f483-4635-8626-9450bbeec0ab/xmo6Cepk2f.lottie", mode: "loop" },
+  // Släppa / mjukna (blobs)
+  "deflate": { src: "https://lottie.host/700d2084-966c-448a-9bc2-5289536489b7/RyvCs0bQ0r.lottie", mode: "loop" },
+  "volume-slider": { src: "https://lottie.host/700d2084-966c-448a-9bc2-5289536489b7/RyvCs0bQ0r.lottie", mode: "loop" },
+  "compassion-heart": { src: "https://lottie.host/700d2084-966c-448a-9bc2-5289536489b7/RyvCs0bQ0r.lottie", mode: "loop" },
+  "dropping-bags": { src: "https://lottie.host/700d2084-966c-448a-9bc2-5289536489b7/RyvCs0bQ0r.lottie", mode: "loop" },
+  // Vind / passerar förbi
+  "passing-traffic": { src: "https://lottie.host/0fa3f1c9-98fc-4c94-8605-e1aec2e1dece/t8XYoJACsQ.lottie", mode: "loop" },
+  "drifter": { src: "https://lottie.host/0fa3f1c9-98fc-4c94-8605-e1aec2e1dece/t8XYoJACsQ.lottie", mode: "loop" },
+  // Löv (blowing/falling)
+  "closing-tabs": { src: "https://lottie.host/a9ab9f37-211b-485b-9754-9d0f1f5ce043/MpeatW0RrH.lottie", mode: "loop" },
+  "closing-laptop": { src: "https://lottie.host/a9ab9f37-211b-485b-9754-9d0f1f5ce043/MpeatW0RrH.lottie", mode: "loop" },
+  "inbox-priority": { src: "https://lottie.host/a9ab9f37-211b-485b-9754-9d0f1f5ce043/MpeatW0RrH.lottie", mode: "loop" },
+  "sleep-waves": { src: "https://lottie.host/a8f3a3d0-ac88-406a-948a-20172ad60d69/zuX5gR3dm8.lottie", mode: "loop" },
+  "mailbox": { src: "https://lottie.host/a8f3a3d0-ac88-406a-948a-20172ad60d69/zuX5gR3dm8.lottie", mode: "loop" },
+};
+
 function build(s: Seed): Exercise {
   return {
     id: s.id,
@@ -130,7 +179,7 @@ function build(s: Seed): Exercise {
     kind: s.kind,
     minutes: s.minutes,
     animation: s.animation,
-    lottie: s.lottie,
+    lottie: s.lottie ?? LOTTIE_BY_KIND[s.animation],
     metric: s.metric,
     requiresRating: s.requiresRating ?? s.kind === "short",
     steps: s.steps.map((t) => ({
@@ -143,6 +192,7 @@ function build(s: Seed): Exercise {
     metaphor: s.metaphor,
     reflectionPrompt: s.reflectionPrompt,
   };
+
 }
 
 // Standardscript för andetagsfaser
