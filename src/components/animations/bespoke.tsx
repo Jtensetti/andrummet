@@ -678,23 +678,6 @@ function BodyScan(p: BespokeProps) {
         fillOpacity={0.35}
       />
 
-      {/* Skannade zoner — stannar markerade */}
-      {Array.from({ length: sc }, (_, z) => {
-        if (z >= stepIdx) return null;
-        const y = padTop + z * zoneH;
-        return (
-          <rect
-            key={`done-${z}`}
-            x={bodyX}
-            y={y}
-            width={bodyW}
-            height={zoneH + 0.5}
-            rx={bodyW / 2}
-            fill={ACCENT}
-            fillOpacity={0.32}
-          />
-        );
-      })}
 
       {/* Zon-skiljelinjer */}
       {Array.from({ length: sc + 1 }, (_, i) => {
