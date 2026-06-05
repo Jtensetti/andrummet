@@ -988,6 +988,8 @@ export const EXERCISES: Exercise[] = SEEDS.map(build);
  * kvar i datat men exponeras inte i UI:t förrän de är klara.
  */
 const POLISHED_IDS = new Set<string>([
+  "andas-i-en-ruta",
+  "lang-utandning",
   "stang-47-flikar",
   "angesten-far-inte-kora",
   "reset",
