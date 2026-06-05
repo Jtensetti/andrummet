@@ -44,14 +44,15 @@ export function BoxBreath({ phaseIndex, phaseProgress }: Props) {
           y={a}
           width={b - a}
           height={b - a}
-          rx={4}
-          ry={4}
-          fill="none"
+          rx={8}
+          ry={8}
+          fill="var(--anim-soft, currentColor)"
+          fillOpacity={0.35}
           stroke="currentColor"
-          strokeOpacity={0.35}
+          strokeOpacity={0.25}
           strokeWidth={2}
         />
-        <circle cx={x} cy={y} r={10} fill="currentColor" />
+        <circle cx={x} cy={y} r={12} fill="var(--anim-accent, currentColor)" />
       </svg>
     </div>
   );
