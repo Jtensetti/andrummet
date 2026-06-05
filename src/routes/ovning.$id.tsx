@@ -406,7 +406,7 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
                       phase={ex.steps[stepIdx]?.label ?? ""}
                       stepIndex={stepIdx}
                       stepCount={ex.steps.length}
-                      stepProgress={stepProgress}
+                      stepProgress={animStepProgress}
                     />
                   ) : (
                     <AnimationFor
@@ -415,7 +415,7 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
                       progress={progress}
                       stepIndex={stepIdx}
                       stepCount={ex.steps.length}
-                      stepProgress={stepProgress}
+                      stepProgress={animStepProgress}
                     />
                   )}
                   {(() => {
