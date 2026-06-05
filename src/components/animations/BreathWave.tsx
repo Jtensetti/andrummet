@@ -51,12 +51,12 @@ export function BreathWave({ phaseIndex, phaseProgress }: Props) {
         <path
           d={linePath}
           fill="none"
-          stroke="currentColor"
-          strokeOpacity={0.7}
-          strokeWidth={2}
+          stroke="var(--anim-soft, currentColor)"
+          strokeOpacity={0.85}
+          strokeWidth={3}
           strokeLinecap="round"
         />
-        <circle cx={dotX} cy={dotY} r={9} fill="currentColor" />
+        <circle cx={dotX} cy={dotY} r={11} fill="var(--anim-accent, currentColor)" />
       </svg>
     </div>
   );
