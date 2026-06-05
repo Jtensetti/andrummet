@@ -223,7 +223,7 @@ const SEEDS: Seed[] = [
     category: "breath",
     kind: "short",
     minutes: 2,
-    animation: "orb",
+    animation: "ring",
     metric: "kroppsspänning",
     steps: [
       ["Lägg en hand på magen", 12, ["Lägg en hand", "på magen", "platt och varm", "känn den ligga där"]],
@@ -267,7 +267,7 @@ const SEEDS: Seed[] = [
     category: "quick-pause",
     kind: "short",
     minutes: 1,
-    animation: "meter-down",
+    animation: "tilt",
     metric: "stress",
     steps: [
       ["Stanna", 12, ["Stanna", "var du är", "du behöver inte göra något", "bara vara här"]],
@@ -303,7 +303,7 @@ const SEEDS: Seed[] = [
     category: "quick-pause",
     kind: "short",
     minutes: 1,
-    animation: "orb",
+    animation: "tilt",
     metric: "kroppsspänning",
     steps: [
       ["Släpp axlarna", 10, ["Lägg märke", "till axlarna", "är de upp?", "släpp dem ner", "längre ner"]],
@@ -320,7 +320,7 @@ const SEEDS: Seed[] = [
     category: "quick-pause",
     kind: "short",
     minutes: 2,
-    animation: "dots",
+    animation: "stack",
     metric: "stress",
     steps: [
       ["Vad tar plats?", 20, ["Vad snurrar?", "i huvudet just nu", "lista tyst", "två-tre saker", "låt dem dyka upp", "döm dem inte"]],
@@ -333,7 +333,7 @@ const SEEDS: Seed[] = [
     closing: "Tre flikar mindre. Tillräckligt för tystnad.",
     metaphor: {
       intro: "Stress är en webbläsare med trettio flikar. Vi börjar med tre.",
-      illustration: "dots",
+      illustration: "stack",
     },
   },
 
@@ -345,7 +345,7 @@ const SEEDS: Seed[] = [
     category: "anxiety",
     kind: "reflective",
     minutes: 6,
-    animation: "orb",
+    animation: "polygon",
     metric: "oro",
     steps: [
       ["Du sitter vid ratten", 40, ["Du kör", "du sitter vid ratten", "händer på 10 och 2", "ångesten är passagerare", "inte förare"]],
@@ -389,7 +389,7 @@ const SEEDS: Seed[] = [
     category: "anxiety",
     kind: "short",
     minutes: 3,
-    animation: "meter-down",
+    animation: "weight",
     metric: "oro",
     steps: [
       ["Känn fötterna", 20, ["Sätt ner fötterna", "platta mot golvet", "känn underlaget", "tryck lätt", "du är förankrad"]],
@@ -401,7 +401,7 @@ const SEEDS: Seed[] = [
     closing: "Du är förankrad. Vinden får blåsa.",
     metaphor: {
       intro: "När huvudet drar iväg behöver vi tyngd i botten. Ankaret sjunker.",
-      illustration: "meter-down",
+      illustration: "weight",
     },
   },
   {
@@ -435,7 +435,7 @@ const SEEDS: Seed[] = [
     category: "stress",
     kind: "short",
     minutes: 3,
-    animation: "orb",
+    animation: "tilt",
     metric: "stress",
     steps: [
       ["Släpp axlarna", 20, ["Lägg märke", "till axlarna", "är de upp?", "släpp ner dem", "längre ner", "bra"]],
@@ -454,7 +454,7 @@ const SEEDS: Seed[] = [
     category: "stress",
     kind: "short",
     minutes: 3,
-    animation: "dots",
+    animation: "stack",
     metric: "stress",
     steps: [
       ["Vad försöker du lösa?", 28, ["Vad snurrar?", "vad försöker hjärnan lösa?", "just nu", "namnge en sak", "tyst"]],
@@ -466,7 +466,7 @@ const SEEDS: Seed[] = [
     closing: "Du behöver inte lösa allt nu. Det får vänta.",
     metaphor: {
       intro: "Vi lägger lappen i en låda märkt 'sen'. Den finns kvar. Den behöver bara inte lösas nu.",
-      illustration: "dots",
+      illustration: "stack",
     },
   },
   {
@@ -501,7 +501,7 @@ const SEEDS: Seed[] = [
     category: "focus",
     kind: "short",
     minutes: 3,
-    animation: "dots",
+    animation: "gather",
     metric: "fokus",
     steps: [
       ["Tre saker du gör NU", 36, ["Lista tyst", "tre saker", "som måste göras", "idag", "just NU", "säg dem"]],
@@ -513,7 +513,7 @@ const SEEDS: Seed[] = [
     closing: "Sorterat. Nu behöver hjärnan inte hålla det åt dig.",
     metaphor: {
       intro: "När allt känns lika viktigt blir inget gjort. Vi tvingar fram tre högar.",
-      illustration: "dots",
+      illustration: "gather",
     },
   },
   {
@@ -523,7 +523,7 @@ const SEEDS: Seed[] = [
     category: "focus",
     kind: "short",
     minutes: 3,
-    animation: "orb",
+    animation: "gather",
     metric: "fokus",
     steps: [
       ["Lägg märke till spritheten", 20, ["Lägg märke", "till uppmärksamheten", "är den spridd?", "hoppar den?", "döm inte"]],
@@ -535,7 +535,7 @@ const SEEDS: Seed[] = [
     closing: "Linsen är inte perfekt. Den är bara mer samlad.",
     metaphor: {
       intro: "Fokus är inte att stänga av allt. Det är att samla något i mitten.",
-      illustration: "orb",
+      illustration: "gather",
     },
   },
   {
@@ -565,7 +565,7 @@ const SEEDS: Seed[] = [
     category: "sleep",
     kind: "reflective",
     minutes: 8,
-    animation: "meter-down",
+    animation: "horizon",
     metric: "trötthet",
     steps: [
       ["Sänk tempot", 56, ["Du är klar för dagen", "sänk tempot", "ingenting måste lösas nu", "bara andas", "långsamt"]],
@@ -586,7 +586,7 @@ const SEEDS: Seed[] = [
     category: "sleep",
     kind: "short",
     minutes: 3,
-    animation: "dots",
+    animation: "stack",
     metric: "trötthet",
     steps: [
       ["Vad hände idag?", 28, ["Vad hände idag?", "kort genomgång", "tyst i huvudet", "döm inte"]],
@@ -598,7 +598,7 @@ const SEEDS: Seed[] = [
     closing: "Dagen ligger i lådan. Den finns kvar imorgon.",
     metaphor: {
       intro: "Dagen behöver inte ligga i huvudet hela natten. Vi lägger den i en låda märkt 'imorgon'.",
-      illustration: "dots",
+      illustration: "stack",
     },
   },
   {
@@ -648,7 +648,7 @@ const SEEDS: Seed[] = [
     category: "body",
     kind: "short",
     minutes: 1,
-    animation: "orb",
+    animation: "weight",
     metric: "kroppsspänning",
     steps: [
       ["Hela foten mot golvet", 14, ["Sätt ner fötterna", "platta mot golvet", "hela fotsulan", "känn underlaget"]],
@@ -682,7 +682,7 @@ const SEEDS: Seed[] = [
     category: "body",
     kind: "short",
     minutes: 2,
-    animation: "orb",
+    animation: "weight",
     metric: "kroppsspänning",
     steps: [
       ["Dra axlarna upp", 10, ["Dra axlarna", "upp mot öronen", "håll", "håll", "släpp snart"]],
@@ -703,7 +703,7 @@ const SEEDS: Seed[] = [
     category: "reflection",
     kind: "reflective",
     minutes: 3,
-    animation: "dots",
+    animation: "ring",
     metric: "stress",
     requiresRating: false,
     steps: [
@@ -748,7 +748,7 @@ const SEEDS: Seed[] = [
     category: "reflection",
     kind: "reflective",
     minutes: 8,
-    animation: "orb",
+    animation: "polygon",
     metric: "oro",
     requiresRating: false,
     steps: [
@@ -769,7 +769,7 @@ const SEEDS: Seed[] = [
     category: "reflection",
     kind: "reflective",
     minutes: 6,
-    animation: "dots",
+    animation: "stack",
     metric: "stress",
     requiresRating: false,
     steps: [
@@ -791,7 +791,7 @@ const SEEDS: Seed[] = [
     category: "compassion",
     kind: "reflective",
     minutes: 4,
-    animation: "dots",
+    animation: "petals",
     metric: "stress",
     requiresRating: false,
     steps: [
@@ -804,7 +804,7 @@ const SEEDS: Seed[] = [
     closing: "Inte tönt. Bara rättvist.",
     metaphor: {
       intro: "Du pratar snällare med vänner än med dig själv. Vi lånar tonen tillbaka.",
-      illustration: "dots",
+      illustration: "petals",
     },
     reflectionPrompt: "Vilken mening behövde du höra mest?",
   },
@@ -815,7 +815,7 @@ const SEEDS: Seed[] = [
     category: "compassion",
     kind: "short",
     minutes: 3,
-    animation: "orb",
+    animation: "ring",
     metric: "stress",
     steps: [
       ["Det här är svårt", 40, ["Säg tyst", "till dig själv", "det här är svårt", "det är okej att det är svårt", "andra människor", "skulle också tycka det"]],
@@ -874,7 +874,7 @@ const SEEDS: Seed[] = [
     category: "anger",
     kind: "reflective",
     minutes: 5,
-    animation: "orb",
+    animation: "polygon",
     metric: "ilska",
     steps: [
       ["Var sitter ilskan?", 36, ["Var i kroppen?", "bröstet?", "käken?", "händerna?", "magen?", "lägg märke"]],
@@ -895,7 +895,7 @@ const SEEDS: Seed[] = [
     category: "worklife",
     kind: "short",
     minutes: 2,
-    animation: "orb",
+    animation: "gather",
     metric: "fokus",
     steps: [
       ["Dagens viktigaste sak?", 28, ["Vad är", "dagens viktigaste sak?", "bara en", "vilken är det?", "säg den tyst"]],
@@ -931,7 +931,7 @@ const SEEDS: Seed[] = [
     category: "worklife",
     kind: "short",
     minutes: 3,
-    animation: "meter-down",
+    animation: "stack",
     metric: "stress",
     steps: [
       ["Vad blev klart idag?", 28, ["Vad blev klart", "idag?", "även smått", "räkna upp tre saker", "tyst"]],
@@ -949,7 +949,7 @@ const SEEDS: Seed[] = [
     category: "worklife",
     kind: "short",
     minutes: 2,
-    animation: "dots",
+    animation: "stack",
     metric: "stress",
     steps: [
       ["Stäng inkorgen", 14, ["Stäng inkorgen", "ett ögonblick", "den finns kvar", "men inte i ögonen"]],
@@ -967,7 +967,7 @@ const SEEDS: Seed[] = [
     category: "worklife",
     kind: "short",
     minutes: 2,
-    animation: "orb",
+    animation: "horizon",
     metric: "stress",
     steps: [
       ["Stanna utanför", 14, ["Stanna", "utanför dörren", "ett ögonblick", "innan du går in"]],
