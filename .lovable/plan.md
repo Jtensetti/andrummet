@@ -1,47 +1,49 @@
+Tre animationer i `src/components/animations/bespoke.tsx` görs om så bilden följer texten — inte tvärtom.
 
-# Pilot: en bespoke animation per kategori
+## 1. Vad behöver jag just nu? (`NeedDrop`)
 
-## Vad som inte funkar nu
-Primitiverna (`orb`, `hexagon/polygon`, `drift`, `weight` …) är generiska geometriska loopar. De är fina men säger ingenting om vad du faktiskt ska göra. "Ångesten får inte köra bilen" som en snurrande hexagon → ingen koppling.
+Stegen: "Vad dyker upp?" → "Behov eller borde?" → "Vad hjälper?" → "Gör det litet" → "Kan du ge dig det?".
 
-Dessutom: animationerna återställs hårt vid varje steg-byte istället för att flyta vidare i samma form.
+Ny visuell idé — **brunnen / lyssna nedåt**:
+- En lugn cirkel i mitten = du. En vertikal axel går genom den: huvud (uppe) och kropp (nere).
+- Steg 1: små ord-prickar bubblar upp ur huvudet, sprider sig — många tankar på en gång.
+- Steg 2: skärm delas mjukt: vänster märkt "borde" (fyrkantiga prickar uppe vid huvudet), höger märkt "behov" (runda prickar nere vid bröst/mage). Prickar sorterar sig själva åt sina sidor.
+- Steg 3: "borde"-sidan tonar ner. En enda rund "behov"-prick lyser upp och sjunker långsamt ner till magen.
+- Steg 4: pricken krymper till en liten, tydlig kärna — "liten version".
+- Steg 5: två händer (enkla bågar) sluter sig mjukt runt kärnan, andas med pulsen. "Att ge dig det själv."
 
-## Ny princip
-1. **En animation per övning** (inte per primitiv). Animationen är gjord *för just den övningen* och dess steg-script.
-2. **Fortfarande abstrakt och platt** — geometri, inga figurer, inga gradienter/skuggor. "Andas i en ruta" är förebilden: en prick som följer en kvadrat, ett moment per sida.
-3. **Synkad med texten.** Varje steg har redan `label` + `script`. Animationen får samma steg-index och stepProgress som driver formen — när texten säger "lägg den första i 'sen'-lådan" så landar en bricka i lådan.
-4. **Snygg loop.** Inga abrupta resets mellan steg. Antingen
-   - state-machine: formen står kvar i sluttillstånd för steg N och fortsätter därifrån in i steg N+1, eller
-   - cyklisk: hela övningen är en kontinuerlig loop (typ box-breath) där steget bara byter färgton/markör.
+Allt drivs av `stepProgress` med kontinuerlig lerp, ingen reset mellan stegen.
 
-## Pilot — 11 övningar, en per kategori
-Vi gör en åt gången, du godkänner, sen nästa. Förslag på vilken som blir "kategorins ansikte" och vad animationen visar:
+## 2. Sov mjukare (`SoftSleep`)
 
-| Kategori | Övning | Animation (idé) |
-|---|---|---|
-| breath | **Andas i en ruta** ✓ (klar) | Prick runt kvadrat, en sida per fas |
-| breath (extra) | **Lång utandning** ✓ (klar) | Båge som fylls (in 4s) / töms (ut 7s) |
-| quick-pause | **Stäng 47 mentala flikar** | 3 brickor överst, en glider ner i "låda" per steg, hög blir låg |
-| anxiety | **Ångesten får inte köra bilen** | Horisontell väg: en stadig prick (du) i mitten + en mindre, oroligare prick som först studsar runt ratten, sen sätter sig vid sidan medan vägen rullar vidare |
-| stress | **Reset** | Tre staplade segment (axlar/käke/andetag) som tappar höjd ett i taget |
-| focus | **Fokuslinsen** | Många små prickar i utkanten → drar in mot ett centrum tills bara en finns kvar |
-| sleep | **Sov mjukare** | Horisontlinje som sänks i mjuka steg, en cirkel (sol/måne) glider ner under linjen |
-| body | **Kroppsskanning** (välj kortaste) | Lodrät stapel där en ljus markör vandrar uppifrån ned, segment "mjuknar" (tjocklek minskar) när den passerar |
-| reflection | välj en | Cirkel som sakta ritar sig själv runt ett centrum — en varv per fråga |
-| compassion | välj en | Två cirklar som närmar sig varandra och överlappar mjukt (du + du) |
-| anger | välj en | Skarp triangel som sakta roterar till en rundad form, en kant per andetag |
-| worklife | välj en | Tidslinje med block (möten) — ett block tonar ner per steg tills det blir luft mellan dem |
+Ersätt nuvarande kroppspelare helt. Ny scen — **en natt passerar**:
+- Bred horisontlinje längs mitten av canvas. Stjärnor svagt utspridda ovanför.
+- En halvmåne stiger från vänster horisont, går i en mjuk båge tvärs över himlen och sjunker ner vid höger horisont. Banan följer `progress` (hela övningens progress, inte stepProgress) så månen rör sig kontinuerligt över alla steg.
+- Himlen skiftar gradient över tiden: skymning → djupblå natt (mitten) → tidig gryning (slutet).
+- Stjärnorna tonar in starkare runt månens högsta punkt och tonar ut mot slutet.
+- Andningspuls (`useBreathPulse`) styr bara en mycket subtil skala på månen så den "andas" lugnt.
 
-Övriga övningar i kategorin behåller tills vidare de generiska primitiverna — vi byter ut dem efter pilotrundan.
+Textkopplingen blir metaforisk men ärlig: medan du mjuknar passerar natten.
 
-## Hur jag bygger varje animation
-- Egen komponent under `src/components/animations/exercises/<id>.tsx`.
-- Tar emot `stepIndex`, `stepCount`, `stepProgress` (0–1 inom steget) och `phase` (label-strängen). Inget annat.
-- Använder bara `var(--anim-accent)` / `var(--anim-soft)` / `currentColor` — kategorifärgen kommer fortsatt från `ovning.$id.tsx`.
-- `AnimationFor` får en lookup: om övningens `animation`-fält är ett känt övnings-id → rendera dess komponent, annars fall tillbaka till nuvarande primitiv.
-- **Loop utan reset:** komponenten håller eget internt state med `useRef` + rAF som *inte* nollställs vid stegbyte — bara fas-mål byts. Övergångar via `framer-motion`s `animate` mot nytt target.
+För att kunna driva animationen på hela övningens progress (inte bara `stepProgress`) skickar vi vidare `stepIndex`/`stepCount` och räknar `overallProgress = (stepIndex + stepProgress) / stepCount` inne i komponenten. Inga API-ändringar behövs — props finns redan.
 
-## Fråga innan jag börjar
-1. **Pilotomfång:** kör vi alla 11 på en gång, eller börjar vi med 3 (anxiety, quick-pause, stress) för att se om formspråket sitter innan vi rullar ut resten?
-2. **Övningsval per kategori:** håller listan ovan, eller vill du peka ut en annan övning som kategorins ansikte (t.ex. "ankaret" istället för "bilen" för anxiety)?
-3. **Övriga övningar i samma kategori under tiden:** ska de ärva pilot-övningens animation (så slipper vi se generisk hexagon), eller behåller vi nuvarande primitiver tills var och en får sin egen?
+## 3. Ångesten får inte köra bilen (`NotDriving`)
+
+Stegen: "Du sitter vid ratten" → "Namnge känslan" → "Ge den en plats" → "Den får skrika. Du kör." → "Vart vill du köra?" → "En liten handling".
+
+Ny scen — **vy ut genom framrutan**:
+- Ramen visar bilens insida nedtill: ratt centrerat nere, instrumentbräda, vindrutans båge upptill. Två händer på ratten på 10 och 2.
+- Bakom rutan: en väg i centralperspektiv som rör sig **mot tittaren** (streckade mittlinjer skalas upp och glider neråt/utåt → känsla av att åka framåt). Horisont i mitten med ett mjukt gryningsljus.
+- Passageraren (ångesten) sitter **från start** till höger om ratten: en liten rund form, bältad (ett diagonalt streck över sig), med små skakiga vibrationer (skriker). Den lämnar aldrig sin plats.
+- Steg 1: ratten + händer framträder, vägen börjar röra sig långsamt.
+- Steg 2: passageraren får en etikett/ord ovanför sig som byts (oro / rädsla / stress) — namnges.
+- Steg 3: bältet drar åt sig tydligare, passageraren sitter still — "fönsterplats, bältad".
+- Steg 4: passageraren skakar mer intensivt (skriker), vägen fortsätter i samma takt — föraren håller kursen.
+- Steg 5: en mjuk vägskylt/pil tonar in på horisonten ("riktning").
+- Steg 6: ett litet ljus tänds längre fram på vägen (en handling).
+
+Vägens rörelse drivs av en kontinuerlig tids-loop (inte `stepProgress`) så den aldrig hackar mellan steg. Passagerarens skak-amplitud lerpas mjukt upp mot steg 4 och ner igen.
+
+## Tekniskt
+
+Alla tre komponenter skrivs om i `src/components/animations/bespoke.tsx`. Inga ändringar i `exercises.ts`, `ovning.$id.tsx` eller mappningen i `BESPOKE`. Färger via befintliga `--anim-accent` / `--anim-soft` / `--anim-on` CSS-variabler. Behåller `useBreathPulse` och `stepProgress`-easing-mönstret från övriga animationer.
