@@ -404,7 +404,7 @@ function MeetingsTimeline(p: BespokeProps) {
 }
 
 // ─── Router ────────────────────────────────────────────────
-const BESPOKE: Record<string, (p: BespokeProps) => JSX.Element> = {
+const BESPOKE: Record<string, (p: BespokeProps) => React.ReactElement> = {
   "stang-47-flikar": CloseTabs,
   "angesten-far-inte-kora": NotDriving,
   reset: ResetBars,
