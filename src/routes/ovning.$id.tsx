@@ -393,14 +393,24 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
                 })()
               ) : (
                 <>
-                  <AnimationFor
-                    kind={ex.animation}
-                    phase={ex.steps[stepIdx]?.label ?? ""}
-                    progress={progress}
-                    stepIndex={stepIdx}
-                    stepCount={ex.steps.length}
-                    stepProgress={stepProgress}
-                  />
+                  {hasBespoke(ex.id) ? (
+                    <BespokeFor
+                      exerciseId={ex.id}
+                      phase={ex.steps[stepIdx]?.label ?? ""}
+                      stepIndex={stepIdx}
+                      stepCount={ex.steps.length}
+                      stepProgress={stepProgress}
+                    />
+                  ) : (
+                    <AnimationFor
+                      kind={ex.animation}
+                      phase={ex.steps[stepIdx]?.label ?? ""}
+                      progress={progress}
+                      stepIndex={stepIdx}
+                      stepCount={ex.steps.length}
+                      stepProgress={stepProgress}
+                    />
+                  )}
                   {(() => {
                     const sub = subtitleFor(ex.steps[stepIdx], stepProgress);
                     return (
