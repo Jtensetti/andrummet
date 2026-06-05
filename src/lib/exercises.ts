@@ -982,15 +982,36 @@ const SEEDS: Seed[] = [
 
 export const EXERCISES: Exercise[] = SEEDS.map(build);
 
+/**
+ * Övningar som har en färdig, finslipad animation kopplad till sig.
+ * Bara dessa visas i listor (kategorisidor, hem-tiles). Andra finns
+ * kvar i datat men exponeras inte i UI:t förrän de är klara.
+ */
+const POLISHED_IDS = new Set<string>([
+  "stang-47-flikar",
+  "angesten-far-inte-kora",
+  "reset",
+  "fokuslinsen",
+  "sov-mjukare",
+  "kroppsskanning-huvud-till-fot",
+  "vad-behover-jag-just-nu",
+  "tre-vanliga-meningar",
+  "svalna-innan-svar",
+  "mellan-tva-moten",
+  "rott-gult-gront",
+]);
+
+export const isPolished = (id: string) => POLISHED_IDS.has(id);
+
 export const getExercise = (id: string) => EXERCISES.find((e) => e.id === id);
 
 export const getByCategory = (cat: Category) =>
-  EXERCISES.filter((e) => e.category === cat);
+  EXERCISES.filter((e) => e.category === cat && POLISHED_IDS.has(e.id));
 
 export const getByKind = (cat: Category, kind: ExerciseKind | "all") =>
   kind === "all"
     ? getByCategory(cat)
-    : EXERCISES.filter((e) => e.category === cat && e.kind === kind);
+    : getByCategory(cat).filter((e) => e.kind === kind);
 
 /** 8 huvudbehov på startsidan (i ordning) */
 export const FEELINGS: {
