@@ -208,140 +208,228 @@ function CloseTabs(p: BespokeProps) {
 }
 
 // ─── 2. Ångesten får inte köra bilen ────────────────────────
-// 6 steg:
-//  0 "Du sitter vid ratten"      → du (stadig prick) i ratten, ingen oro syns
-//  1 "Namnge känslan"            → oron dyker upp som jittrig prick vid ratten
-//  2 "Ge den en plats"           → oron glider till passagerarsätet, bälte
-//  3 "Den får skrika. Du kör."   → oron pulserar starkt, du stadig, vägen rullar
-//  4 "Vart vill du köra?"        → riktnings-pil framåt, vägen rullar tydligare
-//  5 "En liten handling"         → en liten markör går framåt på vägen
+// Förstaperson: vy ut genom framrutan. Vägen rör sig MOT användaren
+// i centralperspektiv. Ratten sitter i botten, händer på 10 och 2.
+// Passageraren (oron) sitter från start i passagerarsätet, bältad
+// och skakande. Föraren håller kursen.
+//  0 "Du sitter vid ratten"      → ratt + händer + lugn väg
+//  1 "Namnge känslan"            → liten etikett-bricka tonas in över oron
+//  2 "Ge den en plats"           → bältet drar åt sig tydligt
+//  3 "Den får skrika. Du kör."   → skak-amplituden ökar
+//  4 "Vart vill du köra?"        → vägskylt/pil dyker upp på horisonten
+//  5 "En liten handling"         → en liten ljuspunkt längre fram på vägen
 function NotDriving(p: BespokeProps) {
-  const W = 300;
-  const H = 220;
+  const W = 320;
+  const H = 240;
   const stepIdx = p.stepIndex ?? 0;
   const sp = clamp01(p.stepProgress ?? 0);
   const pulse = useBreathPulse(4200);
+  const time = useTimeSec();
 
-  const wheelCx = W * 0.32;
-  const wheelCy = H * 0.5;
-  const passengerCx = W * 0.66;
-  const passengerCy = H * 0.58;
+  // Vy: horisont i mitten, dashboard nedtill
+  const horizonY = H * 0.42;
+  const dashTop = H - 56;
 
-  // Oron blir synlig i steg 1+
-  const worryOpacity =
-    stepIdx === 0 ? 0
-    : stepIdx === 1 ? easeInOut(sp)
-    : 1;
+  // Vägens kanter konvergerar mot horisonten (vanishing point)
+  const vpX = W / 2;
+  const roadLeftNear = W * 0.05;
+  const roadRightNear = W * 0.95;
 
-  // Förflyttning till passagerarsätet sker i steg 2
-  const settle =
-    stepIdx < 2 ? 0
-    : stepIdx === 2 ? easeInOut(sp)
-    : 1;
+  // Hastighet: lugn från start, ökar något efter steg 0
+  const speed = stepIdx === 0 ? 0.18 : 0.28;
+  const tNorm = (time * speed) % 1;
 
-  // Bälte syns när orden landat
-  const beltOpacity = stepIdx >= 2 ? (stepIdx === 2 ? easeInOut(sp) : 1) : 0;
+  // 6 stripes som glider från horisont mot tittaren. Varje stripe har
+  // en fas u i [0..1) där u=0 är vid horisonten, u=1 är vid betraktaren.
+  const N = 6;
+  const stripes = Array.from({ length: N }, (_, i) => {
+    const u = (tNorm + i / N) % 1;
+    const persp = u * u; // accelererar mot tittaren = känsla av fart
+    const y = lerp(horizonY, dashTop, persp);
+    const w = lerp(2, 14, persp);
+    const h = lerp(3, 18, persp);
+    const op = lerp(0.25, 0.7, persp);
+    return { y, w, h, op, key: i };
+  });
 
-  // Jitter-amplitud: liten i steg 1, stor i steg 3 (skriker), liten igen i 4-5
-  const jitterAmp =
-    stepIdx === 1 ? 6
-    : stepIdx === 2 ? lerp(6, 3, easeInOut(sp))
-    : stepIdx === 3 ? 9 + pulse * 4
-    : 3;
+  // Skak-amplitud för oron: alltid lite, mycket i steg 3
+  const baseShake = 1.5;
+  const stepShake =
+    stepIdx === 3 ? 4 + pulse * 2.5
+    : stepIdx >= 4 ? 2
+    : 1.5;
+  const shake = baseShake + stepShake;
+  const wobX = Math.sin(time * 11) * shake;
+  const wobY = Math.cos(time * 13) * shake * 0.6;
 
-  // Oron-position: vid ratten i 0-1, glider över i 2, sitter i 3-5
-  const wx = lerp(wheelCx + 36, passengerCx, settle);
-  const wy = lerp(wheelCy - 14, passengerCy, settle);
-  const px = wx + Math.sin(pulse * Math.PI * 4) * jitterAmp;
-  const py = wy + Math.cos(pulse * Math.PI * 4) * jitterAmp * 0.6;
-  const worryR = stepIdx === 3 ? 11 + pulse * 4 : 10;
+  // Passagerarens plats — fast position uppe till höger (peripheral glimt)
+  const seatX = W * 0.76;
+  const seatY = H * 0.46;
+  const seatW = 56;
+  const seatH = 76;
 
-  // Vägen rullar — snabbare när vi börjar köra/vill köra
-  const roadSpeed = stepIdx >= 3 ? 1 : 0.3;
-  const roadOffset = (pulse * 40 * roadSpeed * 6) % 28;
+  // Bälte syns alltid men dras åt i steg 2
+  const beltOp = stepIdx < 2 ? 0.35 : stepIdx === 2 ? lerp(0.35, 0.95, easeInOut(sp)) : 0.95;
+  const beltW = stepIdx < 2 ? 2 : stepIdx === 2 ? lerp(2, 3.5, easeInOut(sp)) : 3.5;
 
-  // Riktnings-pil i steg 4
+  // Etikett ("namnge") i steg 1+
+  const labelOp = stepIdx === 1 ? easeInOut(sp) : stepIdx > 1 ? 1 : 0;
+
+  // Riktnings-pil i steg 4+
   const arrowOp = stepIdx === 4 ? easeInOut(sp) : stepIdx > 4 ? 1 : 0;
 
-  // Liten handling — markör går framåt i steg 5
-  const stepMarkerX = stepIdx === 5 ? lerp(W * 0.5, W * 0.88, easeInOut(sp)) : 0;
-  const stepMarkerOp = stepIdx === 5 ? 1 : 0;
+  // Liten handling — ljuspunkt på vägen i steg 5
+  const emberOp = stepIdx === 5 ? easeInOut(sp) : 0;
+  const emberPersp = 0.55; // halvvägs mellan horisont och tittaren
+  const emberY = lerp(horizonY, dashTop, emberPersp);
+
+  // Ratt — sitter halvt under dashboard, vi ser övre bågen
+  const wheelCx = W * 0.42;
+  const wheelCy = H + 24;
+  const wheelR = 92;
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="h-56 w-[19rem]" aria-hidden>
-      {/* Väg */}
-      <line
-        x1={0}
-        x2={W}
-        y1={H - 22}
-        y2={H - 22}
-        stroke={SOFT}
-        strokeOpacity={0.55}
-        strokeWidth={3}
-      />
-      <g stroke={SOFT} strokeOpacity={0.4} strokeWidth={3} strokeDasharray="14 14">
-        <line x1={-roadOffset} x2={W - roadOffset} y1={H - 10} y2={H - 10} />
-      </g>
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-60 w-[20rem]" aria-hidden>
+      {/* Himmel — mjukt soft fält ovan horisonten */}
+      <rect x={0} y={0} width={W} height={horizonY} fill={SOFT} fillOpacity={0.25} />
+      {/* Horisontlinje */}
+      <line x1={0} x2={W} y1={horizonY} y2={horizonY} stroke="currentColor" strokeOpacity={0.2} strokeWidth={1.5} />
 
-      {/* Ratt */}
-      <circle
-        cx={wheelCx}
-        cy={wheelCy}
-        r={52}
-        fill="none"
-        stroke={ACCENT}
-        strokeOpacity={0.4}
-        strokeWidth={4}
-      />
-      <circle cx={wheelCx} cy={wheelCy} r={5} fill={ACCENT} fillOpacity={0.55} />
-      {/* Du — stadig prick */}
-      <circle cx={wheelCx} cy={wheelCy} r={16} fill={ACCENT} />
-
-      {/* Passagerarsäte — växer fram när oron tar plats */}
-      <rect
-        x={passengerCx - 28}
-        y={passengerCy - 28}
-        width={56}
-        height={56}
-        rx={14}
+      {/* Vägens fyllning — triangel mellan horisont och dashboard */}
+      <path
+        d={`M ${vpX} ${horizonY} L ${roadLeftNear} ${dashTop} L ${roadRightNear} ${dashTop} Z`}
         fill={SOFT}
-        fillOpacity={0.25 + 0.4 * settle}
+        fillOpacity={0.18}
       />
-      {/* Bälte */}
-      <line
-        x1={passengerCx - 28}
-        x2={passengerCx + 28}
-        y1={passengerCy - 6}
-        y2={passengerCy + 10}
-        stroke={ACCENT}
-        strokeOpacity={0.55 * beltOpacity}
-        strokeWidth={3}
-      />
+      {/* Vägkanter */}
+      <line x1={vpX} x2={roadLeftNear} y1={horizonY} y2={dashTop} stroke={SOFT} strokeOpacity={0.55} strokeWidth={2} />
+      <line x1={vpX} x2={roadRightNear} y1={horizonY} y2={dashTop} stroke={SOFT} strokeOpacity={0.55} strokeWidth={2} />
 
-      {/* Oron */}
-      {worryOpacity > 0.02 && (
-        <circle cx={px} cy={py} r={worryR} fill={ACCENT} fillOpacity={0.85 * worryOpacity} />
-      )}
+      {/* Mittlinjer som rör sig mot tittaren */}
+      {stripes.map((s) => (
+        <rect
+          key={s.key}
+          x={vpX - s.w / 2}
+          y={s.y - s.h / 2}
+          width={s.w}
+          height={s.h}
+          rx={s.w / 2}
+          fill={SOFT}
+          fillOpacity={s.op}
+        />
+      ))}
 
-      {/* Riktnings-pil */}
+      {/* Vägskylt/pil på horisonten */}
       {arrowOp > 0.02 && (
-        <g
-          stroke={ACCENT}
-          strokeWidth={3}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          fill="none"
-          opacity={arrowOp}
-        >
-          <line x1={W * 0.5} x2={W * 0.82} y1={H - 22} y2={H - 22} />
-          <polyline points={`${W * 0.78},${H - 30} ${W * 0.86},${H - 22} ${W * 0.78},${H - 14}`} />
+        <g opacity={arrowOp} stroke={ACCENT} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" fill="none">
+          <line x1={vpX} x2={vpX} y1={horizonY - 18} y2={horizonY - 4} />
+          <polyline points={`${vpX - 6},${horizonY - 12} ${vpX},${horizonY - 18} ${vpX + 6},${horizonY - 12}`} />
         </g>
       )}
 
-      {/* Liten handling — markör på vägen */}
-      {stepMarkerOp > 0 && (
-        <circle cx={stepMarkerX} cy={H - 22} r={7} fill={ACCENT} />
+      {/* Liten ljuspunkt längre fram på vägen */}
+      {emberOp > 0.02 && (
+        <circle
+          cx={vpX}
+          cy={emberY}
+          r={4 + pulse * 1.5}
+          fill={ACCENT}
+          fillOpacity={0.9 * emberOp}
+        />
       )}
+
+      {/* Dashboard */}
+      <rect x={0} y={dashTop} width={W} height={H - dashTop} fill={SOFT} fillOpacity={0.7} />
+      <line x1={0} x2={W} y1={dashTop} y2={dashTop} stroke="currentColor" strokeOpacity={0.3} strokeWidth={1.5} />
+
+      {/* Passagerarsäte (peripheral glimt uppe till höger) */}
+      <rect
+        x={seatX - seatW / 2}
+        y={seatY - seatH / 2}
+        width={seatW}
+        height={seatH}
+        rx={12}
+        fill={SOFT}
+        fillOpacity={0.55}
+      />
+      {/* Bälte — diagonal från ovan-vänster ner till nedan-höger */}
+      <line
+        x1={seatX - seatW / 2 + 4}
+        x2={seatX + seatW / 2 - 4}
+        y1={seatY - seatH / 2 + 6}
+        y2={seatY + seatH / 2 - 6}
+        stroke={ACCENT}
+        strokeOpacity={beltOp}
+        strokeWidth={beltW}
+        strokeLinecap="round"
+      />
+      {/* Oron — bältad, skakande från start */}
+      <circle
+        cx={seatX + wobX}
+        cy={seatY - 6 + wobY}
+        r={14}
+        fill={ACCENT}
+        fillOpacity={0.92}
+      />
+      {/* Små "skri"-streck när skakigheten är hög (steg 3+) */}
+      {stepIdx >= 3 && (
+        <g stroke={ACCENT} strokeOpacity={0.55} strokeWidth={2} strokeLinecap="round">
+          <line x1={seatX + 18} x2={seatX + 26} y1={seatY - 18} y2={seatY - 22} />
+          <line x1={seatX + 20} x2={seatX + 28} y1={seatY - 10} y2={seatY - 10} />
+          <line x1={seatX + 18} x2={seatX + 26} y1={seatY - 2} y2={seatY + 2} />
+        </g>
+      )}
+      {/* Namn-etikett (steg 1+) — liten bricka ovanför oron */}
+      {labelOp > 0.02 && (
+        <rect
+          x={seatX - 22}
+          y={seatY - seatH / 2 - 14}
+          width={44}
+          height={12}
+          rx={6}
+          fill={ACCENT}
+          fillOpacity={0.75 * labelOp}
+        />
+      )}
+
+      {/* Ratten — stor båge i botten, händer på 10 och 2 */}
+      <circle
+        cx={wheelCx}
+        cy={wheelCy}
+        r={wheelR}
+        fill="none"
+        stroke={ACCENT}
+        strokeOpacity={0.7}
+        strokeWidth={4}
+      />
+      {/* Inre stadga */}
+      <circle
+        cx={wheelCx}
+        cy={wheelCy}
+        r={wheelR - 14}
+        fill="none"
+        stroke={ACCENT}
+        strokeOpacity={0.25}
+        strokeWidth={2}
+      />
+      {/* Händer — 10 och 2 (vinklar mätt från positiv x-axel uppåt) */}
+      {[
+        { ang: Math.PI * 1.25 }, // 10
+        { ang: Math.PI * 1.75 }, // 2
+      ].map((h, i) => {
+        const hx = wheelCx + Math.cos(h.ang) * (wheelR - 2);
+        const hy = wheelCy + Math.sin(h.ang) * (wheelR - 2);
+        return (
+          <circle
+            key={i}
+            cx={hx}
+            cy={hy}
+            r={9}
+            fill={ACCENT}
+            fillOpacity={0.95}
+          />
+        );
+      })}
     </svg>
   );
 }
@@ -535,114 +623,91 @@ function FocusLens(p: BespokeProps) {
   );
 }
 
-// ─── 5. Sov mjukare — kropp uppifrån ner, måne dalar ───────
+// ─── 5. Sov mjukare — en natt passerar ─────────────────────
 // 8 steg (script): 0 sänk tempot, 1 panna, 2 käke, 3 axlar,
 // 4 bröstkorg, 5 mage, 6 ben, 7 fötter.
-// Visual: stiliserad liggande kropp som rundad vertikal pelare.
-// För varje steg "mjuknar" motsvarande zon (mjukare färg, mjukare puls).
-// Bakom: himmel + måne som dalar långsamt mot horisont över hela övningen.
+// Visual: halvmåne stiger från vänster horisont, går i en mjuk båge
+// över himlen och sjunker ner vid höger horisont. Himlen skiftar
+// från skymning → djupblå natt → tidig gryning. Stjärnor tonar in
+// kring månens högsta punkt. Driver av övningens totala progress.
 function SoftSleep(p: BespokeProps) {
   const t = totalT(p);
-  const stepIdx = p.stepIndex ?? 0;
-  const sp = clamp01(p.stepProgress ?? 0);
   const pulse = useBreathPulse(6500);
   const W = 320;
-  const H = 260;
+  const H = 220;
 
-  // Himmel + horisont + måne — dalar långsamt över hela övningen
-  const horizonY = lerp(H * 0.18, H * 0.42, easeInOut(t));
-  const moonX = W * 0.78;
-  const moonY = lerp(H * 0.08, horizonY - 2, easeInOut(t));
-  const moonR = 18 + pulse * 1.5;
+  const horizonY = H * 0.62;
 
-  // Kroppspelare — vertikal, börjar under horisonten
-  const bodyX = W * 0.18;
-  const bodyW = W * 0.22;
-  const bodyTop = H * 0.18;
-  const bodyBot = H * 0.94;
-  const bodyH = bodyBot - bodyTop;
+  // Månens bana: vänster horisont (t=0) → topp (t=0.5) → höger horisont (t=1)
+  const moonX = lerp(W * 0.06, W * 0.94, t);
+  const arc = Math.sin(Math.PI * t); // 0..1..0
+  const moonCy = horizonY - arc * (horizonY - 28);
+  const moonR = 18 + pulse * 1.2;
 
-  // 7 zoner uppifrån ner: panna, käke, axlar, bröst, mage, ben, fötter
-  // Steg 0 har ingen aktiv zon (bara "sänk tempot"). Steg 1..7 = zon 0..6.
-  const zones = 7;
-  const zoneH = bodyH / zones;
+  // Nattens djup: 0 vid kanter, 1 vid mitten
+  const night = arc;
 
-  // Hur "mjuk" en zon är (0 spänd, 1 släppt)
-  const softness = (z: number) => {
-    const targetStep = z + 1; // zon 0 släpps i steg 1
-    if (stepIdx > targetStep) return 1;
-    if (stepIdx === targetStep) return easeInOut(sp);
-    return 0;
-  };
+  // Stjärnor — fasta positioner, opacity följer night
+  const stars = [
+    { x: 0.12, y: 0.18, r: 1.4 },
+    { x: 0.22, y: 0.08, r: 1.1 },
+    { x: 0.34, y: 0.22, r: 1.6 },
+    { x: 0.42, y: 0.12, r: 1.2 },
+    { x: 0.55, y: 0.06, r: 1.4 },
+    { x: 0.62, y: 0.24, r: 1.1 },
+    { x: 0.70, y: 0.16, r: 1.5 },
+    { x: 0.82, y: 0.10, r: 1.3 },
+    { x: 0.88, y: 0.26, r: 1.1 },
+    { x: 0.95, y: 0.14, r: 1.4 },
+  ];
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="h-64 w-[22rem]" aria-hidden>
-      {/* Himmel */}
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-56 w-[20rem]" aria-hidden>
+      {/* Himmel — ljus bas */}
       <rect x={0} y={0} width={W} height={horizonY} fill={SOFT} fillOpacity={0.35} />
-      {/* Mark */}
-      <rect x={0} y={horizonY} width={W} height={H - horizonY} fill={SOFT} fillOpacity={0.55} />
-      {/* Måne */}
-      <circle cx={moonX} cy={moonY} r={moonR} fill={ACCENT} fillOpacity={0.9} />
-      {/* Horisontlinje */}
-      <line x1={0} x2={W} y1={horizonY} y2={horizonY} stroke="currentColor" strokeOpacity={0.22} strokeWidth={2} />
-
-      {/* Kropp — outline */}
+      {/* Mörk overlay för natt — toppas vid t=0.5 */}
       <rect
-        x={bodyX}
-        y={bodyTop}
-        width={bodyW}
-        height={bodyH}
-        rx={bodyW / 2}
-        fill={SOFT}
-        fillOpacity={0.35}
+        x={0}
+        y={0}
+        width={W}
+        height={horizonY}
+        fill="currentColor"
+        fillOpacity={night * 0.28}
       />
 
-      {/* Zoner — fyller på uppifrån när de "släpps" */}
-      {Array.from({ length: zones }, (_, z) => {
-        const s = softness(z);
-        if (s < 0.02) return null;
-        const y = bodyTop + z * zoneH;
-        // Aktiv zon (just nu släpps) får en mjuk andnings-puls
-        const isActive = stepIdx === z + 1;
-        const op = lerp(0.25, 0.85, s) + (isActive ? pulse * 0.12 : 0);
+      {/* Stjärnor */}
+      {stars.map((s, i) => {
+        // Subtil twinkle med olika fas
+        const tw = 0.6 + 0.4 * (0.5 + Math.sin(pulse * Math.PI * 2 + i) / 2);
         return (
-          <rect
-            key={z}
-            x={bodyX}
-            y={y}
-            width={bodyW}
-            height={zoneH + 0.5}
-            rx={bodyW / 2}
+          <circle
+            key={i}
+            cx={s.x * W}
+            cy={s.y * horizonY}
+            r={s.r}
             fill={ACCENT}
-            fillOpacity={op}
+            fillOpacity={night * tw * 0.9}
           />
         );
       })}
 
-      {/* Steg 0 — "sänk tempot": mjuk markering över hela kroppen */}
-      {stepIdx === 0 && (
-        <rect
-          x={bodyX - 4}
-          y={bodyTop - 4}
-          width={bodyW + 8}
-          height={bodyH + 8}
-          rx={(bodyW + 8) / 2}
-          fill="none"
-          stroke={ACCENT}
-          strokeOpacity={0.3 + pulse * 0.2}
-          strokeWidth={2}
-        />
-      )}
+      {/* Mark */}
+      <rect x={0} y={horizonY} width={W} height={H - horizonY} fill={SOFT} fillOpacity={0.6} />
+      {/* Horisontlinje */}
+      <line x1={0} x2={W} y1={horizonY} y2={horizonY} stroke="currentColor" strokeOpacity={0.22} strokeWidth={1.5} />
 
-      {/* Markör för aktuell zon — liten prick utanför pelaren */}
-      {stepIdx >= 1 && stepIdx <= zones && (
+      {/* Halvmåne — en cirkel + en överlappande mark-färgad cirkel för "halv" */}
+      <g>
+        <circle cx={moonX} cy={moonCy} r={moonR} fill={ACCENT} fillOpacity={0.92} />
+        {/* Mjuk skugga som gör månen halv — förskjuten åt rörelseriktningen */}
         <circle
-          cx={bodyX + bodyW + 14}
-          cy={bodyTop + (stepIdx - 0.5) * zoneH}
-          r={5 + pulse * 1.5}
-          fill={ACCENT}
+          cx={moonX + (t < 0.5 ? -moonR * 0.35 : moonR * 0.35)}
+          cy={moonCy - moonR * 0.15}
+          r={moonR * 0.95}
+          fill={SOFT}
+          fillOpacity={0.55}
         />
-      )}
+      </g>
     </svg>
   );
 }
@@ -737,119 +802,161 @@ function BodyScan(p: BespokeProps) {
   );
 }
 
-// ─── 7. Vad behöver jag just nu — droppen sjunker genom lager
-// 5 steg, mappade mot scriptet:
-//  0 "Vad dyker upp först?"             → många tankar-prickar svävar i topp-lagret
-//  1 "Är det ett behov — eller ett borde?" → två fält ("borde" vänster, "behov" höger), droppen glider mot höger
-//  2 "Vad skulle faktiskt hjälpa?"      → droppen växer till en mjuk cirkel (behovet namnges)
-//  3 "Gör det litet"                    → cirkeln krymper till en liten kärna
-//  4 "Kan du ge dig det?"               → en skål växer fram nederst, kärnan landar i den och pulserar
+// ─── 7. Vad behöver jag just nu — lyssna nedåt ─────────────
+// Lugn central cirkel = du. Vertikal axel: huvud uppe, mage nere.
+//  0 "Vad dyker upp först?"             → tankar-prickar bubblar upp ur huvudet
+//  1 "Behov eller borde?"               → fält delas: borde (uppe, fyrkant) / behov (nere, runda)
+//  2 "Vad skulle faktiskt hjälpa?"      → en rund behov-prick lyser upp och sjunker mot magen
+//  3 "Gör det litet"                    → kärnan krymper till liten tydlig punkt
+//  4 "Kan du ge dig det?"               → två händer (bågar) sluter sig om kärnan, andas
 function NeedDrop(p: BespokeProps) {
-  const W = 240;
-  const H = 300;
+  const W = 260;
+  const H = 320;
   const stepIdx = p.stepIndex ?? 0;
   const sp = clamp01(p.stepProgress ?? 0);
   const breathe = useBreathPulse(5400);
 
-  // Lager-y-koordinater (topp → botten)
-  const yTop = 40;       // tankarna
-  const ySort = 110;     // borde/behov
-  const yName = 170;     // behovet namnges
-  const ySmall = 215;    // gjord liten
-  const yBowl = 258;     // skål
+  const cx = W / 2;
+  const headY = H * 0.22;
+  const bellyY = H * 0.72;
+  const youCy = H * 0.5;
+  const youR = 46;
 
-  // Bakgrundslager — mjuka horisontella band
-  const lanes = [yTop, ySort, yName, ySmall, yBowl];
+  // Steg 2: en behov-prick lyser upp och sjunker från behov-fältet till magen
+  const dropY = stepIdx >= 2 ? lerp(youCy + 6, bellyY, easeInOut(stepIdx === 2 ? sp : 1)) : youCy;
+  const dropR =
+    stepIdx === 2 ? lerp(5, 9, easeInOut(sp))
+    : stepIdx === 3 ? lerp(9, 5, easeInOut(sp))
+    : stepIdx >= 4 ? 5 + breathe * 1.4
+    : 0;
 
-  // Droppens y-position glider mjukt mellan lager-mittpunkterna
-  const fromY = lanes[Math.min(stepIdx, lanes.length - 1)];
-  const toY = lanes[Math.min(stepIdx + 1, lanes.length - 1)];
-  const dotY = lerp(fromY, toY, easeInOut(sp) * 0.9); // glider mot nästa lager mot slutet
-
-  // Droppens x-position — i steg 1 glider den från mitten mot höger (behov)
-  const driftX =
-    stepIdx === 0 ? 0
-    : stepIdx === 1 ? lerp(0, 40, easeInOut(sp))
-    : 40;
-  const jitter = stepIdx === 0 ? Math.sin(breathe * Math.PI * 2) * 4 : 0;
-  const dotX = W / 2 + driftX + jitter;
-
-  // Droppens storlek per steg
-  const dotR =
-    stepIdx === 0 ? 6
-    : stepIdx === 1 ? 7
-    : stepIdx === 2 ? lerp(7, 22, easeInOut(sp))
-    : stepIdx === 3 ? lerp(22, 8, easeInOut(sp))
-    : 8 + breathe * 2;
-
-  // Sat-tankar runt droppen i steg 0 (rörigt)
-  const noise = 9;
-
-  // Borde / Behov fält i steg 1+
+  // Borde/Behov-fältens opacity
   const sortOp =
     stepIdx === 0 ? 0
     : stepIdx === 1 ? easeInOut(sp)
-    : 1;
+    : stepIdx === 2 ? lerp(1, 0.25, easeInOut(sp))
+    : 0.2;
 
-  // Skål — växer fram i steg 4
-  const bowlOp = stepIdx === 4 ? easeInOut(sp) : 0;
+  // Steg 4: händer som sluter sig om kärnan, andas med pulsen
+  const handsOp = stepIdx === 4 ? easeInOut(sp) : 0;
+  const handGap = stepIdx === 4 ? lerp(50, 24, easeInOut(sp)) + breathe * 2 : 24;
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="h-72 w-60" aria-hidden>
-      {/* Mjuka bakgrundsband — markerar aktivt lager */}
-      {lanes.map((y, i) => (
-        <rect
-          key={i}
-          x={20}
-          y={y - 18}
-          width={W - 40}
-          height={36}
-          rx={18}
-          fill={SOFT}
-          fillOpacity={i === stepIdx ? 0.45 : 0.18}
-        />
-      ))}
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-72 w-[17rem]" aria-hidden>
+      {/* Vertikal axel — diskret */}
+      <line
+        x1={cx}
+        x2={cx}
+        y1={headY - 22}
+        y2={bellyY + 22}
+        stroke="currentColor"
+        strokeOpacity={0.12}
+        strokeWidth={1.5}
+      />
 
-      {/* Borde / Behov etiketter (rektanglar) i steg 1+ */}
+      {/* Borde-fält (uppe) — fyrkantiga små prickar */}
       {sortOp > 0.02 && (
         <g opacity={sortOp}>
-          <rect x={W / 2 - 78} y={ySort - 14} width={64} height={28} rx={8} fill={SOFT} fillOpacity={0.5} />
-          <rect x={W / 2 + 14} y={ySort - 14} width={64} height={28} rx={8} fill={ACCENT} fillOpacity={0.55} />
+          <rect
+            x={20}
+            y={headY - 26}
+            width={W - 40}
+            height={48}
+            rx={10}
+            fill={SOFT}
+            fillOpacity={0.32}
+          />
+          {Array.from({ length: 4 }, (_, i) => (
+            <rect
+              key={i}
+              x={cx - 38 + i * 22}
+              y={headY - 6}
+              width={10}
+              height={10}
+              fill={SOFT}
+              fillOpacity={0.85}
+            />
+          ))}
         </g>
       )}
 
-      {/* Tanke-prickar i steg 0 */}
-      {stepIdx === 0 &&
-        Array.from({ length: 7 }, (_, i) => {
-          const a = (i / 7) * Math.PI * 2;
-          const r = 24 + (i % 3) * 6;
-          const wob = Math.sin(breathe * Math.PI * 2 + i) * noise;
-          return (
+      {/* Behov-fält (nere) — runda prickar */}
+      {sortOp > 0.02 && (
+        <g opacity={sortOp}>
+          <rect
+            x={20}
+            y={bellyY - 22}
+            width={W - 40}
+            height={48}
+            rx={10}
+            fill={ACCENT}
+            fillOpacity={0.18}
+          />
+          {Array.from({ length: 4 }, (_, i) => (
             <circle
               key={i}
-              cx={W / 2 + Math.cos(a) * r + wob}
-              cy={yTop + Math.sin(a) * r * 0.6 + wob * 0.6}
-              r={3.5}
-              fill={SOFT}
-              fillOpacity={0.55}
+              cx={cx - 33 + i * 22}
+              cy={bellyY + 6}
+              r={5}
+              fill={ACCENT}
+              fillOpacity={0.7}
             />
+          ))}
+        </g>
+      )}
+
+      {/* "Du" — lugn central cirkel */}
+      <circle
+        cx={cx}
+        cy={youCy}
+        r={youR}
+        fill={SOFT}
+        fillOpacity={0.5}
+      />
+      <circle
+        cx={cx}
+        cy={youCy}
+        r={youR}
+        fill="none"
+        stroke={ACCENT}
+        strokeOpacity={0.4}
+        strokeWidth={2}
+      />
+
+      {/* Steg 0: tankar-prickar bubblar upp ur huvudet */}
+      {stepIdx === 0 &&
+        Array.from({ length: 8 }, (_, i) => {
+          const phase = (breathe + i / 8) % 1;
+          const a = (i / 8) * Math.PI * 2;
+          const rise = phase; // 0 nedanför → 1 högre upp
+          const x = cx + Math.cos(a) * (16 + rise * 28);
+          const y = headY - rise * 36;
+          const op = (1 - Math.abs(rise - 0.5) * 2) * 0.85;
+          return (
+            <circle key={i} cx={x} cy={y} r={3 + (1 - rise) * 1.5} fill={SOFT} fillOpacity={op} />
           );
         })}
 
-      {/* Skål nederst */}
-      {bowlOp > 0.02 && (
-        <path
-          d={`M ${W / 2 - 56} ${yBowl + 4} Q ${W / 2} ${yBowl + 44}, ${W / 2 + 56} ${yBowl + 4}`}
-          fill="none"
-          stroke={ACCENT}
-          strokeOpacity={0.85 * bowlOp}
-          strokeWidth={4}
-          strokeLinecap="round"
-        />
+      {/* Behov-droppen som sjunker (steg 2+) */}
+      {dropR > 0.1 && (
+        <circle cx={cx} cy={dropY} r={dropR} fill={ACCENT} fillOpacity={0.95} />
       )}
 
-      {/* Droppen */}
-      <circle cx={dotX} cy={dotY} r={dotR} fill={ACCENT} fillOpacity={0.95} />
+      {/* Steg 4: två händer (bågar) sluter sig om kärnan */}
+      {handsOp > 0.02 && (
+        <g opacity={handsOp} stroke={ACCENT} strokeWidth={3} fill="none" strokeLinecap="round">
+          {/* Vänster hand — båge öppen åt höger */}
+          <path
+            d={`M ${cx - handGap} ${bellyY - 14} Q ${cx - handGap - 18} ${bellyY}, ${cx - handGap} ${bellyY + 14}`}
+            strokeOpacity={0.85}
+          />
+          {/* Höger hand — båge öppen åt vänster */}
+          <path
+            d={`M ${cx + handGap} ${bellyY - 14} Q ${cx + handGap + 18} ${bellyY}, ${cx + handGap} ${bellyY + 14}`}
+            strokeOpacity={0.85}
+          />
+        </g>
+      )}
     </svg>
   );
 }
