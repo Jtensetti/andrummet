@@ -1190,44 +1190,163 @@ function FlamesToEmber(p: BespokeProps) {
   );
 }
 
-// ─── 10. Mellan två möten — tidslinje med block ────────────
+// ─── 10. Mellan två möten — pausen mellan två rum ──────────
+// Två rum (förra/nästa möte) på var sin sida. Mellan dem står du.
+//  0 "Stå upp om du kan"           → figuren reser sig från sittande
+//  1 "Släpp axlarna"               → axel-linjen sjunker mjukt
+//  2 "Tre långa utandningar"       → tre ringar bloomar ut från figuren i tur och ordning
+//  3 "Vad behöver nästa möte?"     → blicken/strålen riktas mot höger rum, som lyser upp
 function MeetingsTimeline(p: BespokeProps) {
-  const t = totalT(p);
   const W = 320;
-  const H = 140;
-  const baseY = H / 2;
-  const blocks = 4;
-  // luft växer mellan blocken
-  const air = lerp(4, 28, easeInOut(t));
-  const blockW = (W - 40 - air * (blocks - 1)) / blocks;
+  const H = 220;
+  const stepIdx = p.stepIndex ?? 0;
+  const sp = clamp01(p.stepProgress ?? 0);
+  const breathe = useBreathPulse(5200);
+
+  const floorY = H - 26;
+
+  // Två rum (öppna kuber sedda från sidan)
+  const leftRoom = { x: 14, y: floorY - 86, w: 78, h: 86 };
+  const rightRoom = { x: W - 14 - 78, y: floorY - 86, w: 78, h: 86 };
+
+  // Vänster rum (förra mötet) är alltid dämpat
+  const leftOp = 0.4;
+
+  // Höger rum lyser upp gradvis i steg 3
+  const rightFocus = stepIdx === 3 ? easeInOut(sp) : 0;
+  const rightOp = 0.4 + rightFocus * 0.5;
+
+  // Figur — reser sig i steg 0
+  const stand = stepIdx === 0 ? easeInOut(sp) : stepIdx > 0 ? 1 : 0;
+  const figX = W / 2;
+  const headR = 10;
+  const headY = lerp(floorY - 46, floorY - 96, stand);
+  const bodyTopY = headY + headR;
+  const bodyBotY = floorY - 4;
+
+  // Axlar — droppar i steg 1
+  const shoulderDrop = stepIdx === 1 ? easeInOut(sp) : stepIdx > 1 ? 1 : 0;
+  const shoulderY = lerp(bodyTopY + 1, bodyTopY + 12, shoulderDrop);
+  const shoulderHalfW = lerp(13, 18, shoulderDrop);
+
+  // Tre andetag — varje får sin tredjedel av sp i steg 2
+  const exhales = stepIdx === 2
+    ? [0, 1, 2].map((i) => clamp01(sp * 3 - i))
+    : stepIdx > 2 ? [1, 1, 1] : [0, 0, 0];
+
+  // Huvudet lutar något åt höger i steg 3 (orienterar mot nästa möte)
+  const tilt = stepIdx === 3 ? easeInOut(sp) * 4 : stepIdx > 3 ? 4 : 0;
+
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="h-36 w-[22rem]" aria-hidden>
-      <line x1={20} x2={W - 20} y1={baseY + 28} y2={baseY + 28} stroke={SOFT} strokeOpacity={0.6} strokeWidth={3} />
-      {Array.from({ length: blocks }, (_, i) => {
-        const x = 20 + i * (blockW + air);
-        // mittblocket = "denna paus" — markeras
-        const isNow = i === 1;
-        const op = isNow ? lerp(0.85, 0.4, t) : 0.85;
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-56 w-[20rem]" aria-hidden>
+      {/* Golv-linje */}
+      <line x1={0} x2={W} y1={floorY} y2={floorY} stroke="currentColor" strokeOpacity={0.25} strokeWidth={1.5} />
+
+      {/* Förra mötet (vänster) — dämpat rum */}
+      <g opacity={leftOp}>
+        <rect
+          x={leftRoom.x}
+          y={leftRoom.y}
+          width={leftRoom.w}
+          height={leftRoom.h}
+          rx={6}
+          fill="none"
+          stroke={SOFT}
+          strokeWidth={2}
+        />
+        {/* Stolar */}
+        <rect x={leftRoom.x + 14} y={leftRoom.y + leftRoom.h - 22} width={14} height={14} rx={2} fill={SOFT} fillOpacity={0.6} />
+        <rect x={leftRoom.x + 50} y={leftRoom.y + leftRoom.h - 22} width={14} height={14} rx={2} fill={SOFT} fillOpacity={0.6} />
+      </g>
+
+      {/* Nästa möte (höger) — lyser upp i steg 3 */}
+      <g>
+        <rect
+          x={rightRoom.x}
+          y={rightRoom.y}
+          width={rightRoom.w}
+          height={rightRoom.h}
+          rx={6}
+          fill={ACCENT}
+          fillOpacity={rightFocus * 0.15}
+          stroke={ACCENT}
+          strokeOpacity={rightOp}
+          strokeWidth={2 + rightFocus * 1}
+        />
+        <rect x={rightRoom.x + 14} y={rightRoom.y + rightRoom.h - 22} width={14} height={14} rx={2} fill={ACCENT} fillOpacity={0.3 + rightFocus * 0.5} />
+        <rect x={rightRoom.x + 50} y={rightRoom.y + rightRoom.h - 22} width={14} height={14} rx={2} fill={ACCENT} fillOpacity={0.3 + rightFocus * 0.5} />
+      </g>
+
+      {/* Stråle från figur till nästa möte (steg 3) */}
+      {rightFocus > 0.02 && (
+        <line
+          x1={figX + 14}
+          x2={rightRoom.x - 4}
+          y1={headY}
+          y2={rightRoom.y + rightRoom.h / 2}
+          stroke={ACCENT}
+          strokeOpacity={rightFocus * 0.55}
+          strokeWidth={2}
+          strokeDasharray="4 4"
+        />
+      )}
+
+      {/* Andetags-ringar — tre stycken, bloomar utåt nedanför axlarna */}
+      {exhales.map((u, i) => {
+        if (u <= 0) return null;
+        const r = lerp(8, 44 + i * 8, u);
+        // Opacitet toppar mitt i utandningen och tonar ut
+        const op = u < 0.5 ? u * 2 : (1 - u) * 1.4;
         return (
-          <rect
+          <circle
             key={i}
-            x={x}
-            y={baseY - 24}
-            width={blockW}
-            height={44}
-            rx={10}
-            fill={ACCENT}
-            fillOpacity={op}
+            cx={figX}
+            cy={shoulderY + 18}
+            r={r}
+            fill="none"
+            stroke={ACCENT}
+            strokeOpacity={Math.max(0, op) * 0.7}
+            strokeWidth={2}
           />
         );
       })}
-      {/* Andetags-prick mellan block 1 och 2 */}
-      <circle
-        cx={20 + blockW + air / 2}
-        cy={baseY - 2}
-        r={lerp(4, 14, easeInOut(t))}
-        fill={ACCENT}
-      />
+
+      {/* Figuren — huvud, axel-streck, kropp, ben */}
+      <g>
+        {/* Kropp */}
+        <line
+          x1={figX}
+          x2={figX}
+          y1={bodyTopY + 2}
+          y2={bodyBotY - 22}
+          stroke={ACCENT}
+          strokeOpacity={0.85}
+          strokeWidth={3}
+          strokeLinecap="round"
+        />
+        {/* Ben */}
+        <line x1={figX} x2={figX - 7} y1={bodyBotY - 22} y2={bodyBotY} stroke={ACCENT} strokeOpacity={0.85} strokeWidth={3} strokeLinecap="round" />
+        <line x1={figX} x2={figX + 7} y1={bodyBotY - 22} y2={bodyBotY} stroke={ACCENT} strokeOpacity={0.85} strokeWidth={3} strokeLinecap="round" />
+        {/* Axlar */}
+        <line
+          x1={figX - shoulderHalfW}
+          x2={figX + shoulderHalfW}
+          y1={shoulderY}
+          y2={shoulderY}
+          stroke={ACCENT}
+          strokeOpacity={0.85}
+          strokeWidth={3}
+          strokeLinecap="round"
+        />
+        {/* Huvud — andas lätt med pulsen */}
+        <circle
+          cx={figX + tilt}
+          cy={headY}
+          r={headR + breathe * 0.6}
+          fill={ACCENT}
+          fillOpacity={0.95}
+        />
+      </g>
     </svg>
   );
 }
