@@ -35,30 +35,72 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  /* Tema-färger per kategori */
+  /* Tema-färger per kategori (bg / ink / accent / soft / on) */
   --color-breath: var(--breath);
   --color-breath-ink: var(--breath-ink);
+  --color-breath-accent: var(--breath-accent);
+  --color-breath-soft: var(--breath-soft);
+  --color-breath-on: var(--breath-on);
+
   --color-quick-pause: var(--quick-pause);
   --color-quick-pause-ink: var(--quick-pause-ink);
+  --color-quick-pause-accent: var(--quick-pause-accent);
+  --color-quick-pause-soft: var(--quick-pause-soft);
+  --color-quick-pause-on: var(--quick-pause-on);
+
   --color-anxiety: var(--anxiety);
   --color-anxiety-ink: var(--anxiety-ink);
+  --color-anxiety-accent: var(--anxiety-accent);
+  --color-anxiety-soft: var(--anxiety-soft);
+  --color-anxiety-on: var(--anxiety-on);
+
   --color-stress: var(--stress);
   --color-stress-ink: var(--stress-ink);
+  --color-stress-accent: var(--stress-accent);
+  --color-stress-soft: var(--stress-soft);
+  --color-stress-on: var(--stress-on);
+
   --color-focus: var(--focus);
   --color-focus-ink: var(--focus-ink);
+  --color-focus-accent: var(--focus-accent);
+  --color-focus-soft: var(--focus-soft);
+  --color-focus-on: var(--focus-on);
+
   --color-sleep: var(--sleep);
   --color-sleep-ink: var(--sleep-ink);
+  --color-sleep-accent: var(--sleep-accent);
+  --color-sleep-soft: var(--sleep-soft);
+  --color-sleep-on: var(--sleep-on);
+
   --color-body: var(--body);
   --color-body-ink: var(--body-ink);
+  --color-body-accent: var(--body-accent);
+  --color-body-soft: var(--body-soft);
+  --color-body-on: var(--body-on);
+
   --color-reflection: var(--reflection);
   --color-reflection-ink: var(--reflection-ink);
+  --color-reflection-accent: var(--reflection-accent);
+  --color-reflection-soft: var(--reflection-soft);
+  --color-reflection-on: var(--reflection-on);
+
   --color-compassion: var(--compassion);
   --color-compassion-ink: var(--compassion-ink);
+  --color-compassion-accent: var(--compassion-accent);
+  --color-compassion-soft: var(--compassion-soft);
+  --color-compassion-on: var(--compassion-on);
+
   --color-anger: var(--anger);
   --color-anger-ink: var(--anger-ink);
+  --color-anger-accent: var(--anger-accent);
+  --color-anger-soft: var(--anger-soft);
+  --color-anger-on: var(--anger-on);
+
   --color-worklife: var(--worklife);
   --color-worklife-ink: var(--worklife-ink);
-
+  --color-worklife-accent: var(--worklife-accent);
+  --color-worklife-soft: var(--worklife-soft);
+  --color-worklife-on: var(--worklife-on);
 }
 
 @import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap");
