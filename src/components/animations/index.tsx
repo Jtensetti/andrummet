@@ -219,7 +219,12 @@ function Drift({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Props) {
 }
 
 // ─── TrafficDots ──────────────────────────────────────────────
-function TrafficDots({ phase = "", stepIndex = 0 }: Props) {
+// Mappas mot stegets text:
+//   "Rött: stanna helt"           → röd lyser, helt stilla
+//   "Gult: vad känns under?"      → gul lyser, mjuk "lyssna"-puls inåt
+//   "Gult: vad är du rädd för?"   → gul lyser, samma lyssna-puls
+//   "Grönt: välj handling"        → grön lyser, växer sakta utåt (rörelse)
+function TrafficDots({ phase = "", stepIndex = 0, stepProgress = 0 }: Props) {
   const p = phase.toLowerCase();
   const i = /röd|stanna|stopp/.test(p) ? 0
     : /gul|märk|under|rädd|vad känns/.test(p) ? 1
@@ -230,13 +235,33 @@ function TrafficDots({ phase = "", stepIndex = 0 }: Props) {
   const gap = 16;
   const W = R * 2 + 44;
   const H = 3 * (R * 2) + 2 * gap + 44;
+
+  // Mjuk puls 0..1..0 över hela steget (cosinus)
+  const pulse = 0.5 - Math.cos(clamp01(stepProgress) * Math.PI * 2) / 2;
+
+  // Skala per aktiv lampa: röd stilla, gul lyssnar (krymper svagt), grön rörelse (växer)
+  const scaleFor = (k: number) => {
+    if (k !== i) return 1;
+    if (k === 0) return 1; // stanna helt
+    if (k === 1) return 1 - pulse * 0.06; // lyssna inåt
+    return 1 + pulse * 0.08; // grönt — fram
+  };
+
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="h-72 w-32" aria-hidden>
       <rect x={6} y={6} width={W - 12} height={H - 12} rx={14} ry={14} fill={SOFT} fillOpacity={0.45} />
       {[0, 1, 2].map((k) => {
         const cy = 22 + R + k * (R * 2 + gap);
+        const isActive = k === i;
         return (
-          <circle key={k} cx={W / 2} cy={cy} r={R} fill={colors[k]} fillOpacity={k === i ? 1 : 0.22} />
+          <circle
+            key={k}
+            cx={W / 2}
+            cy={cy}
+            r={R * scaleFor(k)}
+            fill={colors[k]}
+            fillOpacity={isActive ? 1 : 0.22}
+          />
         );
       })}
     </svg>
