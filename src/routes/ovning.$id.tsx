@@ -135,6 +135,13 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
     1,
     Math.max(0, stepElapsed / Math.max(1, stepSeconds)),
   );
+  // Animationerna ska kännas levande även när stegen är långa (20–40s).
+  // Vi låter den visuella övergången slutföras inom ~3.5s och hålla sedan,
+  // medan text/voiceover/timer fortsätter på stegets fulla längd.
+  const animStepProgress = Math.min(
+    1,
+    Math.max(0, stepElapsed / Math.max(1, Math.min(stepSeconds, 3.5))),
+  );
   const elapsed = useMemo(
     () =>
       ex.steps.slice(0, stepIdx).reduce((s, x) => s + x.seconds, 0) + stepElapsed,
