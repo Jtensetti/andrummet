@@ -124,24 +124,22 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
     setStepElapsedMs(0);
   }, [stepIdx]);
 
+  // Texten/voiceover går 20% snabbare än ursprungstajmingen.
+  const TEXT_SPEED = 0.8;
+  const stepSecondsRaw = ex.steps[stepIdx]?.seconds ?? 1;
+  const stepSeconds = Math.max(1, stepSecondsRaw * TEXT_SPEED);
   const totalSeconds = useMemo(
-    () => ex.steps.reduce((s, x) => s + x.seconds, 0),
+    () => ex.steps.reduce((s, x) => s + x.seconds * TEXT_SPEED, 0),
     [ex.steps],
   );
-  const stepSeconds = ex.steps[stepIdx]?.seconds ?? 1;
   const stepElapsed = stepElapsedMs / 1000;
   const stepRemaining = Math.max(0, stepSeconds - stepElapsed);
   const stepProgress = Math.min(
     1,
     Math.max(0, stepElapsed / Math.max(1, stepSeconds)),
   );
-  // Animationerna ska kännas levande även när stegen är långa (20–40s).
-  // Vi låter den visuella övergången slutföras inom ~3.5s och hålla sedan,
-  // medan text/voiceover/timer fortsätter på stegets fulla längd.
-  const animStepProgress = Math.min(
-    1,
-    Math.max(0, stepElapsed / Math.max(1, Math.min(stepSeconds, 3.5))),
-  );
+  // Animationen är åter synkad med texten — samma progress.
+  const animStepProgress = stepProgress;
   const elapsed = useMemo(
     () =>
       ex.steps.slice(0, stepIdx).reduce((s, x) => s + x.seconds, 0) + stepElapsed,
