@@ -287,7 +287,6 @@ function DrawingRings(p: BespokeProps) {
   const sc = Math.max(1, p.stepCount ?? 1);
   const sp = clamp01(p.stepProgress ?? 0);
   const R = 110;
-  const C = 2 * Math.PI * R;
   return (
     <svg viewBox="-130 -130 260 260" className="h-64 w-64 md:h-72 md:w-72" aria-hidden>
       <circle cx={0} cy={0} r={R} fill={SOFT} fillOpacity={0.3} />
