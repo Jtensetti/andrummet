@@ -85,6 +85,11 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
   // Smooth klocka via requestAnimationFrame.
   // Vi uppdaterar stepElapsedMs varje frame så att animation, räknare och
   // textbyten kan följa exakt samma timing — inte rycka i 1-sekundssprång.
+  // Texten/voiceover/animationen går 20% snabbare än ursprungstajmingen.
+  // Vi skalar själva klockan så att stegbyten, animation, undertext och timer
+  // alla delar exakt samma tidsbas — annars springer ett av spåren ifrån.
+  const TEXT_SPEED = 0.8;
+
   useEffect(() => {
     if (phase !== "running" || paused) {
       lastFrameRef.current = null;
@@ -95,7 +100,8 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
       const delta = now - last;
       lastFrameRef.current = now;
       setStepElapsedMs((prev) => {
-        const stepMs = (ex.steps[stepIdx]?.seconds ?? 1) * 1000;
+        const stepMs =
+          Math.max(1, (ex.steps[stepIdx]?.seconds ?? 1) * TEXT_SPEED) * 1000;
         const next = prev + delta;
         if (next >= stepMs) {
           const overflow = next - stepMs;
@@ -118,14 +124,11 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
     };
   }, [phase, paused, ex.steps, ex.requiresRating, stepIdx]);
 
-  // Nollställ stegklockan när stegindex byts (efter overflow-hopp ovan
-  // sätter loopen tillbaka ett kort värde; här försäkrar vi 0 vid faktiskt byte).
+  // Nollställ stegklockan när stegindex byts.
   useEffect(() => {
     setStepElapsedMs(0);
   }, [stepIdx]);
 
-  // Texten/voiceover går 20% snabbare än ursprungstajmingen.
-  const TEXT_SPEED = 0.8;
   const stepSecondsRaw = ex.steps[stepIdx]?.seconds ?? 1;
   const stepSeconds = Math.max(1, stepSecondsRaw * TEXT_SPEED);
   const totalSeconds = useMemo(
@@ -138,15 +141,16 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
     1,
     Math.max(0, stepElapsed / Math.max(1, stepSeconds)),
   );
-  // Animationen är åter synkad med texten — samma progress.
   const animStepProgress = stepProgress;
   const elapsed = useMemo(
     () =>
-      ex.steps.slice(0, stepIdx).reduce((s, x) => s + x.seconds, 0) + stepElapsed,
+      ex.steps.slice(0, stepIdx).reduce((s, x) => s + x.seconds * TEXT_SPEED, 0) +
+      stepElapsed,
     [ex.steps, stepIdx, stepElapsed],
   );
   const progress = Math.min(1, elapsed / Math.max(1, totalSeconds));
   void stepRemaining;
+
 
   function finish(beforeVal: number | null, afterVal: number | null, text: string) {
     addEntry({
