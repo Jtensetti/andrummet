@@ -129,50 +129,87 @@
   --input: oklch(0.92 0.02 80);
   --ring: oklch(0.72 0.18 50);
 
-  /* Andas — djupblå med ljus accent */
-  --breath: oklch(0.55 0.16 235);
-  --breath-ink: oklch(0.98 0.01 80);
+  /* ─── Kategorifärger ─────────────────────────────────────────
+     Mappning: bg / ink / accent / soft / on
+     (on = ljus kontrast som används mot mörka bakgrunder)
+  ──────────────────────────────────────────────────────────── */
 
-  /* Snabb paus — varm sand */
-  --quick-pause: oklch(0.82 0.1 80);
-  --quick-pause-ink: oklch(0.25 0.05 60);
+  /* Andas — klarblå, turkos våg, gul accent */
+  --breath: #1E7FEA;
+  --breath-soft: #7ADDE8;
+  --breath-accent: #FFB000;
+  --breath-ink: #FFFFFF;
+  --breath-on: #FFFFFF;
 
-  /* Hantera oro — turkos */
-  --anxiety: oklch(0.7 0.1 195);
-  --anxiety-ink: oklch(0.2 0.04 200);
+  /* Snabb paus — turkos, krämfärgad yta, gul accent */
+  --quick-pause: #00B4D8;
+  --quick-pause-soft: #FFF3D6;
+  --quick-pause-accent: #FFB703;
+  --quick-pause-ink: #023047;
+  --quick-pause-on: #FFFFFF;
 
-  /* Släppa tankar (stress) — orange */
-  --stress: oklch(0.76 0.16 60);
-  --stress-ink: oklch(0.25 0.05 60);
+  /* Hantera oro — turkos, sand, orange */
+  --anxiety: #00AFAF;
+  --anxiety-soft: #F7DFA6;
+  --anxiety-accent: #FF8C42;
+  --anxiety-ink: #24415F;
+  --anxiety-on: #FFFFFF;
 
-  /* Fokus — grön */
-  --focus: oklch(0.7 0.14 150);
-  --focus-ink: oklch(0.2 0.04 150);
+  /* Släppa tankar (stress) — gul, ljusgul, djup orange */
+  --stress: #FFB000;
+  --stress-soft: #FFF1B8;
+  --stress-accent: #FF6B35;
+  --stress-ink: #4A2500;
+  --stress-on: #FFFFFF;
 
-  /* Sömn — mörk lila */
-  --sleep: oklch(0.4 0.12 290);
-  --sleep-ink: oklch(0.97 0.02 290);
+  /* Fokus — grön, blå lins, gul mittpunkt */
+  --focus: #2FBF71;
+  --focus-soft: #1E88E5;
+  --focus-accent: #FFE156;
+  --focus-ink: #123524;
+  --focus-on: #FFFFFF;
 
-  /* Lugna kroppen — mjuk grönblå */
-  --body: oklch(0.7 0.08 200);
-  --body-ink: oklch(0.2 0.03 200);
+  /* Sömn — djup lila, lavendel, ljuslila, varmgul */
+  --sleep: #3D2C8D;
+  --sleep-soft: #6A4C93;
+  --sleep-accent: #FFE8A3;
+  --sleep-ink: #FFFFFF;
+  --sleep-on: #B8A1FF;
 
-  /* Reflektera — mjuk plommon */
-  --reflection: oklch(0.6 0.1 320);
-  --reflection-ink: oklch(0.98 0.01 320);
+  /* Kropp & närvaro — sand, ljusgul, turkos */
+  --body: #F7CFA3;
+  --body-soft: #FFF3D1;
+  --body-accent: #2A9D8F;
+  --body-ink: #493323;
+  --body-on: #FFFFFF;
 
-  /* Självmedkänsla — rosa */
-  --compassion: oklch(0.82 0.11 5);
-  --compassion-ink: oklch(0.3 0.06 5);
+  /* Reflektera — varm beige, grön, korall */
+  --reflection: #F7DFA6;
+  --reflection-soft: #FFF8E5;
+  --reflection-accent: #6BCB77;
+  --reflection-ink: #3A2E1F;
+  --reflection-on: #FFFFFF;
 
-  /* Ilska — varm tegel */
-  --anger: oklch(0.6 0.18 30);
-  --anger-ink: oklch(0.98 0.01 30);
+  /* Självmedkänsla — rosa, krämyta, gul hjärta */
+  --compassion: #FF8FAB;
+  --compassion-soft: #FFF3D6;
+  --compassion-accent: #FFD166;
+  --compassion-ink: #5A2636;
+  --compassion-on: #FFFFFF;
 
-  /* Arbetsdag — neutral grön-grå */
-  --worklife: oklch(0.65 0.07 170);
-  --worklife-ink: oklch(0.2 0.03 170);
+  /* Ilska — rödorange, krämyta, gul glöd (mörk används som soft) */
+  --anger: #EF5B4C;
+  --anger-soft: #7A1F1F;
+  --anger-accent: #FFB703;
+  --anger-ink: #FFF0D6;
+  --anger-on: #FFFFFF;
 
+  /* Arbetsdag — klarblå, gul paus, grön nästa-steg */
+  --worklife: #4D96FF;
+  --worklife-soft: #F9C74F;
+  --worklife-accent: #90BE6D;
+  --worklife-ink: #FFFFFF;
+  --worklife-on: #1D3557;
 }
 
 .dark {
