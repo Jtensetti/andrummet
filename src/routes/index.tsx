@@ -58,10 +58,10 @@ function Home() {
         </h1>
       </header>
 
-      {/* Primär CTA — 60 sekunders paus */}
+      {/* Primär CTA — en kort paus */}
       <Link
         to="/ovning/$id"
-        params={{ id: "sextio-sekunders-paus" }}
+        params={{ id: "mellan-tva-moten" }}
         className="group relative mb-6 flex items-center justify-between gap-3 overflow-hidden rounded-3xl bg-foreground p-5 text-background shadow-lg transition active:scale-[0.99] md:mb-8 md:p-6"
       >
         <div>
@@ -69,7 +69,7 @@ function Home() {
             Om du bara har en minut
           </p>
           <p className="mt-1 text-xl font-extrabold leading-tight md:text-2xl">
-            Starta 60 sekunders paus
+            Starta en minutspaus
           </p>
         </div>
         <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-background/15 backdrop-blur md:h-14 md:w-14">
