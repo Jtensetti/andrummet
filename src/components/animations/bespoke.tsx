@@ -312,7 +312,6 @@ function DrawingRings(p: BespokeProps) {
           />
         );
       })}
-      {void C}
       <circle cx={0} cy={0} r={10} fill={ACCENT} />
     </svg>
   );
