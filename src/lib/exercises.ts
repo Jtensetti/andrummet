@@ -1,5 +1,4 @@
 import type { AnimationKind } from "@/components/animations";
-import type { LottieSpec } from "@/components/animations/LottiePlayer";
 
 export type Category =
   | "breath"
@@ -29,7 +28,6 @@ export type RatingMetric =
 export interface ExerciseStep {
   label: string;
   seconds: number;
-  /** Undertext-fraser som visas i tur och ordning under stegets gång. */
   script?: string[];
 }
 
@@ -47,8 +45,6 @@ export interface Exercise {
   kind: ExerciseKind;
   minutes: number;
   animation: AnimationKind;
-  /** Valfri Lottie-animation. Om satt används den istället för SVG-primitiven. */
-  lottie?: LottieSpec;
   steps: ExerciseStep[];
   metric: RatingMetric;
   requiresRating: boolean;
@@ -97,9 +93,6 @@ export const METRIC_LABELS: Record<RatingMetric, string> = {
   nedstämdhet: "Nedstämdhet",
 };
 
-// ─────────────────────────────────────────────────────────────
-// Step-tuple: [label, seconds, script?]
-// ─────────────────────────────────────────────────────────────
 type StepTuple = [string, number] | [string, number, string[]];
 
 type Seed = {
@@ -110,7 +103,6 @@ type Seed = {
   kind: ExerciseKind;
   minutes: number;
   animation: AnimationKind;
-  lottie?: LottieSpec;
   metric: RatingMetric;
   requiresRating?: boolean;
   steps: StepTuple[];
@@ -118,55 +110,6 @@ type Seed = {
   microcopy?: string;
   metaphor?: Metaphor;
   reflectionPrompt?: string;
-};
-
-// Centrala Lottie-filer (gratis från lottie.host). Mappas per AnimationKind
-// så att alla övningar som använder en viss animation automatiskt får
-// motsvarande Lottie. Per-seed `lottie` har högre prioritet.
-const LOTTIE_BY_KIND: Partial<Record<AnimationKind, LottieSpec>> = {
-  // Andning
-  "box-breath": { src: "https://lottie.host/c027e0da-afcd-4db3-b8ad-b0eb95ad2f81/Vabha4lcVQ.lottie", mode: "loop" },
-  "breath-wave": { src: "https://lottie.host/c027e0da-afcd-4db3-b8ad-b0eb95ad2f81/Vabha4lcVQ.lottie", mode: "loop" },
-  "belly-hand": { src: "https://lottie.host/c027e0da-afcd-4db3-b8ad-b0eb95ad2f81/Vabha4lcVQ.lottie", mode: "loop" },
-  // Eld / värme
-  "candle": { src: "https://lottie.host/d9cc2ea7-d22e-4e2a-9008-2a2f3832254e/ppT95Xjeh2.lottie", mode: "loop" },
-  "ember": { src: "https://lottie.host/d9cc2ea7-d22e-4e2a-9008-2a2f3832254e/ppT95Xjeh2.lottie", mode: "loop" },
-  "warm-beam": { src: "https://lottie.host/d9cc2ea7-d22e-4e2a-9008-2a2f3832254e/ppT95Xjeh2.lottie", mode: "loop" },
-  "morning-sun": { src: "https://lottie.host/d9cc2ea7-d22e-4e2a-9008-2a2f3832254e/ppT95Xjeh2.lottie", mode: "loop" },
-  // Moln / lugn
-  "drifting-clouds": { src: "https://lottie.host/e3f8b4b5-a1d6-4a3b-bf13-b49dabf3a478/Nf1am485QU.lottie", mode: "loop" },
-  "doorway": { src: "https://lottie.host/e3f8b4b5-a1d6-4a3b-bf13-b49dabf3a478/Nf1am485QU.lottie", mode: "loop" },
-  // Tankar/fokus (meditativ hjärna)
-  "focus-lens": { src: "https://lottie.host/83f4dded-8638-43ff-a2a8-fef45118b279/bo1eaLwYAt.lottie", mode: "loop" },
-  "body-scan": { src: "https://lottie.host/83f4dded-8638-43ff-a2a8-fef45118b279/bo1eaLwYAt.lottie", mode: "loop" },
-  "constellation": { src: "https://lottie.host/83f4dded-8638-43ff-a2a8-fef45118b279/bo1eaLwYAt.lottie", mode: "loop" },
-  "inner-voice": { src: "https://lottie.host/83f4dded-8638-43ff-a2a8-fef45118b279/bo1eaLwYAt.lottie", mode: "loop" },
-  "note-to-self": { src: "https://lottie.host/83f4dded-8638-43ff-a2a8-fef45118b279/bo1eaLwYAt.lottie", mode: "loop" },
-  "typing-cursor": { src: "https://lottie.host/83f4dded-8638-43ff-a2a8-fef45118b279/bo1eaLwYAt.lottie", mode: "loop" },
-  // Rörelse framåt (pappersplan)
-  "first-step": { src: "https://lottie.host/0ffde977-cd24-4d03-9c71-c3097adc9923/wVe55jmePn.lottie", mode: "loop" },
-  "walking-path": { src: "https://lottie.host/0ffde977-cd24-4d03-9c71-c3097adc9923/wVe55jmePn.lottie", mode: "loop" },
-  "footprints": { src: "https://lottie.host/0ffde977-cd24-4d03-9c71-c3097adc9923/wVe55jmePn.lottie", mode: "loop" },
-  "path-fork": { src: "https://lottie.host/0ffde977-cd24-4d03-9c71-c3097adc9923/wVe55jmePn.lottie", mode: "loop" },
-  // Mjuk sträckning / katt med garn
-  "stretch-up": { src: "https://lottie.host/dc5842d7-f483-4635-8626-9450bbeec0ab/xmo6Cepk2f.lottie", mode: "loop" },
-  "jaw-release": { src: "https://lottie.host/dc5842d7-f483-4635-8626-9450bbeec0ab/xmo6Cepk2f.lottie", mode: "loop" },
-  "shoulder-drop": { src: "https://lottie.host/dc5842d7-f483-4635-8626-9450bbeec0ab/xmo6Cepk2f.lottie", mode: "loop" },
-  "opening-hand": { src: "https://lottie.host/dc5842d7-f483-4635-8626-9450bbeec0ab/xmo6Cepk2f.lottie", mode: "loop" },
-  // Släppa / mjukna (blobs)
-  "deflate": { src: "https://lottie.host/700d2084-966c-448a-9bc2-5289536489b7/RyvCs0bQ0r.lottie", mode: "loop" },
-  "volume-slider": { src: "https://lottie.host/700d2084-966c-448a-9bc2-5289536489b7/RyvCs0bQ0r.lottie", mode: "loop" },
-  "compassion-heart": { src: "https://lottie.host/700d2084-966c-448a-9bc2-5289536489b7/RyvCs0bQ0r.lottie", mode: "loop" },
-  "dropping-bags": { src: "https://lottie.host/700d2084-966c-448a-9bc2-5289536489b7/RyvCs0bQ0r.lottie", mode: "loop" },
-  // Vind / passerar förbi
-  "passing-traffic": { src: "https://lottie.host/0fa3f1c9-98fc-4c94-8605-e1aec2e1dece/t8XYoJACsQ.lottie", mode: "loop" },
-  "drifter": { src: "https://lottie.host/0fa3f1c9-98fc-4c94-8605-e1aec2e1dece/t8XYoJACsQ.lottie", mode: "loop" },
-  // Löv (blowing/falling)
-  "closing-tabs": { src: "https://lottie.host/a9ab9f37-211b-485b-9754-9d0f1f5ce043/MpeatW0RrH.lottie", mode: "loop" },
-  "closing-laptop": { src: "https://lottie.host/a9ab9f37-211b-485b-9754-9d0f1f5ce043/MpeatW0RrH.lottie", mode: "loop" },
-  "inbox-priority": { src: "https://lottie.host/a9ab9f37-211b-485b-9754-9d0f1f5ce043/MpeatW0RrH.lottie", mode: "loop" },
-  "sleep-waves": { src: "https://lottie.host/a8f3a3d0-ac88-406a-948a-20172ad60d69/zuX5gR3dm8.lottie", mode: "loop" },
-  "mailbox": { src: "https://lottie.host/a8f3a3d0-ac88-406a-948a-20172ad60d69/zuX5gR3dm8.lottie", mode: "loop" },
 };
 
 function build(s: Seed): Exercise {
@@ -179,7 +122,6 @@ function build(s: Seed): Exercise {
     kind: s.kind,
     minutes: s.minutes,
     animation: s.animation,
-    lottie: s.lottie ?? LOTTIE_BY_KIND[s.animation],
     metric: s.metric,
     requiresRating: s.requiresRating ?? s.kind === "short",
     steps: s.steps.map((t) => ({
@@ -192,30 +134,26 @@ function build(s: Seed): Exercise {
     metaphor: s.metaphor,
     reflectionPrompt: s.reflectionPrompt,
   };
-
 }
 
-// Standardscript för andetagsfaser
-const IN_SCRIPT  = ["Andas in", "långsamt", "fyll lungorna", "håll kvar"];
+const IN_SCRIPT = ["Andas in", "långsamt", "fyll lungorna", "håll kvar"];
 const OUT_SCRIPT = ["Andas ut", "mjukt", "släpp allt", "tomt"];
 const HOLD_SCRIPT = ["Håll", "stilla", "några sekunder", "snart släpper du"];
 const REST_SCRIPT = ["Vila", "tomt", "stilla", "snart in igen"];
 
-// Box-andning (in / håll / ut / vila à 4 sek)
 const BOX = (rounds = 3): StepTuple[] =>
-  Array.from({ length: rounds }, () => ([
+  Array.from({ length: rounds }, () => [
     ["Andas in", 4, IN_SCRIPT] as StepTuple,
     ["Håll", 4, HOLD_SCRIPT] as StepTuple,
     ["Andas ut", 4, OUT_SCRIPT] as StepTuple,
     ["Vila", 4, REST_SCRIPT] as StepTuple,
-  ])).flat();
+  ]).flat();
 
-// 4 in / 7 ut (våg)
 const WAVE = (rounds = 4): StepTuple[] =>
-  Array.from({ length: rounds }, () => ([
+  Array.from({ length: rounds }, () => [
     ["Andas in", 4, ["Andas in", "näsan", "fyll lungorna", "stanna"]] as StepTuple,
     ["Andas ut", 7, ["Andas ut", "mjukt", "längre", "tömt", "släpp", "stilla", "vänta"]] as StepTuple,
-  ])).flat();
+  ]).flat();
 
 const SEEDS: Seed[] = [
   // ─── ÅNGEST / GROUNDING ───────────────────────────────────
@@ -226,7 +164,7 @@ const SEEDS: Seed[] = [
     category: "anxiety",
     kind: "short",
     minutes: 3,
-    animation: "focus-lens",
+    animation: "dots",
     metric: "oro",
     steps: [
       ["5 saker du SER", 40, ["Låt blicken vandra", "namnge det du ser", "en sak i taget"]],
@@ -239,7 +177,7 @@ const SEEDS: Seed[] = [
     metaphor: {
       intro:
         "När oron drar iväg — kom tillbaka via sinnena. Fem saker du ser. Sen fyra du hör. Och så vidare ner till en. Säg dem tyst för dig själv.",
-      illustration: "focus-lens",
+      illustration: "dots",
     },
   },
 
@@ -251,14 +189,14 @@ const SEEDS: Seed[] = [
     category: "breath",
     kind: "short",
     minutes: 4,
-    animation: "box-breath",
+    animation: "box",
     metric: "stress",
     steps: BOX(15),
     closing: "Rutan höll i dig. Du behövde inte tänka tempot.",
     metaphor: {
       intro:
         "Andetaget får en bana: in, håll, ut, vila — fyra sekunder per sida. Du följer pricken runt rutan.",
-      illustration: "box-breath",
+      illustration: "box",
     },
   },
   {
@@ -268,30 +206,14 @@ const SEEDS: Seed[] = [
     category: "breath",
     kind: "short",
     minutes: 1,
-    animation: "breath-wave",
+    animation: "bow",
     metric: "stress",
     steps: WAVE(6),
     closing: "Den långa utandningen var själva poängen.",
     metaphor: {
       intro:
         "Andas in i fyra. Ut i sju. Utandningen är längre — det är där lugnet kommer.",
-      illustration: "breath-wave",
-    },
-  },
-  {
-    id: "andas-som-en-vag",
-    title: "Andas som en våg",
-    short: "Vågen rullar in. Vågen rullar ut.",
-    category: "breath",
-    kind: "short",
-    minutes: 3,
-    animation: "breath-wave",
-    metric: "stress",
-    steps: WAVE(6),
-    closing: "Du behövde inte göra mer än att följa vågen.",
-    metaphor: {
-      intro: "Andningen är en våg. Du sätter inte tempot — du följer det.",
-      illustration: "breath-wave",
+      illustration: "bow",
     },
   },
   {
@@ -301,7 +223,7 @@ const SEEDS: Seed[] = [
     category: "breath",
     kind: "short",
     minutes: 2,
-    animation: "belly-hand",
+    animation: "orb",
     metric: "kroppsspänning",
     steps: [
       ["Lägg en hand på magen", 12, ["Lägg en hand", "på magen", "platt och varm", "känn den ligga där"]],
@@ -322,7 +244,7 @@ const SEEDS: Seed[] = [
     category: "breath",
     kind: "short",
     minutes: 1,
-    animation: "box-breath",
+    animation: "box",
     metric: "stress",
     steps: [
       ["Stanna här", 8, ["Stanna", "här", "innan dörren", "tre andetag räcker"]],
@@ -336,18 +258,6 @@ const SEEDS: Seed[] = [
     ],
     closing: "Tre andetag. Inte allt. Bara tre. Räcker.",
   },
-  {
-    id: "andning-nar-hjarnan-rusar",
-    title: "Andning när hjärnan rusar",
-    short: "Du behöver inte stänga av tankarna — bara sänka takten.",
-    category: "breath",
-    kind: "short",
-    minutes: 3,
-    animation: "breath-wave",
-    metric: "stress",
-    steps: WAVE(6),
-    closing: "Tankarna fortsatte. De får. Du andades långsammare.",
-  },
 
   // ─── SNABB PAUS ───────────────────────────────────────────
   {
@@ -357,7 +267,7 @@ const SEEDS: Seed[] = [
     category: "quick-pause",
     kind: "short",
     minutes: 1,
-    animation: "sand-clock",
+    animation: "meter-down",
     metric: "stress",
     steps: [
       ["Stanna", 12, ["Stanna", "var du är", "du behöver inte göra något", "bara vara här"]],
@@ -375,7 +285,7 @@ const SEEDS: Seed[] = [
     category: "quick-pause",
     kind: "short",
     minutes: 1,
-    animation: "stoplight",
+    animation: "dots",
     metric: "oro",
     steps: [
       ["En sak du ser", 16, ["Titta upp", "låt blicken vila", "hitta en sak", "vad är det?", "säg det tyst", "stanna där en stund"]],
@@ -393,7 +303,7 @@ const SEEDS: Seed[] = [
     category: "quick-pause",
     kind: "short",
     minutes: 1,
-    animation: "shoulder-drop",
+    animation: "orb",
     metric: "kroppsspänning",
     steps: [
       ["Släpp axlarna", 10, ["Lägg märke", "till axlarna", "är de upp?", "släpp dem ner", "längre ner"]],
@@ -404,50 +314,13 @@ const SEEDS: Seed[] = [
     closing: "Tjugo sekunder mindre på pannan. Räcker.",
   },
   {
-    id: "paus-innan-du-svarar",
-    title: "Paus innan du svarar",
-    short: "Innan du trycker skicka. Innan du säger ja.",
-    category: "quick-pause",
-    kind: "short",
-    minutes: 1,
-    animation: "traffic-light",
-    metric: "stress",
-    steps: [
-      ["Rött: stanna", 12, ["Rött ljus", "stanna", "svara inte än", "andas in", "andas ut"]],
-      ["Gult: vad känns?", 16, ["Gult ljus", "vad känns just nu?", "var i kroppen?", "är det irritation?", "rädsla?", "stress?", "namnge det tyst"]],
-      ["Grönt: välj", 16, ["Grönt ljus", "nu väljer du", "vad vill du säga?", "från vilken plats?", "säg det", "eller skriv det", "klar"]],
-    ],
-    closing: "Du valde. Du reagerade inte bara.",
-    metaphor: {
-      intro: "Mellan impuls och svar finns ett mellanrum. Vi gör det lite större.",
-      illustration: "traffic-light",
-    },
-  },
-  {
-    id: "paus-for-kaken",
-    title: "Paus för käken",
-    short: "Käken bär saker den inte borde.",
-    category: "quick-pause",
-    kind: "short",
-    minutes: 1,
-    animation: "jaw-release",
-    metric: "kroppsspänning",
-    steps: [
-      ["Lägg märke till käken", 12, ["Lägg märke", "till käken", "biter du ihop?", "är tänderna emot varandra?", "lägg bara märke till det"]],
-      ["Öppna munnen lite", 10, ["Öppna munnen", "en liten glipa", "luft mellan tänderna", "släpp"]],
-      ["Tungan ner", 10, ["Tungan", "vilar i munnen", "ner från gommen", "tung och avslappnad"]],
-      ["Andas ut genom munnen", 14, ["Andas ut", "genom munnen", "som en suck", "längre", "släpp käken helt", "den hänger", "bra"]],
-    ],
-    closing: "Käken släppte ett halvt steg. Det räknas.",
-  },
-  {
     id: "stang-47-flikar",
     title: "Stäng 47 mentala flikar",
     short: "Stäng tre. Inte alla. Bara tre.",
     category: "quick-pause",
     kind: "short",
     minutes: 2,
-    animation: "closing-tabs",
+    animation: "dots",
     metric: "stress",
     steps: [
       ["Vad tar plats?", 20, ["Vad snurrar?", "i huvudet just nu", "lista tyst", "två-tre saker", "låt dem dyka upp", "döm dem inte"]],
@@ -460,35 +333,11 @@ const SEEDS: Seed[] = [
     closing: "Tre flikar mindre. Tillräckligt för tystnad.",
     metaphor: {
       intro: "Stress är en webbläsare med trettio flikar. Vi börjar med tre.",
-      illustration: "mailbox",
+      illustration: "dots",
     },
   },
 
   // ─── HANTERA ORO ──────────────────────────────────────────
-  {
-    id: "tankar-som-trafik",
-    title: "Tankar som trafik",
-    short: "Tankar passerar. Du står på trottoaren.",
-    category: "anxiety",
-    kind: "reflective",
-    minutes: 5,
-    animation: "passing-traffic",
-    metric: "oro",
-    steps: [
-      ["Se trafiken passera", 36, ["Du står still", "tankarna åker förbi", "som bilar", "du behöver inte hoppa in", "bara titta"]],
-      ["Lägg märke till en tanke", 48, ["En tanke dyker upp", "lägg märke", "vilken är det?", "namnge den tyst", "döm inte", "bara se den"]],
-      ["Namnge den", 40, ["Säg tyst", "'planering'", "eller 'oro'", "eller 'minne'", "vad det än är", "ge den ett namn"]],
-      ["Låt den åka vidare", 56, ["Den är inte din uppgift", "låt den passera", "som en bil", "vidare i trafiken", "ut ur synfältet", "borta"]],
-      ["Tillbaka till trottoaren", 48, ["Du är kvar", "på trottoaren", "andas in", "andas ut", "tankarna åker", "du står still"]],
-      ["En till — låt den passera", 56, ["Ny tanke", "namnge den", "låt den passera", "döm inte", "andas ut", "stanna där du är"]],
-    ],
-    closing: "Trafiken fortsatte. Du behövde inte hoppa in.",
-    metaphor: {
-      intro: "Tankar är trafik. Du behöver inte hoppa in i varje bil. Bara se den passera.",
-      illustration: "passing-traffic",
-    },
-    reflectionPrompt: "Vilken tanke kom oftast tillbaka?",
-  },
   {
     id: "angesten-far-inte-kora",
     title: "Ångesten får inte köra bilen",
@@ -496,7 +345,7 @@ const SEEDS: Seed[] = [
     category: "anxiety",
     kind: "reflective",
     minutes: 6,
-    animation: "steering-wheel",
+    animation: "orb",
     metric: "oro",
     steps: [
       ["Du sitter vid ratten", 40, ["Du kör", "du sitter vid ratten", "händer på 10 och 2", "ångesten är passagerare", "inte förare"]],
@@ -516,7 +365,7 @@ const SEEDS: Seed[] = [
     category: "anxiety",
     kind: "reflective",
     minutes: 7,
-    animation: "drifting-clouds",
+    animation: "drift",
     metric: "oro",
     steps: [
       ["Se himlen", 40, ["Du är himlen", "stor", "öppen", "molnen rör sig över dig", "du står kvar"]],
@@ -529,7 +378,7 @@ const SEEDS: Seed[] = [
     closing: "Känslorna passerade. Himlen var ovan dem hela tiden.",
     metaphor: {
       intro: "Du är inte molnet. Du är himlen som molnen rör sig över.",
-      illustration: "drifting-clouds",
+      illustration: "drift",
     },
     reflectionPrompt: "Vilket moln var tyngst idag?",
   },
@@ -540,7 +389,7 @@ const SEEDS: Seed[] = [
     category: "anxiety",
     kind: "short",
     minutes: 3,
-    animation: "anchor-drop",
+    animation: "meter-down",
     metric: "oro",
     steps: [
       ["Känn fötterna", 20, ["Sätt ner fötterna", "platta mot golvet", "känn underlaget", "tryck lätt", "du är förankrad"]],
@@ -552,7 +401,7 @@ const SEEDS: Seed[] = [
     closing: "Du är förankrad. Vinden får blåsa.",
     metaphor: {
       intro: "När huvudet drar iväg behöver vi tyngd i botten. Ankaret sjunker.",
-      illustration: "anchor-drop",
+      illustration: "meter-down",
     },
   },
   {
@@ -562,7 +411,7 @@ const SEEDS: Seed[] = [
     category: "anxiety",
     kind: "short",
     minutes: 3,
-    animation: "volume-slider",
+    animation: "meter-down",
     metric: "oro",
     steps: [
       ["Lägg märke till volymen", 20, ["Lyssna inåt", "hur högt är det?", "från 1 till 10", "vilken siffra?", "döm inte"]],
@@ -574,7 +423,7 @@ const SEEDS: Seed[] = [
     closing: "Volymen blev lägre. Inte noll. Bara lägre.",
     metaphor: {
       intro: "Oron är ett ljud. Vi sänker volymen — inte stänger av.",
-      illustration: "volume-slider",
+      illustration: "meter-down",
     },
   },
 
@@ -586,7 +435,7 @@ const SEEDS: Seed[] = [
     category: "stress",
     kind: "short",
     minutes: 3,
-    animation: "deflate",
+    animation: "orb",
     metric: "stress",
     steps: [
       ["Släpp axlarna", 20, ["Lägg märke", "till axlarna", "är de upp?", "släpp ner dem", "längre ner", "bra"]],
@@ -605,7 +454,7 @@ const SEEDS: Seed[] = [
     category: "stress",
     kind: "short",
     minutes: 3,
-    animation: "note-to-self",
+    animation: "dots",
     metric: "stress",
     steps: [
       ["Vad försöker du lösa?", 28, ["Vad snurrar?", "vad försöker hjärnan lösa?", "just nu", "namnge en sak", "tyst"]],
@@ -617,46 +466,8 @@ const SEEDS: Seed[] = [
     closing: "Du behöver inte lösa allt nu. Det får vänta.",
     metaphor: {
       intro: "Vi lägger lappen i en låda märkt 'sen'. Den finns kvar. Den behöver bara inte lösas nu.",
-      illustration: "mailbox",
+      illustration: "dots",
     },
-  },
-  {
-    id: "stress-som-ljudvolym",
-    title: "Stress som ljudvolym",
-    short: "Dra ner reglaget ett snäpp.",
-    category: "stress",
-    kind: "short",
-    minutes: 2,
-    animation: "volume-slider",
-    metric: "stress",
-    steps: [
-      ["Var är volymen nu?", 18, ["Lyssna inåt", "hur högt är det?", "från 1 till 10", "vilken siffra?"]],
-      ["Dra ner ett snäpp", 22, ["Dra reglaget", "ner ett snäpp", "bara ett", "inte tyst", "bara lägre"]],
-      ["Andas ut", 14, ["Andas in", "andas ut längre", "släpp"]],
-      ["Ett snäpp till", 22, ["Ett snäpp till", "ner", "stilla", "mjukare"]],
-      ["Andas ut", 14, ["Andas in", "andas ut", "ännu längre", "släpp"]],
-      ["Mjukare här", 18, ["Det är mjukare", "inte tyst", "men mjukare", "räcker"]],
-    ],
-    closing: "Mjukare. Inte stilla. Mjukare räcker.",
-  },
-  {
-    id: "lagg-ner-stenen",
-    title: "Lägg ner stenen",
-    short: "Vad har du burit hela dagen?",
-    category: "stress",
-    kind: "reflective",
-    minutes: 5,
-    animation: "lifting-stone",
-    metric: "stress",
-    steps: [
-      ["Vad har du burit?", 40, ["Vad har du burit?", "hela dagen", "i bröstet", "i magen", "i pannan", "namnge en sak"]],
-      ["Sätt ord på en sak", 48, ["En sak", "som tynger", "ge den ett namn", "säg det tyst", "döm inte"]],
-      ["Lägg ner den i 5 minuter", 56, ["Föreställ dig", "en sten", "i händerna", "lägg ner den", "framför dig", "bara i fem minuter"]],
-      ["Den finns kvar", 40, ["Den ligger där", "den finns kvar", "du har inte slängt den", "bara lagt ner den"]],
-      ["Du hämtar den sen", 56, ["Du kan hämta den", "om en stund", "om du vill", "men just nu", "är dina händer tomma"]],
-    ],
-    closing: "Du satte ner den. Det räknas.",
-    reflectionPrompt: "Vad lade du ner just nu?",
   },
   {
     id: "lov-pa-en-flod",
@@ -665,7 +476,7 @@ const SEEDS: Seed[] = [
     category: "stress",
     kind: "short",
     minutes: 4,
-    animation: "drifting-leaves",
+    animation: "drift",
     metric: "stress",
     steps: [
       ["Sätt dig vid floden", 20, ["Föreställ dig", "en lugn flod", "du sitter på stranden", "vattnet rör sig sakta", "förbi dig"]],
@@ -678,11 +489,9 @@ const SEEDS: Seed[] = [
     closing: "Tankarna fortsatte komma. Du fortsatte släppa dem.",
     metaphor: {
       intro: "Föreställ dig en lugn flod. Varje tanke som dyker upp lägger du på ett löv som flyter förbi. Du behöver inte stoppa floden. Du behöver inte hoppa i. Du bara sitter och tittar.",
-      illustration: "drifting-leaves",
+      illustration: "drift",
     },
   },
-
-
 
   // ─── FOKUSERA ─────────────────────────────────────────────
   {
@@ -692,7 +501,7 @@ const SEEDS: Seed[] = [
     category: "focus",
     kind: "short",
     minutes: 3,
-    animation: "path-fork",
+    animation: "dots",
     metric: "fokus",
     steps: [
       ["Tre saker du gör NU", 36, ["Lista tyst", "tre saker", "som måste göras", "idag", "just NU", "säg dem"]],
@@ -704,7 +513,7 @@ const SEEDS: Seed[] = [
     closing: "Sorterat. Nu behöver hjärnan inte hålla det åt dig.",
     metaphor: {
       intro: "När allt känns lika viktigt blir inget gjort. Vi tvingar fram tre högar.",
-      illustration: "sorting-shelf",
+      illustration: "dots",
     },
   },
   {
@@ -714,7 +523,7 @@ const SEEDS: Seed[] = [
     category: "focus",
     kind: "short",
     minutes: 3,
-    animation: "focus-lens",
+    animation: "orb",
     metric: "fokus",
     steps: [
       ["Lägg märke till spritheten", 20, ["Lägg märke", "till uppmärksamheten", "är den spridd?", "hoppar den?", "döm inte"]],
@@ -726,7 +535,7 @@ const SEEDS: Seed[] = [
     closing: "Linsen är inte perfekt. Den är bara mer samlad.",
     metaphor: {
       intro: "Fokus är inte att stänga av allt. Det är att samla något i mitten.",
-      illustration: "focus-lens",
+      illustration: "orb",
     },
   },
   {
@@ -736,7 +545,7 @@ const SEEDS: Seed[] = [
     category: "focus",
     kind: "short",
     minutes: 2,
-    animation: "first-step",
+    animation: "dots",
     metric: "fokus",
     steps: [
       ["Vad är första handlingen?", 28, ["Vad är", "första handlingen?", "inte hela uppgiften", "bara första steget"]],
@@ -747,25 +556,6 @@ const SEEDS: Seed[] = [
     ],
     closing: "Du behövde inte hela berget. Bara första steget.",
   },
-  {
-    id: "fokus-innan-skrivande",
-    title: "Fokus innan skrivande",
-    short: "Två minuter samling innan första meningen.",
-    category: "focus",
-    kind: "short",
-    minutes: 2,
-    animation: "typing-cursor",
-    metric: "fokus",
-    steps: [
-      ["Vad ska du skriva om?", 20, ["Vad ska du skriva?", "huvudtemat", "i en mening", "tyst för dig själv"]],
-      ["En mening i huvudet", 28, ["Säg tyst", "första meningen", "inte perfekt", "bara en mening", "vad blir det?"]],
-      ["Andas in", 4, IN_SCRIPT],
-      ["Andas ut", 6, OUT_SCRIPT],
-      ["Skriv meningen tyst", 28, ["Säg meningen", "för dig själv", "igen", "håll den i huvudet", "den är klar"]],
-      ["Öppna dokumentet", 24, ["Öppna dokumentet", "skriv ner den", "första meningen", "resten kommer", "gå"]],
-    ],
-    closing: "Första meningen finns redan. Resten är bara skriva ner.",
-  },
 
   // ─── SOVA ─────────────────────────────────────────────────
   {
@@ -775,7 +565,7 @@ const SEEDS: Seed[] = [
     category: "sleep",
     kind: "reflective",
     minutes: 8,
-    animation: "candle",
+    animation: "meter-down",
     metric: "trötthet",
     steps: [
       ["Sänk tempot", 56, ["Du är klar för dagen", "sänk tempot", "ingenting måste lösas nu", "bara andas", "långsamt"]],
@@ -790,39 +580,13 @@ const SEEDS: Seed[] = [
     closing: "Resten av kvällen behöver du inte lösa nu.",
   },
   {
-    id: "varmestralen",
-    title: "Värmestrålen",
-    short: "En varm stråle vandrar från hjässa till tå.",
-    category: "sleep",
-    kind: "reflective",
-    minutes: 6,
-    animation: "warm-beam",
-    metric: "trötthet",
-    steps: [
-      ["Hjässan blir varm", 36, ["En varm stråle", "vid hjässan", "som solljus", "långsamt", "varmt", "tungt"]],
-      ["Pannan släpper", 36, ["Strålen", "rör sig ner", "över pannan", "huden mjuknar", "släpp"]],
-      ["Käken släpper", 36, ["Käken", "varm", "öppen", "tungan ner", "släpp"]],
-      ["Axlarna tunga", 36, ["Axlarna", "varma", "tunga", "ner mot kudden", "släpp"]],
-      ["Bröstet mjukt", 36, ["Bröstet", "varmt", "andas långsamt", "lyfter och sjunker", "mjukt"]],
-      ["Magen släpper", 36, ["Magen", "varm", "mjuk", "ingen spänning", "släpp"]],
-      ["Benen tunga", 36, ["Strålen", "över benen", "låret", "vaden", "tunga"]],
-      ["Fötterna varma", 36, ["Fötterna", "varma", "tunga", "tårna släpper", "stilla"]],
-      ["Hela kroppen vilar", 40, ["Hela kroppen", "varm", "tung", "stilla", "vilar", "redo att sova"]],
-    ],
-    closing: "Värmen finns kvar. Tankarna får stanna utanför.",
-    metaphor: {
-      intro: "Föreställ dig en varm stråle som rör sig sakta nedåt. Det den passerar blir tungt.",
-      illustration: "body-scan",
-    },
-  },
-  {
     id: "lagg-dagen-i-en-lada",
     title: "Lägg dagen i en låda",
     short: "Dagen finns kvar — den behöver inte ligga i huvudet.",
     category: "sleep",
     kind: "short",
     minutes: 3,
-    animation: "mailbox",
+    animation: "dots",
     metric: "trötthet",
     steps: [
       ["Vad hände idag?", 28, ["Vad hände idag?", "kort genomgång", "tyst i huvudet", "döm inte"]],
@@ -834,7 +598,7 @@ const SEEDS: Seed[] = [
     closing: "Dagen ligger i lådan. Den finns kvar imorgon.",
     metaphor: {
       intro: "Dagen behöver inte ligga i huvudet hela natten. Vi lägger den i en låda märkt 'imorgon'.",
-      illustration: "mailbox",
+      illustration: "dots",
     },
   },
   {
@@ -844,7 +608,7 @@ const SEEDS: Seed[] = [
     category: "sleep",
     kind: "short",
     minutes: 3,
-    animation: "sleep-waves",
+    animation: "bow",
     metric: "trötthet",
     steps: WAVE(7),
     closing: "Kroppen följde med till slut. Som den brukar.",
@@ -858,7 +622,7 @@ const SEEDS: Seed[] = [
     category: "body",
     kind: "reflective",
     minutes: 7,
-    animation: "body-scan",
+    animation: "meter-down",
     metric: "kroppsspänning",
     steps: [
       ["Pannan", 48, ["Lägg märke", "till pannan", "är den spänd?", "är den slät?", "fixa inget", "bara märk"]],
@@ -874,7 +638,7 @@ const SEEDS: Seed[] = [
     metaphor: {
       intro:
         "Uppmärksamheten vandrar genom kroppen — pannan, käken, halsen, bröstet, magen, höfter, fötter. Du fixar inget. Du lyser bara upp ett område i taget och märker vad som finns där.",
-      illustration: "body-scan",
+      illustration: "meter-down",
     },
   },
   {
@@ -884,7 +648,7 @@ const SEEDS: Seed[] = [
     category: "body",
     kind: "short",
     minutes: 1,
-    animation: "footprints",
+    animation: "orb",
     metric: "kroppsspänning",
     steps: [
       ["Hela foten mot golvet", 14, ["Sätt ner fötterna", "platta mot golvet", "hela fotsulan", "känn underlaget"]],
@@ -901,7 +665,7 @@ const SEEDS: Seed[] = [
     category: "body",
     kind: "short",
     minutes: 1,
-    animation: "jaw-release",
+    animation: "orb",
     metric: "kroppsspänning",
     steps: [
       ["Lägg märke till käken", 14, ["Lägg märke", "till käken", "biter du ihop?", "döm inte", "bara märk"]],
@@ -918,7 +682,7 @@ const SEEDS: Seed[] = [
     category: "body",
     kind: "short",
     minutes: 2,
-    animation: "shoulder-drop",
+    animation: "orb",
     metric: "kroppsspänning",
     steps: [
       ["Dra axlarna upp", 10, ["Dra axlarna", "upp mot öronen", "håll", "håll", "släpp snart"]],
@@ -939,7 +703,7 @@ const SEEDS: Seed[] = [
     category: "reflection",
     kind: "reflective",
     minutes: 3,
-    animation: "walking-path",
+    animation: "dots",
     metric: "stress",
     requiresRating: false,
     steps: [
@@ -959,7 +723,7 @@ const SEEDS: Seed[] = [
     category: "reflection",
     kind: "reflective",
     minutes: 7,
-    animation: "measuring-tape",
+    animation: "meter-down",
     metric: "stress",
     requiresRating: false,
     steps: [
@@ -973,7 +737,7 @@ const SEEDS: Seed[] = [
     closing: "Måttstocken finns kvar. Den behöver bara inte ligga i handen.",
     metaphor: {
       intro: "Vi går runt med en måttstock som vi inte minns när vi tog upp. Vi lägger ner den ett tag.",
-      illustration: "measuring-tape",
+      illustration: "meter-down",
     },
     reflectionPrompt: "Vad såg du när måttstocken låg ner?",
   },
@@ -984,7 +748,7 @@ const SEEDS: Seed[] = [
     category: "reflection",
     kind: "reflective",
     minutes: 8,
-    animation: "constellation",
+    animation: "orb",
     metric: "oro",
     requiresRating: false,
     steps: [
@@ -1005,7 +769,7 @@ const SEEDS: Seed[] = [
     category: "reflection",
     kind: "reflective",
     minutes: 6,
-    animation: "dropping-bags",
+    animation: "dots",
     metric: "stress",
     requiresRating: false,
     steps: [
@@ -1027,7 +791,7 @@ const SEEDS: Seed[] = [
     category: "compassion",
     kind: "reflective",
     minutes: 4,
-    animation: "compassion-heart",
+    animation: "dots",
     metric: "stress",
     requiresRating: false,
     steps: [
@@ -1040,7 +804,7 @@ const SEEDS: Seed[] = [
     closing: "Inte tönt. Bara rättvist.",
     metaphor: {
       intro: "Du pratar snällare med vänner än med dig själv. Vi lånar tonen tillbaka.",
-      illustration: "compassion-heart",
+      illustration: "dots",
     },
     reflectionPrompt: "Vilken mening behövde du höra mest?",
   },
@@ -1051,7 +815,7 @@ const SEEDS: Seed[] = [
     category: "compassion",
     kind: "short",
     minutes: 3,
-    animation: "inner-voice",
+    animation: "orb",
     metric: "stress",
     steps: [
       ["Det här är svårt", 40, ["Säg tyst", "till dig själv", "det här är svårt", "det är okej att det är svårt", "andra människor", "skulle också tycka det"]],
@@ -1062,24 +826,6 @@ const SEEDS: Seed[] = [
     ],
     closing: "Du är mänsklig. Det räcker idag.",
   },
-  {
-    id: "lagg-ner-piskan",
-    title: "Lägg ner piskan",
-    short: "Den inre rösten kan vara hård. Vi sänker den.",
-    category: "compassion",
-    kind: "short",
-    minutes: 3,
-    animation: "opening-hand",
-    metric: "stress",
-    steps: [
-      ["Vad säger du till dig?", 28, ["Lyssna inåt", "vad säger du", "till dig själv", "just nu?", "ärligt", "döm inte"]],
-      ["Skulle du säga det till en vän?", 28, ["Skulle du säga", "samma sak", "till en vän?", "med samma ton?", "samma ord?"]],
-      ["Sänk volymen", 28, ["Sänk volymen", "på den rösten", "ett snäpp", "den får finnas", "men inte skrika"]],
-      ["En vänligare version", 40, ["Vad blir", "en vänligare version?", "samma sak", "men snällare ton", "säg den tyst"]],
-      ["Säg den tyst", 40, ["Säg den", "till dig själv", "som du menar det", "låt den landa", "andas in", "andas ut"]],
-    ],
-    closing: "Piskan ligger på golvet. Den får ligga där.",
-  },
 
   // ─── ILSKA ────────────────────────────────────────────────
   {
@@ -1089,7 +835,7 @@ const SEEDS: Seed[] = [
     category: "anger",
     kind: "short",
     minutes: 3,
-    animation: "ember",
+    animation: "meter-down",
     metric: "ilska",
     steps: [
       ["Stanna här", 28, ["Stanna", "svara inte än", "andas in", "andas ut", "låt det vänta", "ingen brådska", "du är här"]],
@@ -1101,7 +847,7 @@ const SEEDS: Seed[] = [
     closing: "Glöd är fortfarande het. Den brinner bara inte upp rummet.",
     metaphor: {
       intro: "Ilska är eld. Vi släcker den inte — vi väntar tills den blir glöd.",
-      illustration: "ember",
+      illustration: "meter-down",
     },
   },
   {
@@ -1111,7 +857,7 @@ const SEEDS: Seed[] = [
     category: "anger",
     kind: "short",
     minutes: 2,
-    animation: "traffic-light",
+    animation: "traffic-dots",
     metric: "ilska",
     steps: [
       ["Rött: stanna helt", 18, ["Rött ljus", "stanna helt", "säg inget", "skriv inget", "andas"]],
@@ -1128,7 +874,7 @@ const SEEDS: Seed[] = [
     category: "anger",
     kind: "reflective",
     minutes: 5,
-    animation: "ember",
+    animation: "orb",
     metric: "ilska",
     steps: [
       ["Var sitter ilskan?", 36, ["Var i kroppen?", "bröstet?", "käken?", "händerna?", "magen?", "lägg märke"]],
@@ -1140,24 +886,6 @@ const SEEDS: Seed[] = [
     closing: "Under ilskan fanns något annat. Du tittade efter.",
     reflectionPrompt: "Vad fanns under?",
   },
-  {
-    id: "paus-innan-sms",
-    title: "Paus innan sms",
-    short: "Innan du trycker skicka. En kort sväng.",
-    category: "anger",
-    kind: "short",
-    minutes: 1,
-    animation: "traffic-light",
-    metric: "ilska",
-    steps: [
-      ["Lägg telefonen ner", 10, ["Lägg telefonen", "ner", "skicka inte än", "vänta"]],
-      ["Andas ut", 10, ["Andas in", "andas ut längre", "släpp axlarna"]],
-      ["Vill du säga det om en timme?", 18, ["Skulle du säga", "samma sak", "om en timme?", "om en dag?", "ärligt"]],
-      ["Om ja: säg det", 10, ["Om ja", "säg det", "skicka det", "stå för det"]],
-      ["Om nej: mjukare version", 12, ["Om nej", "skriv om", "samma sak", "men mjukare", "kortare", "ärligare"]],
-    ],
-    closing: "Inget skickat i affekt. Du tackar dig själv imorgon.",
-  },
 
   // ─── ARBETSDAG ────────────────────────────────────────────
   {
@@ -1167,7 +895,7 @@ const SEEDS: Seed[] = [
     category: "worklife",
     kind: "short",
     minutes: 2,
-    animation: "morning-sun",
+    animation: "orb",
     metric: "fokus",
     steps: [
       ["Dagens viktigaste sak?", 28, ["Vad är", "dagens viktigaste sak?", "bara en", "vilken är det?", "säg den tyst"]],
@@ -1186,7 +914,7 @@ const SEEDS: Seed[] = [
     category: "worklife",
     kind: "short",
     minutes: 1,
-    animation: "stretch-up",
+    animation: "bow",
     metric: "stress",
     steps: [
       ["Stå upp om du kan", 10, ["Res dig", "om du kan", "ge kroppen luft", "annars sitt och sträck"]],
@@ -1203,7 +931,7 @@ const SEEDS: Seed[] = [
     category: "worklife",
     kind: "short",
     minutes: 3,
-    animation: "closing-laptop",
+    animation: "meter-down",
     metric: "stress",
     steps: [
       ["Vad blev klart idag?", 28, ["Vad blev klart", "idag?", "även smått", "räkna upp tre saker", "tyst"]],
@@ -1221,7 +949,7 @@ const SEEDS: Seed[] = [
     category: "worklife",
     kind: "short",
     minutes: 2,
-    animation: "inbox-priority",
+    animation: "dots",
     metric: "stress",
     steps: [
       ["Stäng inkorgen", 14, ["Stäng inkorgen", "ett ögonblick", "den finns kvar", "men inte i ögonen"]],
@@ -1239,7 +967,7 @@ const SEEDS: Seed[] = [
     category: "worklife",
     kind: "short",
     minutes: 2,
-    animation: "doorway",
+    animation: "orb",
     metric: "stress",
     steps: [
       ["Stanna utanför", 14, ["Stanna", "utanför dörren", "ett ögonblick", "innan du går in"]],
