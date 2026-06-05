@@ -434,78 +434,303 @@ function ResetBars(p: BespokeProps) {
   );
 }
 
-// ─── 4. Fokuslinsen — många prickar drar in mot centrum ────
+// ─── 4. Fokuslinsen — sprid → välj → mitten → kanter → andas
+// 5 steg (script):
+//  0 "Lägg märke till spritheten"   → ~14 prickar utspridda, jittriga, inget centrum
+//  1 "Välj ett ord eller en uppgift" → en utvald prick fram-poppas, andra dimmas
+//  2 "Låt det vara mitten"           → den utvalda glider till centrum, blir lins
+//  3 "Resten i kanten"               → övriga glider ut till ringkant och stannar svaga
+//  4 "Andas in mot mitten"           → kant-prickarna andas in/ut mot mitten, linsen pulserar
 function FocusLens(p: BespokeProps) {
-  const t = totalT(p);
-  const pulse = useBreathPulse(4500);
-  const n = 14;
+  const stepIdx = p.stepIndex ?? 0;
+  const sp = clamp01(p.stepProgress ?? 0);
+  const breathe = useBreathPulse(5200);
   const R = 110;
-  const gather = easeInOut(t); // 0 spritt, 1 samlat
+  const n = 14;
+  const chosenIdx = 3;
+
+  // Deterministisk "spridd" startposition per prick
+  const seedPos = (i: number) => {
+    const a = (i / n) * Math.PI * 2 + (Math.sin(i * 12.9898) % 1) * 1.2;
+    const noise = Math.abs((Math.sin(i * 78.233) * 43758.5453) % 1);
+    const rr = R * (0.42 + 0.5 * noise);
+    return { x: Math.cos(a) * rr, y: Math.sin(a) * rr, a };
+  };
+
+  const jitterAmp =
+    stepIdx === 0 ? 7
+    : stepIdx === 1 ? lerp(7, 2, easeInOut(sp))
+    : 1.5;
+
   return (
     <svg viewBox="-130 -130 260 260" className="h-64 w-64 md:h-72 md:w-72" aria-hidden>
       <circle cx={0} cy={0} r={R} fill={SOFT} fillOpacity={0.3} />
+      <circle
+        cx={0}
+        cy={0}
+        r={R}
+        fill="none"
+        stroke="currentColor"
+        strokeOpacity={stepIdx >= 3 ? 0.35 : 0.12}
+        strokeWidth={2}
+      />
+
       {Array.from({ length: n }, (_, i) => {
-        const a = (i / n) * Math.PI * 2 + pulse * 0.4;
-        // Egen jitter-radie så de inte ligger på en cirkel hela tiden
-        const noise = (Math.sin(i * 12.9898) * 43758.5453) % 1;
-        const noise2 = Math.abs(noise);
-        const rOuter = R * (0.7 + 0.3 * noise2);
-        const r = lerp(rOuter, 6, gather);
-        const op = lerp(0.55, 1, gather);
-        return <circle key={i} cx={Math.cos(a) * r} cy={Math.sin(a) * r} r={6} fill={ACCENT} fillOpacity={op} />;
+        const base = seedPos(i);
+        const isChosen = i === chosenIdx;
+        const jx = Math.sin(breathe * Math.PI * 2 + i) * jitterAmp;
+        const jy = Math.cos(breathe * Math.PI * 2 + i * 1.3) * jitterAmp;
+        const edgeX = Math.cos(base.a) * (R - 6);
+        const edgeY = Math.sin(base.a) * (R - 6);
+
+        if (isChosen) {
+          const toCenter =
+            stepIdx < 2 ? 0
+            : stepIdx === 2 ? easeInOut(sp)
+            : 1;
+          const grow = stepIdx >= 1 ? (stepIdx === 1 ? easeInOut(sp) : 1) : 0;
+          const lens = stepIdx >= 2 ? (stepIdx === 2 ? easeInOut(sp) : 1) : 0;
+          const cx = lerp(base.x + jx * 0.3, 0, toCenter);
+          const cy = lerp(base.y + jy * 0.3, 0, toCenter);
+          let r = lerp(6, 10, grow);
+          r = lerp(r, 22 + breathe * 4, lens);
+          return <circle key={i} cx={cx} cy={cy} r={r} fill={ACCENT} fillOpacity={1} />;
+        }
+
+        const toEdge =
+          stepIdx < 3 ? 0
+          : stepIdx === 3 ? easeInOut(sp)
+          : 1;
+        const breath = stepIdx >= 4 ? Math.sin(breathe * Math.PI * 2) * 10 : 0;
+        const ax = Math.cos(base.a) * breath;
+        const ay = Math.sin(base.a) * breath;
+        const cx = lerp(base.x + jx, edgeX - ax, toEdge);
+        const cy = lerp(base.y + jy, edgeY - ay, toEdge);
+        const dim =
+          stepIdx === 0 ? 0
+          : stepIdx === 1 ? easeInOut(sp)
+          : 1;
+        return <circle key={i} cx={cx} cy={cy} r={6} fill={SOFT} fillOpacity={lerp(0.75, 0.3, dim)} />;
       })}
-      {/* Linsen själv — växer fram */}
-      <circle cx={0} cy={0} r={lerp(0, 24, gather)} fill={ACCENT} />
     </svg>
   );
 }
 
-// ─── 5. Sov mjukare — horisont sjunker, måne dalar ─────────
+// ─── 5. Sov mjukare — kropp uppifrån ner, måne dalar ───────
+// 8 steg (script): 0 sänk tempot, 1 panna, 2 käke, 3 axlar,
+// 4 bröstkorg, 5 mage, 6 ben, 7 fötter.
+// Visual: stiliserad liggande kropp som rundad vertikal pelare.
+// För varje steg "mjuknar" motsvarande zon (mjukare färg, mjukare puls).
+// Bakom: himmel + måne som dalar långsamt mot horisont över hela övningen.
 function SoftSleep(p: BespokeProps) {
   const t = totalT(p);
+  const stepIdx = p.stepIndex ?? 0;
+  const sp = clamp01(p.stepProgress ?? 0);
   const pulse = useBreathPulse(6500);
   const W = 320;
-  const H = 220;
-  const horizonY = lerp(H * 0.32, H * 0.82, easeInOut(t));
-  const moonX = W * 0.72;
-  const moonY = lerp(H * 0.18, horizonY + 14, easeInOut(t));
-  const moonR = 22 + pulse * 2;
+  const H = 260;
+
+  // Himmel + horisont + måne — dalar långsamt över hela övningen
+  const horizonY = lerp(H * 0.18, H * 0.42, easeInOut(t));
+  const moonX = W * 0.78;
+  const moonY = lerp(H * 0.08, horizonY - 2, easeInOut(t));
+  const moonR = 18 + pulse * 1.5;
+
+  // Kroppspelare — vertikal, börjar under horisonten
+  const bodyX = W * 0.18;
+  const bodyW = W * 0.22;
+  const bodyTop = H * 0.18;
+  const bodyBot = H * 0.94;
+  const bodyH = bodyBot - bodyTop;
+
+  // 7 zoner uppifrån ner: panna, käke, axlar, bröst, mage, ben, fötter
+  // Steg 0 har ingen aktiv zon (bara "sänk tempot"). Steg 1..7 = zon 0..6.
+  const zones = 7;
+  const zoneH = bodyH / zones;
+
+  // Hur "mjuk" en zon är (0 spänd, 1 släppt)
+  const softness = (z: number) => {
+    const targetStep = z + 1; // zon 0 släpps i steg 1
+    if (stepIdx > targetStep) return 1;
+    if (stepIdx === targetStep) return easeInOut(sp);
+    return 0;
+  };
+
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="h-56 w-[22rem]" aria-hidden>
-      {/* himmel */}
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-64 w-[22rem]" aria-hidden>
+      {/* Himmel */}
       <rect x={0} y={0} width={W} height={horizonY} fill={SOFT} fillOpacity={0.35} />
-      {/* land */}
-      <rect x={0} y={horizonY} width={W} height={H - horizonY} fill={ACCENT} fillOpacity={0.85} />
-      {/* måne — klipps av horisonten naturligt eftersom den ligger bakom land-rektangeln när den sjunker */}
-      <circle cx={moonX} cy={moonY} r={moonR} fill={ACCENT} />
-      {/* horisontlinje */}
-      <line x1={0} x2={W} y1={horizonY} y2={horizonY} stroke="currentColor" strokeOpacity={0.25} strokeWidth={2} />
+      {/* Mark */}
+      <rect x={0} y={horizonY} width={W} height={H - horizonY} fill={SOFT} fillOpacity={0.55} />
+      {/* Måne */}
+      <circle cx={moonX} cy={moonY} r={moonR} fill={ACCENT} fillOpacity={0.9} />
+      {/* Horisontlinje */}
+      <line x1={0} x2={W} y1={horizonY} y2={horizonY} stroke="currentColor" strokeOpacity={0.22} strokeWidth={2} />
+
+      {/* Kropp — outline */}
+      <rect
+        x={bodyX}
+        y={bodyTop}
+        width={bodyW}
+        height={bodyH}
+        rx={bodyW / 2}
+        fill={SOFT}
+        fillOpacity={0.35}
+      />
+
+      {/* Zoner — fyller på uppifrån när de "släpps" */}
+      {Array.from({ length: zones }, (_, z) => {
+        const s = softness(z);
+        if (s < 0.02) return null;
+        const y = bodyTop + z * zoneH;
+        // Aktiv zon (just nu släpps) får en mjuk andnings-puls
+        const isActive = stepIdx === z + 1;
+        const op = lerp(0.25, 0.85, s) + (isActive ? pulse * 0.12 : 0);
+        return (
+          <rect
+            key={z}
+            x={bodyX}
+            y={y}
+            width={bodyW}
+            height={zoneH + 0.5}
+            rx={bodyW / 2}
+            fill={ACCENT}
+            fillOpacity={op}
+          />
+        );
+      })}
+
+      {/* Steg 0 — "sänk tempot": mjuk markering över hela kroppen */}
+      {stepIdx === 0 && (
+        <rect
+          x={bodyX - 4}
+          y={bodyTop - 4}
+          width={bodyW + 8}
+          height={bodyH + 8}
+          rx={(bodyW + 8) / 2}
+          fill="none"
+          stroke={ACCENT}
+          strokeOpacity={0.3 + pulse * 0.2}
+          strokeWidth={2}
+        />
+      )}
+
+      {/* Markör för aktuell zon — liten prick utanför pelaren */}
+      {stepIdx >= 1 && stepIdx <= zones && (
+        <circle
+          cx={bodyX + bodyW + 14}
+          cy={bodyTop + (stepIdx - 0.5) * zoneH}
+          r={5 + pulse * 1.5}
+          fill={ACCENT}
+        />
+      )}
     </svg>
   );
 }
 
-// ─── 6. Kroppsskanning — band vandrar uppifrån ner ─────────
+// ─── 6. Kroppsskanning — strålkastare vandrar, zoner lyser upp
+// 7 steg (script): panna, käke, hals/axlar, bröstkorg, mage,
+// höfter/ben, fötter. Inget "släpps" — bara märks. Visualt:
+// band glider mjukt till zonens mitt och stannar tills nästa steg
+// börjar, då glider det vidare. Zoner som redan skannats förblir
+// markerade i bakgrunden.
 function BodyScan(p: BespokeProps) {
-  const t = totalT(p);
-  const W = 140;
-  const H = 280;
+  const stepIdx = p.stepIndex ?? 0;
+  const sp = clamp01(p.stepProgress ?? 0);
+  const sc = Math.max(1, p.stepCount ?? 7);
+  const breathe = useBreathPulse(5200);
+
+  const W = 160;
+  const H = 300;
   const padTop = 18;
   const padBot = 18;
   const innerH = H - padTop - padBot;
-  const bandH = 36;
-  const bandY = lerp(padTop, padTop + innerH - bandH, easeInOut(t));
+  const zoneH = innerH / sc;
+  const bodyX = 36;
+  const bodyW = W - 72;
+
+  // Bandet glider mjukt mellan zoner. Vi mappar:
+  //   bandCenter (i zon-index) = stepIdx + ease(sp) under övergång,
+  //   men HOLDAR i zonens mitt under merparten av steget och
+  //   glider mot nästa zons mitt nära slutet (de sista 25%).
+  // Det ger "ankommen → vila → glida vidare" istället för konstant rörelse.
+  const holdEnd = 0.75;
+  let bandPos: number;
+  if (sp < holdEnd) {
+    bandPos = stepIdx + 0.5;
+  } else {
+    const u = (sp - holdEnd) / (1 - holdEnd);
+    bandPos = lerp(stepIdx + 0.5, stepIdx + 1.5, easeInOut(u));
+  }
+  const bandY = padTop + bandPos * zoneH - zoneH / 2;
+  const bandH = zoneH * 0.95;
+
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="h-72 w-36" aria-hidden>
-      {/* Kropp som en rundad pelare */}
-      <rect x={28} y={padTop} width={W - 56} height={innerH} rx={42} fill={SOFT} fillOpacity={0.4} />
-      {/* Aktivt band */}
-      <rect x={20} y={bandY} width={W - 40} height={bandH} rx={18} fill={ACCENT} />
-      {/* Markörer för segmentstart */}
-      {Array.from({ length: (p.stepCount ?? 7) + 1 }, (_, i) => {
-        const sc = Math.max(1, p.stepCount ?? 7);
-        const y = padTop + (i / sc) * innerH;
-        return <line key={i} x1={14} x2={20} y1={y} y2={y} stroke="currentColor" strokeOpacity={0.45} strokeWidth={2} />;
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-72 w-40" aria-hidden>
+      {/* Kropp — outline */}
+      <rect
+        x={bodyX}
+        y={padTop}
+        width={bodyW}
+        height={innerH}
+        rx={bodyW / 2}
+        fill={SOFT}
+        fillOpacity={0.35}
+      />
+
+      {/* Skannade zoner — stannar markerade */}
+      {Array.from({ length: sc }, (_, z) => {
+        if (z >= stepIdx) return null;
+        const y = padTop + z * zoneH;
+        return (
+          <rect
+            key={`done-${z}`}
+            x={bodyX}
+            y={y}
+            width={bodyW}
+            height={zoneH + 0.5}
+            rx={bodyW / 2}
+            fill={ACCENT}
+            fillOpacity={0.32}
+          />
+        );
       })}
+
+      {/* Zon-skiljelinjer */}
+      {Array.from({ length: sc + 1 }, (_, i) => {
+        const y = padTop + i * zoneH;
+        return (
+          <line
+            key={`line-${i}`}
+            x1={bodyX - 8}
+            x2={bodyX}
+            y1={y}
+            y2={y}
+            stroke="currentColor"
+            strokeOpacity={0.35}
+            strokeWidth={2}
+          />
+        );
+      })}
+
+      {/* Aktivt skannings-band — glider mjukt mellan zonernas mitt */}
+      <rect
+        x={bodyX - 6}
+        y={bandY}
+        width={bodyW + 12}
+        height={bandH}
+        rx={bandH / 2}
+        fill={ACCENT}
+        fillOpacity={0.9}
+      />
+      {/* Andnings-prick på bandet */}
+      <circle
+        cx={W / 2}
+        cy={bandY + bandH / 2}
+        r={4 + breathe * 3}
+        fill={SOFT}
+        fillOpacity={0.8}
+      />
     </svg>
   );
 }
