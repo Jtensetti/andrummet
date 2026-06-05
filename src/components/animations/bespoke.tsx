@@ -52,6 +52,25 @@ function useBreathPulse(periodMs = 5000) {
   return v; // 0..1..0
 }
 
+/** Monotont stigande tid i sekunder sedan komponentens mount. */
+function useTimeSec() {
+  const [t, setT] = useState(0);
+  const raf = useRef<number | null>(null);
+  const start = useRef<number | null>(null);
+  useEffect(() => {
+    const loop = (now: number) => {
+      if (start.current === null) start.current = now;
+      setT((now - start.current) / 1000);
+      raf.current = requestAnimationFrame(loop);
+    };
+    raf.current = requestAnimationFrame(loop);
+    return () => {
+      if (raf.current) cancelAnimationFrame(raf.current);
+    };
+  }, []);
+  return t;
+}
+
 // ─── 1. Stäng 47 mentala flikar ──────────────────────────────
 // 6 steg, mappade exakt mot scriptet:
 //  0 "Vad tar plats?"          → 9 brickor svävar/jittrar uppe (rörigt)
