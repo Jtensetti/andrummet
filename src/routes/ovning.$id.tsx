@@ -85,10 +85,6 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
   // Smooth klocka via requestAnimationFrame.
   // Vi uppdaterar stepElapsedMs varje frame så att animation, räknare och
   // textbyten kan följa exakt samma timing — inte rycka i 1-sekundssprång.
-  // Texten/voiceover/animationen går 20% snabbare än ursprungstajmingen.
-  // Vi skalar själva klockan så att stegbyten, animation, undertext och timer
-  // alla delar exakt samma tidsbas — annars springer ett av spåren ifrån.
-  const TEXT_SPEED = 0.8;
 
   useEffect(() => {
     if (phase !== "running" || paused) {
@@ -100,8 +96,7 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
       const delta = now - last;
       lastFrameRef.current = now;
       setStepElapsedMs((prev) => {
-        const stepMs =
-          Math.max(1, (ex.steps[stepIdx]?.seconds ?? 1) * TEXT_SPEED) * 1000;
+        const stepMs = Math.max(1, ex.steps[stepIdx]?.seconds ?? 1) * 1000;
         const next = prev + delta;
         if (next >= stepMs) {
           const overflow = next - stepMs;
@@ -129,10 +124,9 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
     setStepElapsedMs(0);
   }, [stepIdx]);
 
-  const stepSecondsRaw = ex.steps[stepIdx]?.seconds ?? 1;
-  const stepSeconds = Math.max(1, stepSecondsRaw * TEXT_SPEED);
+  const stepSeconds = Math.max(1, ex.steps[stepIdx]?.seconds ?? 1);
   const totalSeconds = useMemo(
-    () => ex.steps.reduce((s, x) => s + x.seconds * TEXT_SPEED, 0),
+    () => ex.steps.reduce((s, x) => s + x.seconds, 0),
     [ex.steps],
   );
   const stepElapsed = stepElapsedMs / 1000;
@@ -144,11 +138,13 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
   const animStepProgress = stepProgress;
   const elapsed = useMemo(
     () =>
-      ex.steps.slice(0, stepIdx).reduce((s, x) => s + x.seconds * TEXT_SPEED, 0) +
+      ex.steps.slice(0, stepIdx).reduce((s, x) => s + x.seconds, 0) +
       stepElapsed,
     [ex.steps, stepIdx, stepElapsed],
   );
   const progress = Math.min(1, elapsed / Math.max(1, totalSeconds));
+  void stepRemaining;
+
   void stepRemaining;
 
 
