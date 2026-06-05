@@ -10,7 +10,7 @@
  *   currentColor       = neutralt streck
  */
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactElement } from "react";
 
 const ACCENT = "var(--anim-accent, currentColor)";
 const SOFT = "var(--anim-soft, currentColor)";
