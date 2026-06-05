@@ -5,6 +5,7 @@ import { X, Pause, Play, ArrowLeft } from "lucide-react";
 import { getExercise, METRIC_LABELS, type Category } from "@/lib/exercises";
 import { addEntry } from "@/lib/history";
 import { AnimationFor } from "@/components/animations";
+import { BespokeFor, hasBespoke } from "@/components/animations/bespoke";
 import { BoxBreath, type BoxPhase } from "@/components/animations/BoxBreath";
 import { BreathWave, type WavePhase } from "@/components/animations/BreathWave";
 
