@@ -53,96 +53,232 @@ function useBreathPulse(periodMs = 5000) {
 }
 
 // ─── 1. Stäng 47 mentala flikar ──────────────────────────────
-// 3 brickor uppe. Per steg 3,4,5 glider en ner i lådan.
+// 6 steg, mappade exakt mot scriptet:
+//  0 "Vad tar plats?"          → 9 brickor svävar/jittrar uppe (rörigt)
+//  1 "Välj tre tyst"           → 3 brickor lyfter fram, resten dimmas
+//  2 "Lägg den första i lådan" → bricka 1 glider ner i lådan
+//  3 "Den andra"               → bricka 2 glider ner
+//  4 "Den tredje"              → bricka 3 glider ner
+//  5 "Andas ut längre än in"   → bara lådan, lugn andnings-puls
 function CloseTabs(p: BespokeProps) {
-  const W = 240;
+  const W = 260;
   const H = 280;
-  const boxW = 160;
-  const boxH = 32;
-  const gap = 10;
-  const total = 3;
+  const boxW = 180;
+  const boxH = 40;
+  const boxX = (W - boxW) / 2;
+  const boxY = H - boxH - 18;
+
   const stepIdx = p.stepIndex ?? 0;
   const sp = clamp01(p.stepProgress ?? 0);
-  // Drop-steg är index 2,3,4 (0-baserat) i original-övningen (6 steg totalt).
-  const dropStartStep = 2;
+  const breathe = useBreathPulse(5200);
+
+  // 9 brickor, 3 av dem (index 1, 4, 7) är de utvalda
+  const total = 9;
+  const chosen = [1, 4, 7];
+  const cols = 3;
+  const tabW = 56;
+  const tabH = 18;
+  const colGap = 12;
+  const rowGap = 14;
+  const gridW = cols * tabW + (cols - 1) * colGap;
+  const gridX = (W - gridW) / 2;
+  const gridY = 26;
+
+  // Deterministisk jitter per bricka
+  const jitter = (i: number, k: number) => {
+    const v = Math.sin(i * 12.9898 + k * 78.233) * 43758.5453;
+    return v - Math.floor(v); // 0..1
+  };
+
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="h-72 w-60" aria-hidden>
-      {/* Lådan */}
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-72 w-64" aria-hidden>
+      {/* Lådan — alltid synlig, pulserar mjukt i steg 5 */}
       <rect
-        x={(W - boxW - 20) / 2}
-        y={H - boxH - 26}
-        width={boxW + 20}
-        height={boxH + 22}
-        rx={10}
+        x={boxX - 6}
+        y={boxY - 4}
+        width={boxW + 12}
+        height={boxH + 14}
+        rx={12}
         fill={SOFT}
-        fillOpacity={0.45}
+        fillOpacity={0.4 + (stepIdx >= 5 ? breathe * 0.2 : 0)}
       />
+      {/* Lådans öppningslinje */}
+      <line
+        x1={boxX - 4}
+        x2={boxX + boxW + 4}
+        y1={boxY + 2}
+        y2={boxY + 2}
+        stroke="currentColor"
+        strokeOpacity={0.35}
+        strokeWidth={2}
+      />
+
       {Array.from({ length: total }, (_, i) => {
-        // Hur långt den här brickan har "fallit": 0 = uppe, 1 = i lådan.
-        const stepForThis = dropStartStep + i;
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+        const baseX = gridX + col * (tabW + colGap);
+        const baseY = gridY + row * (tabH + rowGap);
+        const isChosen = chosen.includes(i);
+        const chosenOrder = chosen.indexOf(i); // 0,1,2 → drop-steg 2,3,4
+
+        // Jitter (rörigt) i steg 0, klingar av efteråt
+        const jitterAmount = stepIdx === 0 ? 1 : stepIdx === 1 ? 0.3 : 0;
+        const jx = (jitter(i, 1) - 0.5) * 8 * jitterAmount * (0.5 + breathe);
+        const jy = (jitter(i, 2) - 0.5) * 6 * jitterAmount * (0.5 + breathe);
+
+        // Steg 1: utvalda lyfter fram (lite uppåt + opacitet upp), andra dimmas
+        let liftY = 0;
+        let dim = 1;
+        if (stepIdx >= 1) {
+          if (isChosen) {
+            liftY = stepIdx === 1 ? -4 * easeInOut(sp) : -4;
+          } else {
+            const fade = stepIdx === 1 ? easeInOut(sp) : 1;
+            dim = lerp(1, 0.25, fade);
+          }
+        }
+
+        // Drop: vilket steg släpps just denna bricka i lådan?
         let fall = 0;
-        if (stepIdx > stepForThis) fall = 1;
-        else if (stepIdx === stepForThis) fall = easeInOut(sp);
-        const stackY = 22 + i * (boxH + gap);
-        const restY = H - boxH - 16 - (total - 1 - i) * 4;
-        const y = lerp(stackY, restY, fall);
-        const op = lerp(1, 0.55, fall);
+        if (isChosen) {
+          const dropStep = 2 + chosenOrder; // 2, 3, 4
+          if (stepIdx > dropStep) fall = 1;
+          else if (stepIdx === dropStep) fall = easeInOut(sp);
+        }
+
+        // Steg 5: alla brickor borta (utvalda i lådan, andra fadat helt)
+        if (stepIdx >= 5 && !isChosen) dim = 0;
+
+        // Mål för en fallande bricka: in i lådan, lite sidoförskjutning per ordning
+        const restX = boxX + 12 + chosenOrder * ((boxW - 24 - tabW) / 2);
+        const restY = boxY + (boxH - tabH) / 2;
+
+        const x = lerp(baseX + jx, restX, fall);
+        const y = lerp(baseY + jy + liftY, restY, fall);
+
+        const fill = isChosen ? ACCENT : SOFT;
+        const op = lerp(0.85, 0, 1 - dim) * (fall > 0.95 ? 0.9 : 1);
+
+        if (op < 0.02) return null;
         return (
           <rect
             key={i}
-            x={(W - boxW) / 2}
+            x={x}
             y={y}
-            width={boxW}
-            height={boxH}
-            rx={9}
-            fill={fall > 0.95 ? SOFT : ACCENT}
-            fillOpacity={op}
+            width={tabW}
+            height={tabH}
+            rx={5}
+            fill={fill}
+            fillOpacity={isChosen ? lerp(0.95, 0.7, fall) : op}
           />
         );
       })}
+
+      {/* Andnings-prick i lådan i steg 5 */}
+      {stepIdx >= 5 && (
+        <circle
+          cx={W / 2}
+          cy={boxY + boxH / 2 + 14}
+          r={4 + breathe * 6}
+          fill={ACCENT}
+          fillOpacity={0.6 + breathe * 0.3}
+        />
+      )}
     </svg>
   );
 }
 
 // ─── 2. Ångesten får inte köra bilen ────────────────────────
-// Stor cirkel = ratt. Stadig prick i mitten (du). Mindre prick (oron)
-// rör sig från "vid ratten" → "passagerarsäte" → bältad bredvid.
+// 6 steg:
+//  0 "Du sitter vid ratten"      → du (stadig prick) i ratten, ingen oro syns
+//  1 "Namnge känslan"            → oron dyker upp som jittrig prick vid ratten
+//  2 "Ge den en plats"           → oron glider till passagerarsätet, bälte
+//  3 "Den får skrika. Du kör."   → oron pulserar starkt, du stadig, vägen rullar
+//  4 "Vart vill du köra?"        → riktnings-pil framåt, vägen rullar tydligare
+//  5 "En liten handling"         → en liten markör går framåt på vägen
 function NotDriving(p: BespokeProps) {
-  const W = 280;
-  const H = 240;
-  const pulse = useBreathPulse(4500);
-  const t = totalT(p); // 0..1 över hela övningen
-  // Position för "oron":
-  // t=0:    nära ratten (cx, cy uppe)
-  // t=0.3:  glider åt sidan
-  // t>=0.5: sätter sig i passagerarsätet
-  const wheelCx = W * 0.4;
-  const wheelCy = H * 0.45;
-  const passengerCx = W * 0.75;
-  const passengerCy = H * 0.55;
+  const W = 300;
+  const H = 220;
+  const stepIdx = p.stepIndex ?? 0;
+  const sp = clamp01(p.stepProgress ?? 0);
+  const pulse = useBreathPulse(4200);
 
-  // jitter när oron är vid ratten, lugn när bältad
-  const jitterAmp = lerp(10, 0, easeInOut(Math.min(1, t * 2.2)));
-  const settle = easeInOut(Math.min(1, Math.max(0, (t - 0.15) / 0.4)));
-  const px = lerp(wheelCx, passengerCx, settle) + Math.sin(pulse * Math.PI * 4) * jitterAmp;
-  const py = lerp(wheelCy, passengerCy, settle) + Math.cos(pulse * Math.PI * 4) * jitterAmp * 0.6;
+  const wheelCx = W * 0.32;
+  const wheelCy = H * 0.5;
+  const passengerCx = W * 0.66;
+  const passengerCy = H * 0.58;
 
-  // Vägen rullar (streckade linjer som glider)
-  const roadOffset = (pulse * 40) % 40;
+  // Oron blir synlig i steg 1+
+  const worryOpacity =
+    stepIdx === 0 ? 0
+    : stepIdx === 1 ? easeInOut(sp)
+    : 1;
+
+  // Förflyttning till passagerarsätet sker i steg 2
+  const settle =
+    stepIdx < 2 ? 0
+    : stepIdx === 2 ? easeInOut(sp)
+    : 1;
+
+  // Bälte syns när orden landat
+  const beltOpacity = stepIdx >= 2 ? (stepIdx === 2 ? easeInOut(sp) : 1) : 0;
+
+  // Jitter-amplitud: liten i steg 1, stor i steg 3 (skriker), liten igen i 4-5
+  const jitterAmp =
+    stepIdx === 1 ? 6
+    : stepIdx === 2 ? lerp(6, 3, easeInOut(sp))
+    : stepIdx === 3 ? 9 + pulse * 4
+    : 3;
+
+  // Oron-position: vid ratten i 0-1, glider över i 2, sitter i 3-5
+  const wx = lerp(wheelCx + 36, passengerCx, settle);
+  const wy = lerp(wheelCy - 14, passengerCy, settle);
+  const px = wx + Math.sin(pulse * Math.PI * 4) * jitterAmp;
+  const py = wy + Math.cos(pulse * Math.PI * 4) * jitterAmp * 0.6;
+  const worryR = stepIdx === 3 ? 11 + pulse * 4 : 10;
+
+  // Vägen rullar — snabbare när vi börjar köra/vill köra
+  const roadSpeed = stepIdx >= 3 ? 1 : 0.3;
+  const roadOffset = (pulse * 40 * roadSpeed * 6) % 28;
+
+  // Riktnings-pil i steg 4
+  const arrowOp = stepIdx === 4 ? easeInOut(sp) : stepIdx > 4 ? 1 : 0;
+
+  // Liten handling — markör går framåt i steg 5
+  const stepMarkerX = stepIdx === 5 ? lerp(W * 0.5, W * 0.88, easeInOut(sp)) : 0;
+  const stepMarkerOp = stepIdx === 5 ? 1 : 0;
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="h-60 w-[18rem]" aria-hidden>
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-56 w-[19rem]" aria-hidden>
       {/* Väg */}
-      <line x1={0} x2={W} y1={H - 24} y2={H - 24} stroke={SOFT} strokeOpacity={0.6} strokeWidth={3} />
-      <g stroke={SOFT} strokeOpacity={0.45} strokeWidth={3} strokeDasharray="14 14">
-        <line x1={-roadOffset} x2={W - roadOffset} y1={H - 12} y2={H - 12} />
+      <line
+        x1={0}
+        x2={W}
+        y1={H - 22}
+        y2={H - 22}
+        stroke={SOFT}
+        strokeOpacity={0.55}
+        strokeWidth={3}
+      />
+      <g stroke={SOFT} strokeOpacity={0.4} strokeWidth={3} strokeDasharray="14 14">
+        <line x1={-roadOffset} x2={W - roadOffset} y1={H - 10} y2={H - 10} />
       </g>
+
       {/* Ratt */}
-      <circle cx={wheelCx} cy={wheelCy} r={56} fill="none" stroke={ACCENT} strokeOpacity={0.45} strokeWidth={4} />
-      <circle cx={wheelCx} cy={wheelCy} r={6} fill={ACCENT} fillOpacity={0.6} />
-      {/* Du — stadig prick i mitten av ratten */}
-      <circle cx={wheelCx} cy={wheelCy} r={18} fill={ACCENT} />
-      {/* Passagerarsäte (mjuk rektangel) — syns mer när oron sätter sig */}
+      <circle
+        cx={wheelCx}
+        cy={wheelCy}
+        r={52}
+        fill="none"
+        stroke={ACCENT}
+        strokeOpacity={0.4}
+        strokeWidth={4}
+      />
+      <circle cx={wheelCx} cy={wheelCy} r={5} fill={ACCENT} fillOpacity={0.55} />
+      {/* Du — stadig prick */}
+      <circle cx={wheelCx} cy={wheelCy} r={16} fill={ACCENT} />
+
+      {/* Passagerarsäte — växer fram när oron tar plats */}
       <rect
         x={passengerCx - 28}
         y={passengerCy - 28}
@@ -150,57 +286,150 @@ function NotDriving(p: BespokeProps) {
         height={56}
         rx={14}
         fill={SOFT}
-        fillOpacity={0.35 + 0.35 * settle}
+        fillOpacity={0.25 + 0.4 * settle}
       />
-      {/* Bälte: streck mellan oron och sätet när bältad */}
-      {settle > 0.6 && (
-        <line
-          x1={passengerCx - 28}
-          x2={passengerCx + 28}
-          y1={passengerCy - 8}
-          y2={passengerCy + 8}
-          stroke={ACCENT}
-          strokeOpacity={0.5}
-          strokeWidth={3}
-        />
-      )}
+      {/* Bälte */}
+      <line
+        x1={passengerCx - 28}
+        x2={passengerCx + 28}
+        y1={passengerCy - 6}
+        y2={passengerCy + 10}
+        stroke={ACCENT}
+        strokeOpacity={0.55 * beltOpacity}
+        strokeWidth={3}
+      />
+
       {/* Oron */}
-      <circle cx={px} cy={py} r={12} fill={ACCENT} fillOpacity={0.85} />
+      {worryOpacity > 0.02 && (
+        <circle cx={px} cy={py} r={worryR} fill={ACCENT} fillOpacity={0.85 * worryOpacity} />
+      )}
+
+      {/* Riktnings-pil */}
+      {arrowOp > 0.02 && (
+        <g
+          stroke={ACCENT}
+          strokeWidth={3}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          fill="none"
+          opacity={arrowOp}
+        >
+          <line x1={W * 0.5} x2={W * 0.82} y1={H - 22} y2={H - 22} />
+          <polyline points={`${W * 0.78},${H - 30} ${W * 0.86},${H - 22} ${W * 0.78},${H - 14}`} />
+        </g>
+      )}
+
+      {/* Liten handling — markör på vägen */}
+      {stepMarkerOp > 0 && (
+        <circle cx={stepMarkerX} cy={H - 22} r={7} fill={ACCENT} />
+      )}
     </svg>
   );
 }
 
-// ─── 3. Reset — tre staplar tappar höjd ─────────────────────
-// Axlar, käke, andetag. Varje stapel sjunker när dess steg passeras.
+// ─── 3. Reset — sänk tempot ─────────────────────────────────
+// 6 steg, mappade mot kroppsdelar + medvetenhet:
+//  0 "Släpp axlarna"            → övre stapel (axlar) sjunker
+//  1 "Mjuka käken"              → mellan-stapel (käke) sjunker
+//  2 "Andas ut genom munnen"    → nedre stapel (andetag) sjunker
+//  3 "Lägg märke till kroppen"  → medvetenhets-band sveper neråt över staplarna
+//  4 "Lägg märke till tankarna" → bandet sveper uppåt mot huvudet
+//  5 "Kom tillbaka hit"         → bandet landar i mitten och pulserar lugnt
 function ResetBars(p: BespokeProps) {
-  const labels = 3; // axlar, käke, andning (de tre första stegen sänker)
+  const W = 260;
+  const H = 280;
   const stepIdx = p.stepIndex ?? 0;
   const sp = clamp01(p.stepProgress ?? 0);
-  const W = 240;
-  const H = 260;
-  const barW = 56;
-  const gap = 22;
-  const totalW = labels * barW + (labels - 1) * gap;
-  const startX = (W - totalW) / 2;
+  const breathe = useBreathPulse(5000);
+
+  // Tre staplar: axlar (topp), käke (mitt), andetag (botten)
+  const bars = 3;
+  const barW = 48;
+  const gap = 20;
+  const groupW = bars * barW + (bars - 1) * gap;
+  const startX = (W - groupW) / 2;
+  const baselineY = H - 28;
+  const fullH = 200;
+  const minH = 36;
+
+  // Hur mycket varje stapel har "sjunkit" (0..1)
+  const drop = (i: number) => {
+    if (stepIdx > i) return 1;
+    if (stepIdx === i) return easeInOut(sp);
+    return 0;
+  };
+
+  // Medvetenhets-bandets vertikala position (0 = topp, 1 = botten)
+  // 3 = sveper topp→botten, 4 = botten→topp, 5 = mitten + puls
+  let bandY: number | null = null;
+  let bandOp = 0;
+  if (stepIdx === 3) {
+    bandY = lerp(40, baselineY - 20, easeInOut(sp));
+    bandOp = 1;
+  } else if (stepIdx === 4) {
+    bandY = lerp(baselineY - 20, 40, easeInOut(sp));
+    bandOp = 1;
+  } else if (stepIdx >= 5) {
+    bandY = (40 + baselineY - 20) / 2 + Math.sin(breathe * Math.PI * 2) * 6;
+    bandOp = 0.85;
+  }
+
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="h-64 w-60" aria-hidden>
-      <line x1={20} x2={W - 20} y1={H - 24} y2={H - 24} stroke={SOFT} strokeOpacity={0.6} strokeWidth={3} />
-      {Array.from({ length: labels }, (_, i) => {
-        let drop = 0;
-        if (stepIdx > i) drop = 1;
-        else if (stepIdx === i) drop = easeInOut(sp);
-        const fullH = H - 50;
-        const minH = 24;
-        const h = lerp(fullH, minH, drop);
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-72 w-64" aria-hidden>
+      {/* Marklinje */}
+      <line
+        x1={20}
+        x2={W - 20}
+        y1={baselineY}
+        y2={baselineY}
+        stroke="currentColor"
+        strokeOpacity={0.3}
+        strokeWidth={2}
+      />
+
+      {Array.from({ length: bars }, (_, i) => {
+        const d = drop(i);
+        const h = lerp(fullH, minH, d);
         const x = startX + i * (barW + gap);
-        const y = H - 24 - h;
+        const y = baselineY - h;
         return (
           <g key={i}>
-            <rect x={x} y={24} width={barW} height={fullH} rx={12} fill={SOFT} fillOpacity={0.3} />
+            {/* "Spöke" som visar ursprunglig höjd */}
+            <rect
+              x={x}
+              y={baselineY - fullH}
+              width={barW}
+              height={fullH}
+              rx={12}
+              fill={SOFT}
+              fillOpacity={0.22}
+            />
+            {/* Faktisk stapel */}
             <rect x={x} y={y} width={barW} height={h} rx={12} fill={ACCENT} />
           </g>
         );
       })}
+
+      {/* Medvetenhets-band */}
+      {bandY !== null && (
+        <g opacity={bandOp}>
+          <line
+            x1={startX - 14}
+            x2={startX + groupW + 14}
+            y1={bandY}
+            y2={bandY}
+            stroke={ACCENT}
+            strokeOpacity={0.5}
+            strokeWidth={2}
+          />
+          <circle
+            cx={W / 2}
+            cy={bandY}
+            r={stepIdx >= 5 ? 10 + breathe * 4 : 8}
+            fill={ACCENT}
+          />
+        </g>
+      )}
     </svg>
   );
 }
