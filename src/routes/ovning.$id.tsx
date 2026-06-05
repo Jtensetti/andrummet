@@ -13,17 +13,17 @@ export const Route = createFileRoute("/ovning/$id")({
 });
 
 const themeBg: Record<Category, string> = {
-  body: "bg-[var(--body)] text-[var(--body-ink)]",
-  breath: "bg-[var(--breath)] text-[var(--breath-ink)]",
-  anxiety: "bg-[var(--anxiety)] text-[var(--anxiety-ink)]",
-  stress: "bg-[var(--stress)] text-[var(--stress-ink)]",
-  focus: "bg-[var(--focus)] text-[var(--focus-ink)]",
-  sleep: "bg-[var(--sleep)] text-[var(--sleep-ink)]",
-  reflection: "bg-[var(--reflection)] text-[var(--reflection-ink)]",
-  "quick-pause": "bg-[var(--quick-pause)] text-[var(--quick-pause-ink)]",
-  compassion: "bg-[var(--compassion)] text-[var(--compassion-ink)]",
-  anger: "bg-[var(--anger)] text-[var(--anger-ink)]",
-  worklife: "bg-[var(--worklife)] text-[var(--worklife-ink)]",
+  body: "bg-[var(--body)] text-[var(--body-ink)] [--anim-accent:var(--body-accent)] [--anim-soft:var(--body-soft)] [--anim-on:var(--body-on)]",
+  breath: "bg-[var(--breath)] text-[var(--breath-ink)] [--anim-accent:var(--breath-accent)] [--anim-soft:var(--breath-soft)] [--anim-on:var(--breath-on)]",
+  anxiety: "bg-[var(--anxiety)] text-[var(--anxiety-ink)] [--anim-accent:var(--anxiety-accent)] [--anim-soft:var(--anxiety-soft)] [--anim-on:var(--anxiety-on)]",
+  stress: "bg-[var(--stress)] text-[var(--stress-ink)] [--anim-accent:var(--stress-accent)] [--anim-soft:var(--stress-soft)] [--anim-on:var(--stress-on)]",
+  focus: "bg-[var(--focus)] text-[var(--focus-ink)] [--anim-accent:var(--focus-accent)] [--anim-soft:var(--focus-soft)] [--anim-on:var(--focus-on)]",
+  sleep: "bg-[var(--sleep)] text-[var(--sleep-ink)] [--anim-accent:var(--sleep-accent)] [--anim-soft:var(--sleep-soft)] [--anim-on:var(--sleep-on)]",
+  reflection: "bg-[var(--reflection)] text-[var(--reflection-ink)] [--anim-accent:var(--reflection-accent)] [--anim-soft:var(--reflection-soft)] [--anim-on:var(--reflection-on)]",
+  "quick-pause": "bg-[var(--quick-pause)] text-[var(--quick-pause-ink)] [--anim-accent:var(--quick-pause-accent)] [--anim-soft:var(--quick-pause-soft)] [--anim-on:var(--quick-pause-on)]",
+  compassion: "bg-[var(--compassion)] text-[var(--compassion-ink)] [--anim-accent:var(--compassion-accent)] [--anim-soft:var(--compassion-soft)] [--anim-on:var(--compassion-on)]",
+  anger: "bg-[var(--anger)] text-[var(--anger-ink)] [--anim-accent:var(--anger-accent)] [--anim-soft:var(--anger-soft)] [--anim-on:var(--anger-on)]",
+  worklife: "bg-[var(--worklife)] text-[var(--worklife-ink)] [--anim-accent:var(--worklife-accent)] [--anim-soft:var(--worklife-soft)] [--anim-on:var(--worklife-on)]",
 };
 
 type Phase = "intro" | "before" | "running" | "after" | "done";
