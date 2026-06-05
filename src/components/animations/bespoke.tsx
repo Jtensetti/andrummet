@@ -1114,9 +1114,9 @@ const BESPOKE: Record<string, (p: BespokeProps) => ReactElement> = {
   fokuslinsen: FocusLens,
   "sov-mjukare": SoftSleep,
   "kroppsskanning-huvud-till-fot": BodyScan,
-  "vad-behover-jag-just-nu": DrawingRings,
-  "tre-vanliga-meningar": TwoCircles,
-  "svalna-innan-svar": CoolingTriangle,
+  "vad-behover-jag-just-nu": NeedDrop,
+  "tre-vanliga-meningar": KindSentences,
+  "svalna-innan-svar": FlamesToEmber,
   "mellan-tva-moten": MeetingsTimeline,
 };
 
