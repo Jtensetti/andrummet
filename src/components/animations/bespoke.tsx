@@ -718,80 +718,348 @@ function BodyScan(p: BespokeProps) {
   );
 }
 
-// ─── 7. Vad behöver jag just nu — ringar ritas, en per steg ─
-function DrawingRings(p: BespokeProps) {
+// ─── 7. Vad behöver jag just nu — droppen sjunker genom lager
+// 5 steg, mappade mot scriptet:
+//  0 "Vad dyker upp först?"             → många tankar-prickar svävar i topp-lagret
+//  1 "Är det ett behov — eller ett borde?" → två fält ("borde" vänster, "behov" höger), droppen glider mot höger
+//  2 "Vad skulle faktiskt hjälpa?"      → droppen växer till en mjuk cirkel (behovet namnges)
+//  3 "Gör det litet"                    → cirkeln krymper till en liten kärna
+//  4 "Kan du ge dig det?"               → en skål växer fram nederst, kärnan landar i den och pulserar
+function NeedDrop(p: BespokeProps) {
+  const W = 240;
+  const H = 300;
   const stepIdx = p.stepIndex ?? 0;
-  const sc = Math.max(1, p.stepCount ?? 1);
   const sp = clamp01(p.stepProgress ?? 0);
-  const R = 110;
+  const breathe = useBreathPulse(5400);
+
+  // Lager-y-koordinater (topp → botten)
+  const yTop = 40;       // tankarna
+  const ySort = 110;     // borde/behov
+  const yName = 170;     // behovet namnges
+  const ySmall = 215;    // gjord liten
+  const yBowl = 258;     // skål
+
+  // Bakgrundslager — mjuka horisontella band
+  const lanes = [yTop, ySort, yName, ySmall, yBowl];
+
+  // Droppens y-position glider mjukt mellan lager-mittpunkterna
+  const fromY = lanes[Math.min(stepIdx, lanes.length - 1)];
+  const toY = lanes[Math.min(stepIdx + 1, lanes.length - 1)];
+  const dotY = lerp(fromY, toY, easeInOut(sp) * 0.9); // glider mot nästa lager mot slutet
+
+  // Droppens x-position — i steg 1 glider den från mitten mot höger (behov)
+  const driftX =
+    stepIdx === 0 ? 0
+    : stepIdx === 1 ? lerp(0, 40, easeInOut(sp))
+    : 40;
+  const jitter = stepIdx === 0 ? Math.sin(breathe * Math.PI * 2) * 4 : 0;
+  const dotX = W / 2 + driftX + jitter;
+
+  // Droppens storlek per steg
+  const dotR =
+    stepIdx === 0 ? 6
+    : stepIdx === 1 ? 7
+    : stepIdx === 2 ? lerp(7, 22, easeInOut(sp))
+    : stepIdx === 3 ? lerp(22, 8, easeInOut(sp))
+    : 8 + breathe * 2;
+
+  // Sat-tankar runt droppen i steg 0 (rörigt)
+  const noise = 9;
+
+  // Borde / Behov fält i steg 1+
+  const sortOp =
+    stepIdx === 0 ? 0
+    : stepIdx === 1 ? easeInOut(sp)
+    : 1;
+
+  // Skål — växer fram i steg 4
+  const bowlOp = stepIdx === 4 ? easeInOut(sp) : 0;
+
   return (
-    <svg viewBox="-130 -130 260 260" className="h-64 w-64 md:h-72 md:w-72" aria-hidden>
-      <circle cx={0} cy={0} r={R} fill={SOFT} fillOpacity={0.3} />
-      {Array.from({ length: sc }, (_, i) => {
-        const ringR = R * (0.35 + 0.6 * ((i + 1) / sc));
-        const ringC = 2 * Math.PI * ringR;
-        let drawn = 0;
-        if (i < stepIdx) drawn = 1;
-        else if (i === stepIdx) drawn = easeInOut(sp);
-        const dash = `${ringC * drawn} ${ringC}`;
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-72 w-60" aria-hidden>
+      {/* Mjuka bakgrundsband — markerar aktivt lager */}
+      {lanes.map((y, i) => (
+        <rect
+          key={i}
+          x={20}
+          y={y - 18}
+          width={W - 40}
+          height={36}
+          rx={18}
+          fill={SOFT}
+          fillOpacity={i === stepIdx ? 0.45 : 0.18}
+        />
+      ))}
+
+      {/* Borde / Behov etiketter (rektanglar) i steg 1+ */}
+      {sortOp > 0.02 && (
+        <g opacity={sortOp}>
+          <rect x={W / 2 - 78} y={ySort - 14} width={64} height={28} rx={8} fill={SOFT} fillOpacity={0.5} />
+          <rect x={W / 2 + 14} y={ySort - 14} width={64} height={28} rx={8} fill={ACCENT} fillOpacity={0.55} />
+        </g>
+      )}
+
+      {/* Tanke-prickar i steg 0 */}
+      {stepIdx === 0 &&
+        Array.from({ length: 7 }, (_, i) => {
+          const a = (i / 7) * Math.PI * 2;
+          const r = 24 + (i % 3) * 6;
+          const wob = Math.sin(breathe * Math.PI * 2 + i) * noise;
+          return (
+            <circle
+              key={i}
+              cx={W / 2 + Math.cos(a) * r + wob}
+              cy={yTop + Math.sin(a) * r * 0.6 + wob * 0.6}
+              r={3.5}
+              fill={SOFT}
+              fillOpacity={0.55}
+            />
+          );
+        })}
+
+      {/* Skål nederst */}
+      {bowlOp > 0.02 && (
+        <path
+          d={`M ${W / 2 - 56} ${yBowl + 4} Q ${W / 2} ${yBowl + 44}, ${W / 2 + 56} ${yBowl + 4}`}
+          fill="none"
+          stroke={ACCENT}
+          strokeOpacity={0.85 * bowlOp}
+          strokeWidth={4}
+          strokeLinecap="round"
+        />
+      )}
+
+      {/* Droppen */}
+      <circle cx={dotX} cy={dotY} r={dotR} fill={ACCENT} fillOpacity={0.95} />
+    </svg>
+  );
+}
+
+// ─── 8. Tre vänliga meningar — meningar landar i bröstet ───
+// 5 steg:
+//  0 "Tänk på dig som en vän"   → "du"-cirkel + spegelbild av "vän" bredvid, mjuk linje emellan
+//  1 "Säg en vänlig mening"     → mening 1 (rundad stapel) glider från sidan in i bröstet
+//  2 "En till"                  → mening 2 glider in och staplas
+//  3 "Och en sista"             → mening 3 glider in och staplas
+//  4 "Låt det landa"            → alla tre meningarna pulserar tillsammans med andetag
+function KindSentences(p: BespokeProps) {
+  const W = 280;
+  const H = 240;
+  const stepIdx = p.stepIndex ?? 0;
+  const sp = clamp01(p.stepProgress ?? 0);
+  const breathe = useBreathPulse(5200);
+
+  const youCx = W * 0.5;
+  const youCy = H * 0.55;
+  const youR = 62;
+
+  // Vänlig "spegel" — en mindre cirkel som dyker upp i steg 0 och dröjer kvar svagt
+  const friendCx = W * 0.82;
+  const friendR = 28;
+  const friendOp =
+    stepIdx === 0 ? easeInOut(sp) * 0.7
+    : 0.4;
+
+  // Tre meningar — staplade i hjärtat (mitten av "du"-cirkeln)
+  const slotH = 14;
+  const slotW = 78;
+  const slotGap = 6;
+  const stackTop = youCy - ((3 * slotH + 2 * slotGap) / 2);
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-60 w-72" aria-hidden>
+      {/* "Vän"-spegel */}
+      <circle cx={friendCx} cy={youCy - 18} r={friendR} fill={SOFT} fillOpacity={friendOp} />
+      {/* Mjuk linje mellan vän och du — endast tydlig i steg 0 */}
+      {stepIdx === 0 && (
+        <line
+          x1={youCx + youR + 6}
+          x2={friendCx - friendR - 6}
+          y1={youCy - 18}
+          y2={youCy - 18}
+          stroke={ACCENT}
+          strokeOpacity={0.3 + easeInOut(sp) * 0.3}
+          strokeWidth={2}
+          strokeDasharray="4 4"
+        />
+      )}
+
+      {/* "Du" — yttre cirkel */}
+      <circle cx={youCx} cy={youCy} r={youR} fill={SOFT} fillOpacity={0.4} />
+      {/* Hjärt-zon — pulserar lite i steg 4 */}
+      <circle
+        cx={youCx}
+        cy={youCy}
+        r={42 + (stepIdx >= 4 ? breathe * 3 : 0)}
+        fill={SOFT}
+        fillOpacity={0.55}
+      />
+
+      {/* Tre meningar */}
+      {[0, 1, 2].map((i) => {
+        // Mening i landar i steg i+1 (1, 2, 3)
+        const arriveStep = i + 1;
+        let visible = 0;
+        let slideT = 0;
+        if (stepIdx > arriveStep) {
+          visible = 1;
+          slideT = 1;
+        } else if (stepIdx === arriveStep) {
+          visible = easeInOut(sp);
+          slideT = easeInOut(sp);
+        }
+        if (visible < 0.02) return null;
+
+        const targetY = stackTop + i * (slotH + slotGap);
+        // Kommer in från höger sida (där vännen står)
+        const startX = friendCx;
+        const targetX = youCx - slotW / 2;
+        const x = lerp(startX, targetX, slideT);
+        const y = lerp(youCy - slotH / 2, targetY, slideT);
+
+        // I steg 4 pulserar alla tre med samma andetag
+        const pulseOp = stepIdx >= 4 ? 0.85 + breathe * 0.15 : 0.9;
+
         return (
-          <circle
+          <rect
             key={i}
-            cx={0}
-            cy={0}
-            r={ringR}
-            fill="none"
-            stroke={ACCENT}
-            strokeOpacity={0.85}
-            strokeWidth={3}
-            strokeDasharray={dash}
-            transform="rotate(-90)"
+            x={x}
+            y={y}
+            width={slotW}
+            height={slotH}
+            rx={slotH / 2}
+            fill={ACCENT}
+            fillOpacity={pulseOp * visible}
           />
         );
       })}
-      <circle cx={0} cy={0} r={10} fill={ACCENT} />
     </svg>
   );
 }
 
-// ─── 8. Tre vänliga meningar — två cirklar närmar sig ──────
-function TwoCircles(p: BespokeProps) {
-  const t = totalT(p);
-  const approach = easeInOut(t); // 0 långt isär, 1 helt överlappande
-  const R = 70;
-  const sep = lerp(110, 18, approach);
-  const opOverlap = lerp(0.5, 1, approach);
+// ─── 9. Svalna innan svar — eld blir glöd ──────────────────
+// 5 steg:
+//  0 "Stanna här"             → 5 vassa lågor flackrar tall + jittrigt
+//  1 "Andas ut längre"        → lågorna sjunker i takt med andetaget (ut = lägre)
+//  2 "Var sitter elden?"      → mittlågan markeras (vart brinner det?)
+//  3 "Flammor blir glöd"      → lågorna sjunker ner till rundade glödhögar
+//  4 "Svara från glöden"      → en lugn glödcirkel pulserar i mitten
+function FlamesToEmber(p: BespokeProps) {
+  const W = 280;
+  const H = 240;
+  const stepIdx = p.stepIndex ?? 0;
+  const sp = clamp01(p.stepProgress ?? 0);
+  const breathe = useBreathPulse(5400);
+
+  const baseY = H - 36;
+  const flames = 5;
+  const spacing = 38;
+  const startX = (W - (flames - 1) * spacing) / 2;
+
+  // Hur "släckta" lågorna är (0 vild eld, 1 glöd)
+  const cool =
+    stepIdx <= 1 ? 0
+    : stepIdx === 2 ? 0.15
+    : stepIdx === 3 ? easeInOut(sp)
+    : 1;
+
+  // Andnings-modulering: i steg 1 styr breath-pulsen höjden tydligt
+  const breathMod = stepIdx === 1 ? 1 : stepIdx === 0 ? 0.4 : 0;
+
+  // Jitter — vilt i 0, dämpas
+  const jitterAmp = stepIdx === 0 ? 5 : stepIdx === 1 ? 2 : 0;
+
+  // Höjd-bas per låga (mittlåga högst)
+  const baseHeights = [70, 100, 130, 100, 70];
+
   return (
-    <svg viewBox="-150 -110 300 220" className="h-56 w-72" aria-hidden>
-      <circle cx={-sep} cy={0} r={R} fill={ACCENT} fillOpacity={0.7} />
-      <circle cx={sep} cy={0} r={R} fill={ACCENT} fillOpacity={0.7} />
-      {/* överlapp markeras med en mörkare cirkel i mitten när nära */}
-      {approach > 0.4 && (
-        <circle cx={0} cy={0} r={lerp(8, R, (approach - 0.4) / 0.6)} fill={ACCENT} fillOpacity={opOverlap} />
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-60 w-72" aria-hidden>
+      {/* Mark */}
+      <line
+        x1={20}
+        x2={W - 20}
+        y1={baseY}
+        y2={baseY}
+        stroke="currentColor"
+        strokeOpacity={0.3}
+        strokeWidth={2}
+      />
+
+      {stepIdx < 4 &&
+        Array.from({ length: flames }, (_, i) => {
+          const x = startX + i * spacing;
+          // Lågans nuvarande höjd
+          const breath = (1 - breathe) * breathMod * 18; // ut = mindre höjd
+          const baseH = baseHeights[i] - breath;
+          const h = lerp(baseH, 14, cool); // sjunker mot ember
+          const halfW = lerp(13, 22, cool); // bredare när glöd
+          const jx = Math.sin(breathe * Math.PI * 4 + i) * jitterAmp;
+
+          // Markera mittlågan i steg 2
+          const highlight = stepIdx === 2 && i === 2 ? 1 : 0;
+          const op = lerp(0.9, 0.7, cool) + highlight * 0.1;
+
+          // Form: triangulär låga som rundas mer ju kallare
+          // Använd path: M (x-half, baseY) Q (x, baseY-h*1.1) (x+half, baseY)
+          const ctrlY = baseY - h * lerp(1.15, 1.0, cool);
+          const path = `M ${x - halfW + jx} ${baseY} Q ${x + jx} ${ctrlY} ${x + halfW + jx} ${baseY} Z`;
+
+          return (
+            <g key={i}>
+              {/* Glöd-mark under lågan när vi kyler ner */}
+              {cool > 0.3 && (
+                <ellipse
+                  cx={x}
+                  cy={baseY + 2}
+                  rx={halfW + 4}
+                  ry={4 + cool * 3}
+                  fill={ACCENT}
+                  fillOpacity={0.4 * cool}
+                />
+              )}
+              <path d={path} fill={ACCENT} fillOpacity={op} />
+              {highlight > 0 && (
+                <circle
+                  cx={x + jx}
+                  cy={baseY - h * 0.5}
+                  r={5 + breathe * 2}
+                  fill="currentColor"
+                  fillOpacity={0.6}
+                />
+              )}
+            </g>
+          );
+        })}
+
+      {/* Steg 4: en lugn glöd i mitten */}
+      {stepIdx >= 4 && (
+        <g>
+          <ellipse
+            cx={W / 2}
+            cy={baseY + 2}
+            rx={70}
+            ry={8}
+            fill={ACCENT}
+            fillOpacity={0.5}
+          />
+          <circle
+            cx={W / 2}
+            cy={baseY - 18}
+            r={18 + breathe * 4}
+            fill={ACCENT}
+            fillOpacity={0.85}
+          />
+          <circle
+            cx={W / 2}
+            cy={baseY - 18}
+            r={28 + breathe * 6}
+            fill="none"
+            stroke={ACCENT}
+            strokeOpacity={0.35}
+            strokeWidth={2}
+          />
+        </g>
       )}
-    </svg>
-  );
-}
-
-// ─── 9. Svalna innan svar — vass triangel rundas ───────────
-function CoolingTriangle(p: BespokeProps) {
-  const t = totalT(p);
-  const round = easeInOut(t); // 0 vass, 1 nästan rund
-  const size = lerp(110, 70, round); // krymper också
-  // Vi tecknar en triangel där hörnen byts ut mot bågar med växande radie.
-  // För enkelhet: morfa polygon från triangel (3 hörn) mot regelbunden polygon med 12 hörn.
-  const sides = Math.round(lerp(3, 12, round));
-  const pts = Array.from({ length: sides }, (_, i) => {
-    const a = (i / sides) * Math.PI * 2 - Math.PI / 2;
-    return `${(Math.cos(a) * size).toFixed(2)},${(Math.sin(a) * size).toFixed(2)}`;
-  }).join(" ");
-  const op = lerp(1, 0.55, round); // brinner starkt, dämpas till glöd
-  return (
-    <svg viewBox="-140 -140 280 280" className="h-64 w-64 md:h-72 md:w-72" aria-hidden>
-      <circle cx={0} cy={0} r={120} fill={SOFT} fillOpacity={0.3} />
-      <polygon points={pts} fill={ACCENT} fillOpacity={op} />
-      {/* Glöd-centrum syns när nästan rund */}
-      {round > 0.6 && <circle cx={0} cy={0} r={lerp(0, 24, (round - 0.6) / 0.4)} fill={ACCENT} />}
     </svg>
   );
 }
