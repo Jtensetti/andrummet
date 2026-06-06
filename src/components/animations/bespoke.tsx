@@ -456,7 +456,7 @@ function ResetBars(p: BespokeProps) {
       })}
 
       {/* Medvetenhets-band */}
-      {bandY !== null && (
+      {bandOp > 0.02 && (
         <g opacity={bandOp}>
           <line
             x1={startX - 14}
@@ -467,12 +467,7 @@ function ResetBars(p: BespokeProps) {
             strokeOpacity={0.5}
             strokeWidth={2}
           />
-          <circle
-            cx={W / 2}
-            cy={bandY}
-            r={stepIdx >= 5 ? 10 + breathe * 4 : 8}
-            fill={ACCENT}
-          />
+          <circle cx={W / 2} cy={bandY} r={dotR} fill={ACCENT} />
         </g>
       )}
     </svg>
