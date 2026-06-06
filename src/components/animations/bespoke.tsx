@@ -104,8 +104,13 @@ function CloseTabs(p: BespokeProps) {
   const boxY = H - boxH - 18;
 
   const stepIdx = p.stepIndex ?? 0;
-  const sp = clamp01(p.stepProgress ?? 0);
   const breathe = useBreathPulse(5200);
+
+  // Kontinuerliga ramp-faser (oberoende av stegbyten)
+  const messFade = stepRamp(p, 0.6, 2); // röran lugnar sig 0.6→2
+  const liftPhase = stepRamp(p, 1, 2); // utvalda lyfts under steg 1
+  const dimPhase = stepRamp(p, 1, 2); // övriga dimmas
+  const breathOnly = stepRamp(p, 4.6, 5.4); // när bara lådan är kvar
 
   // 9 brickor, 3 av dem (index 1, 4, 7) är de utvalda
   const total = 9;
@@ -127,7 +132,7 @@ function CloseTabs(p: BespokeProps) {
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="h-72 w-64" aria-hidden>
-      {/* Lådan — alltid synlig, pulserar mjukt i steg 5 */}
+      {/* Lådan — alltid synlig, pulserar mjukt när bara den är kvar */}
       <rect
         x={boxX - 6}
         y={boxY - 4}
@@ -135,7 +140,7 @@ function CloseTabs(p: BespokeProps) {
         height={boxH + 14}
         rx={12}
         fill={SOFT}
-        fillOpacity={0.4 + (stepIdx >= 5 ? breathe * 0.2 : 0)}
+        fillOpacity={0.4 + breathOnly * breathe * 0.2}
       />
       {/* Lådans öppningslinje */}
       <line
@@ -154,35 +159,31 @@ function CloseTabs(p: BespokeProps) {
         const baseX = gridX + col * (tabW + colGap);
         const baseY = gridY + row * (tabH + rowGap);
         const isChosen = chosen.includes(i);
-        const chosenOrder = chosen.indexOf(i); // 0,1,2 → drop-steg 2,3,4
+        const chosenOrder = chosen.indexOf(i); // 0,1,2 → drop-faser
 
-        // Jitter (rörigt) i steg 0, klingar av efteråt
-        const jitterAmount = stepIdx === 0 ? 1 : stepIdx === 1 ? 0.3 : 0;
+        // Jitter (rörigt) — tonas ut kontinuerligt
+        const jitterAmount = 1 - messFade;
         const jx = (jitter(i, 1) - 0.5) * 8 * jitterAmount * (0.5 + breathe);
         const jy = (jitter(i, 2) - 0.5) * 6 * jitterAmount * (0.5 + breathe);
 
-        // Steg 1: utvalda lyfter fram (lite uppåt + opacitet upp), andra dimmas
+        // Utvalda lyfts mjukt, övriga dimmas mjukt
         let liftY = 0;
         let dim = 1;
-        if (stepIdx >= 1) {
-          if (isChosen) {
-            liftY = stepIdx === 1 ? -4 * easeInOut(sp) : -4;
-          } else {
-            const fade = stepIdx === 1 ? easeInOut(sp) : 1;
-            dim = lerp(1, 0.25, fade);
-          }
+        if (isChosen) {
+          liftY = -4 * liftPhase;
+        } else {
+          dim = lerp(1, 0.25, dimPhase);
         }
 
-        // Drop: vilket steg släpps just denna bricka i lådan?
+        // Drop: varje utvald bricka glider mot lådan över ett eget intervall
         let fall = 0;
         if (isChosen) {
-          const dropStep = 2 + chosenOrder; // 2, 3, 4
-          if (stepIdx > dropStep) fall = 1;
-          else if (stepIdx === dropStep) fall = easeInOut(sp);
+          const dropStart = 2 + chosenOrder; // 2, 3, 4
+          fall = stepRamp(p, dropStart, dropStart + 1);
         }
 
-        // Steg 5: alla brickor borta (utvalda i lådan, andra fadat helt)
-        if (stepIdx >= 5 && !isChosen) dim = 0;
+        // När bara lådan är kvar — övriga försvinner mjukt
+        if (!isChosen) dim *= 1 - breathOnly;
 
         // Mål för en fallande bricka: in i lådan, lite sidoförskjutning per ordning
         const restX = boxX + 12 + chosenOrder * ((boxW - 24 - tabW) / 2);
@@ -192,7 +193,7 @@ function CloseTabs(p: BespokeProps) {
         const y = lerp(baseY + jy + liftY, restY, fall);
 
         const fill = isChosen ? ACCENT : SOFT;
-        const op = lerp(0.85, 0, 1 - dim) * (fall > 0.95 ? 0.9 : 1);
+        const op = isChosen ? lerp(0.95, 0.7, fall) : lerp(0.85, 0, 1 - dim);
 
         if (op < 0.02) return null;
         return (
@@ -204,24 +205,26 @@ function CloseTabs(p: BespokeProps) {
             height={tabH}
             rx={5}
             fill={fill}
-            fillOpacity={isChosen ? lerp(0.95, 0.7, fall) : op}
+            fillOpacity={op}
           />
         );
       })}
 
-      {/* Andnings-prick i lådan i steg 5 */}
-      {stepIdx >= 5 && (
+      {/* Andnings-prick i lådan när bara den är kvar */}
+      {breathOnly > 0.02 && (
         <circle
           cx={W / 2}
           cy={boxY + boxH / 2 + 14}
           r={4 + breathe * 6}
           fill={ACCENT}
-          fillOpacity={0.6 + breathe * 0.3}
+          fillOpacity={(0.6 + breathe * 0.3) * breathOnly}
         />
       )}
+      {void stepIdx}
     </svg>
   );
 }
+
 
 // ─── 2. Ångesten får inte köra bilen ────────────────────────
 // Förstaperson: vy ut genom framrutan. Vägen rör sig MOT användaren
