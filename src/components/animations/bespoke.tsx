@@ -1891,8 +1891,7 @@ function HeldInArch(p: BespokeProps) {
       <g
         style={{
           transformOrigin: `${cx}px ${baseY}px`,
-          transform: `scale(${(0.0 + outerGrow).toFixed(3)}, ${(0.0 + outerGrow).toFixed(3)}) scale(${archBreath})`,
-          transition: "transform 220ms linear",
+          transform: `scale(${outerGrow.toFixed(4)}, ${outerGrow.toFixed(4)}) scale(${archBreath.toFixed(4)})`,
         }}
       >
         <path
@@ -1905,8 +1904,7 @@ function HeldInArch(p: BespokeProps) {
       <g
         style={{
           transformOrigin: `${cx}px ${baseY}px`,
-          transform: `scale(1, ${innerGrow.toFixed(3)}) scale(${archBreath})`,
-          transition: "transform 220ms linear",
+          transform: `scale(1, ${innerGrow.toFixed(4)}) scale(${archBreath.toFixed(4)})`,
         }}
       >
         <path
