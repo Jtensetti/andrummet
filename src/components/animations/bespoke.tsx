@@ -103,8 +103,8 @@ function CloseTabs(p: BespokeProps) {
   const boxX = (W - boxW) / 2;
   const boxY = H - boxH - 18;
 
-  const stepIdx = p.stepIndex ?? 0;
   const breathe = useBreathPulse(5200);
+
 
   // Kontinuerliga ramp-faser (oberoende av stegbyten)
   const messFade = stepRamp(p, 0.6, 2); // röran lugnar sig 0.6→2
