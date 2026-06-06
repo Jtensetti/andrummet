@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { FEELINGS, type Category } from "@/lib/exercises";
 import { motion } from "framer-motion";
-import { Timer } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 
 export const Route = createFileRoute("/")({
