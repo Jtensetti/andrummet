@@ -210,12 +210,11 @@ function CloseTabs(p: BespokeProps) {
 // ─── 2. Ångesten får inte köra bilen ────────────────────────
 // Förstaperson: vy ut genom framrutan. Vägen rör sig MOT användaren
 // i centralperspektiv. Ratten sitter i botten, händer på 10 och 2.
-// Passageraren (oron) sitter från start i passagerarsätet, bältad
-// och skakande. Föraren håller kursen.
+// Föraren håller kursen.
 //  0 "Du sitter vid ratten"      → ratt + händer + lugn väg
-//  1 "Namnge känslan"            → liten etikett-bricka tonas in över oron
-//  2 "Ge den en plats"           → bältet drar åt sig tydligt
-//  3 "Den får skrika. Du kör."   → skak-amplituden ökar
+//  1 "Känn ratten"               → händerna på ratten
+//  2 "Vägen är öppen"            → vägen fortsätter framåt
+//  3 "Du kör ändå"               → vägen fortsätter framåt
 //  4 "Vart vill du köra?"        → vägskylt/pil dyker upp på horisonten
 //  5 "En liten handling"         → en liten ljuspunkt längre fram på vägen
 function NotDriving(p: BespokeProps) {
@@ -251,29 +250,6 @@ function NotDriving(p: BespokeProps) {
     const op = lerp(0.25, 0.7, persp);
     return { y, w, h, op, key: i };
   });
-
-  // Skak-amplitud för oron: alltid lite, mycket i steg 3
-  const baseShake = 1.5;
-  const stepShake =
-    stepIdx === 3 ? 4 + pulse * 2.5
-    : stepIdx >= 4 ? 2
-    : 1.5;
-  const shake = baseShake + stepShake;
-  const wobX = Math.sin(time * 11) * shake;
-  const wobY = Math.cos(time * 13) * shake * 0.6;
-
-  // Passagerarens plats — fast position uppe till höger (peripheral glimt)
-  const seatX = W * 0.76;
-  const seatY = H * 0.46;
-  const seatW = 56;
-  const seatH = 76;
-
-  // Bälte syns alltid men dras åt i steg 2
-  const beltOp = stepIdx < 2 ? 0.35 : stepIdx === 2 ? lerp(0.35, 0.95, easeInOut(sp)) : 0.95;
-  const beltW = stepIdx < 2 ? 2 : stepIdx === 2 ? lerp(2, 3.5, easeInOut(sp)) : 3.5;
-
-  // Etikett ("namnge") i steg 1+
-  const labelOp = stepIdx === 1 ? easeInOut(sp) : stepIdx > 1 ? 1 : 0;
 
   // Riktnings-pil i steg 4+
   const arrowOp = stepIdx === 4 ? easeInOut(sp) : stepIdx > 4 ? 1 : 0;
@@ -341,56 +317,6 @@ function NotDriving(p: BespokeProps) {
       {/* Dashboard */}
       <rect x={0} y={dashTop} width={W} height={H - dashTop} fill={SOFT} fillOpacity={0.7} />
       <line x1={0} x2={W} y1={dashTop} y2={dashTop} stroke="currentColor" strokeOpacity={0.3} strokeWidth={1.5} />
-
-      {/* Passagerarsäte (peripheral glimt uppe till höger) */}
-      <rect
-        x={seatX - seatW / 2}
-        y={seatY - seatH / 2}
-        width={seatW}
-        height={seatH}
-        rx={12}
-        fill={SOFT}
-        fillOpacity={0.55}
-      />
-      {/* Bälte — diagonal från ovan-vänster ner till nedan-höger */}
-      <line
-        x1={seatX - seatW / 2 + 4}
-        x2={seatX + seatW / 2 - 4}
-        y1={seatY - seatH / 2 + 6}
-        y2={seatY + seatH / 2 - 6}
-        stroke={ACCENT}
-        strokeOpacity={beltOp}
-        strokeWidth={beltW}
-        strokeLinecap="round"
-      />
-      {/* Oron — bältad, skakande från start */}
-      <circle
-        cx={seatX + wobX}
-        cy={seatY - 6 + wobY}
-        r={14}
-        fill={ACCENT}
-        fillOpacity={0.92}
-      />
-      {/* Små "skri"-streck när skakigheten är hög (steg 3+) */}
-      {stepIdx >= 3 && (
-        <g stroke={ACCENT} strokeOpacity={0.55} strokeWidth={2} strokeLinecap="round">
-          <line x1={seatX + 18} x2={seatX + 26} y1={seatY - 18} y2={seatY - 22} />
-          <line x1={seatX + 20} x2={seatX + 28} y1={seatY - 10} y2={seatY - 10} />
-          <line x1={seatX + 18} x2={seatX + 26} y1={seatY - 2} y2={seatY + 2} />
-        </g>
-      )}
-      {/* Namn-etikett (steg 1+) — liten bricka ovanför oron */}
-      {labelOp > 0.02 && (
-        <rect
-          x={seatX - 22}
-          y={seatY - seatH / 2 - 14}
-          width={44}
-          height={12}
-          rx={6}
-          fill={ACCENT}
-          fillOpacity={0.75 * labelOp}
-        />
-      )}
 
       {/* Ratten — stor båge i botten, händer på 10 och 2 */}
       <circle
