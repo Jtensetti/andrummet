@@ -1810,66 +1810,97 @@ function HeldInArch(p: BespokeProps) {
   const t = useTimeSec();
   const breathe = useBreathPulse(5200);
 
-  // Geometri — "fat arch" (raka sidor + halvcirkel på toppen)
-  const outerCx = 130, outerBaseY = 248, outerStraightTopY = 130, outerHalf = 90;
-  const innerCx = 130, innerBaseY = 248, innerStraightTopY = 170, innerHalf = 50;
+  // Geometri — koncentriska "fat arches" (raka sidor + halvcirkel på toppen)
+  const cx = 130;
+  const baseY = 240;
+  const innerHalf = 46;
+  const outerHalf = 92;
+  const innerStraightTopY = baseY - innerHalf - 30; // 164
+  const outerStraightTopY = baseY - outerHalf - 30; // 118
 
-  const archPath = (cx: number, baseY: number, topY: number, half: number) => {
-    const left = cx - half, right = cx + half;
-    return `M ${left} ${baseY} V ${topY} A ${half} ${half} 0 0 1 ${right} ${topY} V ${baseY} Z`;
+  const archPath = (
+    cxv: number,
+    baseYv: number,
+    topYv: number,
+    half: number,
+  ) => {
+    const left = cxv - half;
+    const right = cxv + half;
+    return `M ${left} ${baseYv} V ${topYv} A ${half} ${half} 0 0 1 ${right} ${topYv} V ${baseYv} Z`;
   };
-  const outerPath = archPath(outerCx, outerBaseY, outerStraightTopY, outerHalf);
-  const innerPath = archPath(innerCx, innerBaseY, innerStraightTopY, innerHalf);
-
-  // Vaggpunkt — där bollen vilar i fickan mellan inre och yttre
-  const restX = 161;
-  const restY = 116;
-  const baseR = 11;
 
   const smoothstep = (a: number, b: number, x: number) => {
     const k = clamp01((x - a) / (b - a));
     return k * k * (3 - 2 * k);
   };
 
-  // Bågarna finns från början — hållandet är redan där.
-  // De fördjupas bara: yttre tonar in tydligare, inre blir varmare när du landar.
-  const outerOp = 0.32 + smoothstep(0.55, 0.85, u) * 0.28;
-  const innerOp = 0.55 + smoothstep(0.25, 0.55, u) * 0.30;
+  // Bollen vilar centrerat på inre bågens krön
+  const baseR = 12;
+  const innerCrownY = innerStraightTopY - innerHalf; // toppen av halvcirkeln = 118
+  const restX = cx;
+  const restY = innerCrownY - baseR; // 106 — boll sitter ovanpå krönet
 
-  // Boll: vinglar ovanför → driver i båge mot vaggan → liten studs → vila
-  const startX = 130;
-  const startY = 70;
-  const wobbleDecay = Math.pow(clamp01(1 - u / 0.45), 2);
-  const wobble = Math.sin(t * 2.4) * 18 * wobbleDecay;
+  // ── Faser ────────────────────────────────────────────────
+  // 0.00–0.28  Bollen ensam, vinglar och faller långsamt (inget under)
+  // 0.28–0.55  Inre bågen växer upp underifrån och möter bollen
+  // 0.55–0.80  Yttre bågen expanderar runtom (det större håller er båda)
+  // 0.80–1.00  Allt andas synkront
 
-  const drift = smoothstep(0.30, 0.62, u);
-  const ballX = lerp(startX, restX, drift) + wobble * (1 - drift);
-  // Båglik bana: ner och åt sidan, inte rakt
-  const arcLift = Math.sin(drift * Math.PI) * -12;
-  const ballY = lerp(startY, restY, drift) + arcLift;
+  // Inre båge: skalas upp från basen (y = baseY) tills full höjd
+  const innerGrow = smoothstep(0.28, 0.55, u);
+  // Yttre båge: expanderar efter inre
+  const outerGrow = smoothstep(0.55, 0.80, u);
 
-  // Mjuk landningsstuds runt u ≈ 0.62
-  const bp = clamp01((u - 0.58) / 0.10);
-  const bounce = bp > 0 && bp < 1 ? -Math.sin(bp * Math.PI) * 4 : 0;
+  // Boll: vinglar och faller mjukt tills inre bågen möter den
+  const startY = 50;
+  const fallProgress = smoothstep(0.05, 0.55, u);
+  const wobbleDecay = Math.pow(clamp01(1 - u / 0.55), 1.6);
+  const wobble = Math.sin(t * 2.2) * 16 * wobbleDecay;
+  const ballX = cx + wobble;
+  const ballY = lerp(startY, restY, fallProgress);
 
-  // Andning börjar mjukt så snart bollen har landat
-  const restPhase = smoothstep(0.62, 0.85, u);
-  const ballR = baseR + breathe * 1.1 * restPhase;
-  const archBreath = 1 + breathe * 0.014 * restPhase;
+  // Liten landningsstuds när bollen möter krönet (~u = 0.52)
+  const bp = clamp01((u - 0.50) / 0.10);
+  const bounce = bp > 0 && bp < 1 ? -Math.sin(bp * Math.PI) * 5 : 0;
+
+  // Synkron andning när allt är på plats
+  const restPhase = smoothstep(0.80, 0.95, u);
+  const ballR = baseR + breathe * 0.9 * restPhase;
+  const archBreath = 1 + breathe * 0.012 * restPhase;
+
+  // Opacitet följer växt-progress, så bågen syns när den faktiskt är där
+  const innerOp = 0.25 + innerGrow * 0.55;
+  const outerOp = 0.18 + outerGrow * 0.42;
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="h-72 w-72" aria-hidden>
+      {/* Yttre båge — gemensam mänsklighet (växer från basen runt allt) */}
       <g
         style={{
-          transformOrigin: `${outerCx}px ${outerBaseY}px`,
-          transform: `scale(${archBreath})`,
-          transition: "transform 200ms linear",
+          transformOrigin: `${cx}px ${baseY}px`,
+          transform: `scale(${(0.0 + outerGrow).toFixed(3)}, ${(0.0 + outerGrow).toFixed(3)}) scale(${archBreath})`,
+          transition: "transform 220ms linear",
         }}
       >
-        {/* Yttre båge — gemensam mänsklighet, det större som håller */}
-        <path d={outerPath} fill={SOFT} fillOpacity={outerOp} />
-        {/* Inre båge — vänlighet mot dig själv */}
-        <path d={innerPath} fill={ACCENT} fillOpacity={innerOp} />
+        <path
+          d={archPath(cx, baseY, outerStraightTopY, outerHalf)}
+          fill={SOFT}
+          fillOpacity={outerOp}
+        />
+      </g>
+      {/* Inre båge — vänlighet mot dig själv (växer upp och möter bollen) */}
+      <g
+        style={{
+          transformOrigin: `${cx}px ${baseY}px`,
+          transform: `scale(1, ${innerGrow.toFixed(3)}) scale(${archBreath})`,
+          transition: "transform 220ms linear",
+        }}
+      >
+        <path
+          d={archPath(cx, baseY, innerStraightTopY, innerHalf)}
+          fill={ACCENT}
+          fillOpacity={innerOp}
+        />
       </g>
       {/* Bollen — du, i det här ögonblicket */}
       <circle
@@ -1877,7 +1908,7 @@ function HeldInArch(p: BespokeProps) {
         cy={ballY + bounce}
         r={ballR}
         fill="currentColor"
-        opacity={0.92}
+        opacity={0.94}
       />
     </svg>
   );
