@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { X, Pause, Play, ArrowLeft } from "lucide-react";
+import { X, ArrowLeft } from "lucide-react";
 import { getExercise, METRIC_LABELS, type Category } from "@/lib/exercises";
 import { addEntry } from "@/lib/history";
 import { AnimationFor } from "@/components/animations";
@@ -280,16 +280,8 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
             exit={{ opacity: 0 }}
             className="flex min-h-[100dvh] flex-col items-center justify-between px-6 py-10"
           >
-            {/* progress */}
-            <div className="w-full max-w-md">
-              <div className="h-1 w-full overflow-hidden rounded-full bg-black/15">
-                <motion.div
-                  className="h-full bg-white/80"
-                  animate={{ width: `${progress * 100}%` }}
-                  transition={{ ease: "linear", duration: 0.4 }}
-                />
-              </div>
-            </div>
+            <div className="w-full max-w-md" />
+
 
             {/* central animation + undertext + steg-rubrik */}
             <div className="flex flex-1 flex-col items-center justify-center gap-8">
@@ -432,32 +424,15 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
                             {sub.text}
                           </motion.p>
                         </AnimatePresence>
-                        <p className="text-[11px] font-bold uppercase tracking-widest opacity-60">
-                          Steg {stepIdx + 1} / {ex.steps.length} · {ex.steps[stepIdx]?.label}
-                        </p>
                       </div>
+
                     );
                   })()}
                 </>
               )}
             </div>
+            <div />
 
-
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setPaused((p) => !p)}
-                className="grid h-14 w-14 place-items-center rounded-full bg-black/15"
-                aria-label={paused ? "Fortsätt" : "Pausa"}
-              >
-                {paused ? <Play className="h-6 w-6" /> : <Pause className="h-6 w-6" />}
-              </button>
-              <button
-                onClick={afterToDone}
-                className="rounded-full bg-black/10 px-4 py-3 text-xs font-bold opacity-70"
-              >
-                Hoppa till slut
-              </button>
-            </div>
           </motion.div>
         )}
 
