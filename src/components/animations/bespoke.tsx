@@ -979,8 +979,6 @@ function KindSentences(p: BespokeProps) {
 function FlamesToEmber(p: BespokeProps) {
   const W = 280;
   const H = 240;
-  const stepIdx = p.stepIndex ?? 0;
-  const sp = clamp01(p.stepProgress ?? 0);
   const breathe = useBreathPulse(5400);
 
   const baseY = H - 36;
@@ -988,18 +986,26 @@ function FlamesToEmber(p: BespokeProps) {
   const spacing = 38;
   const startX = (W - (flames - 1) * spacing) / 2;
 
-  // Hur "släckta" lågorna är (0 vild eld, 1 glöd)
-  const cool =
-    stepIdx <= 1 ? 0
-    : stepIdx === 2 ? 0.15
-    : stepIdx === 3 ? easeInOut(sp)
-    : 1;
+  // Kontinuerliga ramper över hela övningen
+  // cool: 0 i 0..1, 0.15 plateau under steg 2, sedan upp mot 1 under steg 3
+  const coolHint = 0.15 * stepRamp(p, 1.6, 2.2);
+  const coolMain = stepRamp(p, 2.6, 3.6);
+  const cool = coolHint * (1 - coolMain) + coolMain;
 
-  // Andnings-modulering: i steg 1 styr breath-pulsen höjden tydligt
-  const breathMod = stepIdx === 1 ? 1 : stepIdx === 0 ? 0.4 : 0;
+  // breathMod: tonas in 0.4 i steg 0 → 1 i steg 1 → 0 från steg 2
+  const breathRamp01 = stepRamp(p, 0.6, 1);
+  const breathFadeOut = stepRamp(p, 1.6, 2);
+  const breathMod = lerp(0.4, 1, breathRamp01) * (1 - breathFadeOut);
 
-  // Jitter — vilt i 0, dämpas
-  const jitterAmp = stepIdx === 0 ? 5 : stepIdx === 1 ? 2 : 0;
+  // jitter: 5→2 → 0
+  const jitterAmp = lerp(5, 2, breathRamp01) * (1 - breathFadeOut);
+
+  // Mittlågans highlight under steg 2
+  const highlightOn = stepRamp(p, 1.6, 2.2) * (1 - stepRamp(p, 2.6, 3.2));
+
+  // Övergång eld → ember-vy
+  const emberPhase = stepRamp(p, 3.4, 4.2);
+  const flameVis = 1 - emberPhase;
 
   // Höjd-bas per låga (mittlåga högst)
   const baseHeights = [70, 100, 130, 100, 70];
@@ -1017,28 +1023,23 @@ function FlamesToEmber(p: BespokeProps) {
         strokeWidth={2}
       />
 
-      {stepIdx < 4 &&
+      {flameVis > 0.02 &&
         Array.from({ length: flames }, (_, i) => {
           const x = startX + i * spacing;
-          // Lågans nuvarande höjd
-          const breath = (1 - breathe) * breathMod * 18; // ut = mindre höjd
+          const breath = (1 - breathe) * breathMod * 18;
           const baseH = baseHeights[i] - breath;
-          const h = lerp(baseH, 14, cool); // sjunker mot ember
-          const halfW = lerp(13, 22, cool); // bredare när glöd
+          const h = lerp(baseH, 14, cool);
+          const halfW = lerp(13, 22, cool);
           const jx = Math.sin(breathe * Math.PI * 4 + i) * jitterAmp;
 
-          // Markera mittlågan i steg 2
-          const highlight = stepIdx === 2 && i === 2 ? 1 : 0;
-          const op = lerp(0.9, 0.7, cool) + highlight * 0.1;
+          const highlight = i === 2 ? highlightOn : 0;
+          const op = (lerp(0.9, 0.7, cool) + highlight * 0.1) * flameVis;
 
-          // Form: triangulär låga som rundas mer ju kallare
-          // Använd path: M (x-half, baseY) Q (x, baseY-h*1.1) (x+half, baseY)
           const ctrlY = baseY - h * lerp(1.15, 1.0, cool);
           const path = `M ${x - halfW + jx} ${baseY} Q ${x + jx} ${ctrlY} ${x + halfW + jx} ${baseY} Z`;
 
           return (
             <g key={i}>
-              {/* Glöd-mark under lågan när vi kyler ner */}
               {cool > 0.3 && (
                 <ellipse
                   cx={x}
@@ -1046,26 +1047,26 @@ function FlamesToEmber(p: BespokeProps) {
                   rx={halfW + 4}
                   ry={4 + cool * 3}
                   fill={ACCENT}
-                  fillOpacity={0.4 * cool}
+                  fillOpacity={0.4 * cool * flameVis}
                 />
               )}
               <path d={path} fill={ACCENT} fillOpacity={op} />
-              {highlight > 0 && (
+              {highlight > 0.02 && (
                 <circle
                   cx={x + jx}
                   cy={baseY - h * 0.5}
                   r={5 + breathe * 2}
                   fill="currentColor"
-                  fillOpacity={0.6}
+                  fillOpacity={0.6 * highlight}
                 />
               )}
             </g>
           );
         })}
 
-      {/* Steg 4: en lugn glöd i mitten */}
-      {stepIdx >= 4 && (
-        <g>
+      {/* En lugn glöd i mitten — tonas in kontinuerligt */}
+      {emberPhase > 0.02 && (
+        <g opacity={emberPhase}>
           <ellipse
             cx={W / 2}
             cy={baseY + 2}
@@ -1095,6 +1096,7 @@ function FlamesToEmber(p: BespokeProps) {
     </svg>
   );
 }
+
 
 // ─── 10. Mellan två möten — pausen mellan två rum ──────────
 // Två rum (förra/nästa möte) på var sin sida. Mellan dem står du.
