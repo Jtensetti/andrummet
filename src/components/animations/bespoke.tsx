@@ -735,8 +735,6 @@ function BodyScan(p: BespokeProps) {
 function NeedDrop(p: BespokeProps) {
   const W = 260;
   const H = 320;
-  const stepIdx = p.stepIndex ?? 0;
-  const sp = clamp01(p.stepProgress ?? 0);
   const breathe = useBreathPulse(5400);
 
   const cx = W / 2;
@@ -745,24 +743,23 @@ function NeedDrop(p: BespokeProps) {
   const youCy = H * 0.5;
   const youR = 46;
 
-  // Steg 2: en behov-prick lyser upp och sjunker från behov-fältet till magen
-  const dropY = stepIdx >= 2 ? lerp(youCy + 6, bellyY, easeInOut(stepIdx === 2 ? sp : 1)) : youCy;
-  const dropR =
-    stepIdx === 2 ? lerp(5, 9, easeInOut(sp))
-    : stepIdx === 3 ? lerp(9, 5, easeInOut(sp))
-    : stepIdx >= 4 ? 5 + breathe * 1.4
-    : 0;
+  // Kontinuerliga ramper
+  const thoughtsFade = 1 - stepRamp(p, 0.5, 1.2); // tankar-bubblor tonas ut
+  const sortIn = stepRamp(p, 0.7, 1.3);
+  const sortDim = stepRamp(p, 1.7, 2.3);
+  const sortOp = sortIn * lerp(1, 0.25, sortDim);
+  const dropFall = stepRamp(p, 1.8, 2.6); // droppen sjunker
+  const dropGrow = stepRamp(p, 1.8, 2.6);
+  const dropShrink = stepRamp(p, 2.7, 3.5);
+  const breathOn = stepRamp(p, 3.6, 4.2);
+  const handsOp = stepRamp(p, 3.7, 4.3);
 
-  // Borde/Behov-fältens opacity
-  const sortOp =
-    stepIdx === 0 ? 0
-    : stepIdx === 1 ? easeInOut(sp)
-    : stepIdx === 2 ? lerp(1, 0.25, easeInOut(sp))
-    : 0.2;
+  const dropY = lerp(youCy + 6, bellyY, dropFall);
+  let dropR = lerp(0, 9, dropGrow);
+  dropR = lerp(dropR, 5, dropShrink);
+  dropR = lerp(dropR, 5 + breathe * 1.4, breathOn);
 
-  // Steg 4: händer som sluter sig om kärnan, andas med pulsen
-  const handsOp = stepIdx === 4 ? easeInOut(sp) : 0;
-  const handGap = stepIdx === 4 ? lerp(50, 24, easeInOut(sp)) + breathe * 2 : 24;
+  const handGap = lerp(50, 24 + breathe * 2, handsOp);
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="h-72 w-[17rem]" aria-hidden>
@@ -829,13 +826,7 @@ function NeedDrop(p: BespokeProps) {
       )}
 
       {/* "Du" — lugn central cirkel */}
-      <circle
-        cx={cx}
-        cy={youCy}
-        r={youR}
-        fill={SOFT}
-        fillOpacity={0.5}
-      />
+      <circle cx={cx} cy={youCy} r={youR} fill={SOFT} fillOpacity={0.5} />
       <circle
         cx={cx}
         cy={youCy}
@@ -846,34 +837,32 @@ function NeedDrop(p: BespokeProps) {
         strokeWidth={2}
       />
 
-      {/* Steg 0: tankar-prickar bubblar upp ur huvudet */}
-      {stepIdx === 0 &&
+      {/* Tankar-prickar bubblar upp ur huvudet, tonas ut kontinuerligt */}
+      {thoughtsFade > 0.02 &&
         Array.from({ length: 8 }, (_, i) => {
           const phase = (breathe + i / 8) % 1;
           const a = (i / 8) * Math.PI * 2;
-          const rise = phase; // 0 nedanför → 1 högre upp
+          const rise = phase;
           const x = cx + Math.cos(a) * (16 + rise * 28);
           const y = headY - rise * 36;
-          const op = (1 - Math.abs(rise - 0.5) * 2) * 0.85;
+          const op = (1 - Math.abs(rise - 0.5) * 2) * 0.85 * thoughtsFade;
           return (
             <circle key={i} cx={x} cy={y} r={3 + (1 - rise) * 1.5} fill={SOFT} fillOpacity={op} />
           );
         })}
 
-      {/* Behov-droppen som sjunker (steg 2+) */}
+      {/* Behov-droppen som sjunker */}
       {dropR > 0.1 && (
         <circle cx={cx} cy={dropY} r={dropR} fill={ACCENT} fillOpacity={0.95} />
       )}
 
-      {/* Steg 4: två händer (bågar) sluter sig om kärnan */}
+      {/* Två händer (bågar) sluter sig om kärnan */}
       {handsOp > 0.02 && (
         <g opacity={handsOp} stroke={ACCENT} strokeWidth={3} fill="none" strokeLinecap="round">
-          {/* Vänster hand — båge öppen åt höger */}
           <path
             d={`M ${cx - handGap} ${bellyY - 14} Q ${cx - handGap - 18} ${bellyY}, ${cx - handGap} ${bellyY + 14}`}
             strokeOpacity={0.85}
           />
-          {/* Höger hand — båge öppen åt vänster */}
           <path
             d={`M ${cx + handGap} ${bellyY - 14} Q ${cx + handGap + 18} ${bellyY}, ${cx + handGap} ${bellyY + 14}`}
             strokeOpacity={0.85}
@@ -883,6 +872,7 @@ function NeedDrop(p: BespokeProps) {
     </svg>
   );
 }
+
 
 // ─── 8. Tre vänliga meningar — meningar landar i bröstet ───
 // 5 steg:
