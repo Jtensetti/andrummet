@@ -92,17 +92,12 @@ function Home() {
             <Link
               to="/k/$category"
               params={{ category: f.category }}
-              className={`group relative block h-[160px] overflow-hidden rounded-3xl ${TILE_BG[f.category]} p-4 shadow-sm transition active:scale-[0.98] hover:shadow-md md:aspect-square md:h-auto md:p-5`}
+              className={`group relative flex h-[140px] items-end overflow-hidden rounded-3xl ${TILE_BG[f.category]} p-4 shadow-sm transition active:scale-[0.98] hover:shadow-md sm:h-[170px] md:aspect-square md:h-auto md:p-6`}
             >
               <TileDecor category={f.category} />
-              <div className="relative flex h-full flex-col justify-between">
-                <p className="text-[10px] font-bold uppercase tracking-wider opacity-70 md:text-xs">
-                  {f.question}
-                </p>
-                <h2 className="text-lg font-extrabold leading-tight md:text-2xl">
-                  {f.label}
-                </h2>
-              </div>
+              <h2 className="relative text-xl font-extrabold leading-[1.05] tracking-tight sm:text-2xl md:text-3xl lg:text-[2rem]">
+                {f.label}
+              </h2>
             </Link>
           </motion.div>
         ))}
