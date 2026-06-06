@@ -1,80 +1,114 @@
-# Ny övning: Löv i bäcken
 
-En klassisk ACT-defusionsövning där man lär sig se sina tankar passera istället för att fastna i dem. Lövet är tanken. Bäcken är medvetandet. Tanken är inte du — den flyter förbi.
+# Ny övning: "Märk tanken"
 
-## Placering
+En aktiv defusionsövning i kategorin **Reflektera**. Komplement till "Löv i bäcken" — där tittar man passivt på tankar som driver förbi; här gör man något konkret med dem: sätter en etikett på *sorten*, inte på innehållet.
 
-- **Kategori:** `reflection` (passar bättre än anxiety — det är en observations­övning, inte en lugnande)
-- **ID:** `lov-i-backen`
-- **Titel:** "Löv i bäcken"
-- **Längd:** 3 min
-- **Metric:** `clarity` (eller motsvarande befintlig — kollas mot METRIC_LABELS)
-- **requiresRating:** true
-- **reflectionPrompt:** "Vilken tanke var svårast att släppa förbi?"
+## Varför just den här övningen
+
+- **Evidensbaserad teknik.** "Noting / labeling" är en kärnpraktik i både mindfulness (Goldstein, Salzberg) och ACT (Hayes). Att säga "det här är en oro-tanke" istället för att gå in i innehållet skapar avstånd utan att förtränga.
+- **Unik bland reflection-övningarna.** Ingen befintlig övning handlar om kategorisering. Löv i bäcken = se tankar gå förbi. Märk tanken = sätt en lapp på dem först. Olika muskler.
+- **Stark omedelbar nytta.** Funkar i busskön, i sängen, i mötet. Tre sekunders verktyg: *"planering"*, *"självkritik"*, *"minne"* — och så går tanken från diffus storm till tydligt objekt.
+- **Passar starka färgen.** Reflektera är en intensiv kategori; den här övningen är konkret och handlingsbar, inte luddig.
+
+## Pedagogisk metafor
+
+Diffus tanke = ett moln av dimma man inte ser kanten på. När man **namnger sorten** (oro, plan, minne, kritik, fantasi) **kristalliserar** dimman till ett objekt man kan se — och då kan man också släppa det.
+
+> "Det är inte 'jag kommer aldrig fixa det här' — det är en oro-tanke som dyker upp ofta."
 
 ## Animation (bespoke)
 
-En platt, ovanifrån-vy av en bäck som rinner från vänster till höger. Två böljande linjer markerar strandkanterna (`SOFT`). Längs strömmen färdas ovala löv (`ACCENT`) i olika takt och y-offset. Varje löv föds till vänster, driver förbi, och försvinner till höger. Allt drivs av `useTimeSec` så rörelsen är kontinuerlig och oberoende av steg.
+Centralt i bildytan: en mjuk, oregelbunden **dimblob** (SVG path med några böljande punkter, animerad via `useTimeSec` så formen rör sig långsamt och organiskt). Runt blobben driver små **etikettord** in från sidorna — "planering", "oro", "minne", "kritik", "fantasi", "fantasi-katastrof", "borde".
 
-**Pedagogisk koppling:**
-- Lövens hastighet är konstant — användaren kan inte stoppa dem, bara titta på
-- När `stepProgress` byter steg byts inte animationen, bara texten — det förstärker "tankarna kommer och går, du gör inget"
-- Inga gradient/skugga, samma stil som övriga bespoke-animationer
-- Subtil andningspuls (`useBreathPulse`) på bäckens svaja, så bilden andas utan att kräva andning
+När en etikett driver "förbi" blobben (var ~6–8 sek):
+1. Etiketten saktar ner och dockar vid blobben
+2. Blobben **kristalliserar** — dimman drar ihop sig till en enkel geometrisk form (cirkel, fyrkant, triangel) med etiketten under
+3. Det namngivna objektet driver mjukt ut åt sidan och tonar bort
+4. En ny dimblob formas i mitten
+
+Detta loopar kontinuerligt, oberoende av `stepProgress`. Texten byts; animationen fortsätter. Det förstärker budskapet: *tankar fortsätter komma — du fortsätter märka*.
+
+**Stilregler (samma som övriga bespoke):**
+- Inga gradienter eller skuggor
+- `SOFT`-färg för dimman, `ACCENT` för etiketterna och de kristalliserade formerna
+- `useBreathPulse` ger blobben en subtil andning så bilden lever utan att kräva andning av användaren
+- Edge-fade på etiketter (samma teknik som löven i bäcken) så loopen inte hoppar
 
 **Skiss:**
 ```text
- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  ← strand (SOFT)
-   🍂      🍂            🍂      →
-        🍂        🍂           🍂  →
-   🍂           🍂      🍂        →
- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   planering →
+              ╭─ ~~~ ─╮
+       oro → │  dimma  │ → [▢ minne]   (kristalliserad, driver ut)
+              ╰─ ~~~ ─╯
+   självkritik →
 ```
-(Löven renderas som enkla ellipser med liten rotation, inte emoji.)
 
-## Steg och script (övningsspecifikt språk)
+## Steg och script
 
-Texterna är skrivna för just denna övning — ingen "andas in / andas ut", inget "släpp axlarna". Fokus ligger på observation och defusion.
+Texterna är skrivna för just den här övningen — fokus på *sortering* och *avstånd*, inte på andning eller kropp.
 
-1. **"Sätt dig vid bäcken"** (20s)
-   - "blicken mjuk, ingenstans att vara"
-   - "bäcken rinner av sig själv"
+1. **"Vänta in nästa tanke"** (20s)
+   - "blicken mjuk, ingen ansträngning"
+   - "förr eller senare dyker något upp"
+   - "en bild, en mening, en oro"
 
-2. **"Lägg nästa tanke på ett löv"** (30s)
-   - "vänta tills något dyker upp i huvudet"
-   - "en oro, en plan, ett minne — vad som helst"
-   - "lägg den på lövet och låt det driva"
+2. **"Vad är det för sorts tanke?"** (35s)
+   - "planering? oro? minne?"
+   - "självkritik? fantasi? borde?"
+   - "leta efter sorten, inte innehållet"
 
-3. **"Tankar är inte order"** (40s)
-   - "du behöver inte hålla med"
-   - "du behöver inte argumentera"
-   - "låt lövet passera även om tanken känns viktig"
+3. **"Sätt ordet på den"** (35s)
+   - "säg tyst: 'det här är en oro-tanke'"
+   - "eller 'det här är planering'"
+   - "kort etikett, ingen analys"
 
-4. **"Om du följer med lövet"** (30s)
-   - "märk det — du har klivit i vattnet"
-   - "kliv upp på stranden igen"
-   - "nästa tanke, nytt löv"
+4. **"Märk skillnaden"** (35s)
+   - "tanken är fortfarande där"
+   - "men nu är den ett objekt du ser"
+   - "inte en sanning du är inuti"
 
-5. **"Samma bäck, andra löv"** (40s)
-   - "tankar upprepar sig — det är okej"
-   - "samma tanke får ett nytt löv"
-   - "den behöver inte lösas, bara passera"
+5. **"Samma sort igen?"** (35s)
+   - "många tankar är samma sort i ny förpackning"
+   - "även då — sätt etiketten"
+   - "'oro-tanke. igen.' räcker"
 
-6. **"Lämna bäcken sakta"** (20s)
-   - "bäcken finns kvar utan dig"
-   - "ta med dig blicken, inte tankarna"
+6. **"Tacka hjärnan, släpp"** (20s)
+   - "tack för varningen, hjärna"
+   - "jag har märkt den"
+   - "nästa tanke får sin egen etikett"
 
-**Closing:** "Bäcken finns kvar nästa gång du behöver den."
-**Microcopy (done):** "Du satt och tittade. Det räknas."
+**Closing:** "Tankar slutar inte komma. Du har bara fått ett verktyg att se dem med."
+**Microcopy (done):** "Du satte ord på sorten. Det räknas."
+**Reflection prompt:** "Vilken sorts tanke dök upp oftast?"
 
-## Filer som ändras
+## Tekniska detaljer
 
-- `src/lib/exercises.ts` — lägg till övningen i listan med category `reflection`, fyll i steps/script/closing/microcopy. Sätt `animation: "river"` (fallback ignoreras eftersom bespoke matchar id).
-- `src/components/animations/bespoke.tsx` — ny komponent `LovIBacken` + registrera id `lov-i-backen` i `hasBespoke` / `BespokeFor`-uppslaget (samma mönster som befintliga bespoke-övningar).
+- **ID:** `mark-tanken`
+- **Kategori:** `reflection`
+- **Kind:** `reflective`
+- **Längd:** 4 min
+- **Metric:** `oro` (samma som lov-i-backen)
+- **requiresRating:** true
+- **animation-fält:** `"drift"` (fallback — bespoke matchar på id)
 
-Inga ändringar i `ovning.$id.tsx` (BespokeFor plockar upp den automatiskt). Inga ändringar i routing, kategorifärger eller startsidan.
+### Filer som ändras
+
+1. **`src/lib/exercises.ts`**
+   - Lägg till övningsobjektet i listan (precis efter `lov-i-backen`, så reflection-blocket är samlat)
+   - Lägg till `"mark-tanken"` i `POLISHED_IDS`-arrayen (samma fix som behövdes för löven)
+
+2. **`src/components/animations/bespoke.tsx`**
+   - Ny komponent `MarkTanken` som följer samma mönster som `LovIBacken`:
+     - `useTimeSec` driver dimblobens path-morf och etiketternas drift
+     - `useBreathPulse` ger subtil andning till blobben
+     - Beräkna ett cykliskt index för "vilken etikett kristalliseras just nu" baserat på `t`
+     - Edge-fade på etiketterna så loopen är osynlig
+   - Registrera `mark-tanken` i `hasBespoke` och `BespokeFor`-uppslaget
+
+3. **`.lovable/plan.md`** — uppdatera planen så den dokumenterar båda nya övningar.
 
 ## Vad jag INTE rör
 
-- Befintliga övningar, animationer, hastigheter, kategorifärger, kortlayout.
-- Andnings-UI med stegcountern (denna övning använder ren script-undertext, samma som övriga reflection-övningar).
+- Befintliga övningar, deras texter, animationer eller hastigheter
+- Kategorifärger, kortlayout, routing, startsidan
+- `ovning.$id.tsx` — `BespokeFor` plockar upp den nya animationen automatiskt
