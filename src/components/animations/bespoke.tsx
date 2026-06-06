@@ -1107,8 +1107,6 @@ function FlamesToEmber(p: BespokeProps) {
 function MeetingsTimeline(p: BespokeProps) {
   const W = 320;
   const H = 220;
-  const stepIdx = p.stepIndex ?? 0;
-  const sp = clamp01(p.stepProgress ?? 0);
   const breathe = useBreathPulse(5200);
 
   const floorY = H - 26;
@@ -1120,30 +1118,28 @@ function MeetingsTimeline(p: BespokeProps) {
   // Vänster rum (förra mötet) är alltid dämpat
   const leftOp = 0.4;
 
-  // Höger rum lyser upp gradvis i steg 3
-  const rightFocus = stepIdx === 3 ? easeInOut(sp) : 0;
+  // Höger rum lyser upp kontinuerligt runt steg 3
+  const rightFocus = stepRamp(p, 2.7, 3.3);
   const rightOp = 0.4 + rightFocus * 0.5;
 
-  // Figur — reser sig i steg 0
-  const stand = stepIdx === 0 ? easeInOut(sp) : stepIdx > 0 ? 1 : 0;
+  // Figur reser sig kontinuerligt under steg 0
+  const stand = stepRamp(p, 0, 1);
   const figX = W / 2;
   const headR = 10;
   const headY = lerp(floorY - 46, floorY - 96, stand);
   const bodyTopY = headY + headR;
   const bodyBotY = floorY - 4;
 
-  // Axlar — droppar i steg 1
-  const shoulderDrop = stepIdx === 1 ? easeInOut(sp) : stepIdx > 1 ? 1 : 0;
+  // Axlar droppar kontinuerligt under steg 1
+  const shoulderDrop = stepRamp(p, 1, 2);
   const shoulderY = lerp(bodyTopY + 1, bodyTopY + 12, shoulderDrop);
   const shoulderHalfW = lerp(13, 18, shoulderDrop);
 
-  // Tre andetag — varje får sin tredjedel av sp i steg 2
-  const exhales = stepIdx === 2
-    ? [0, 1, 2].map((i) => clamp01(sp * 3 - i))
-    : stepIdx > 2 ? [1, 1, 1] : [0, 0, 0];
+  // Tre andetag — varje får sitt eget tredjedels-intervall i steg 2
+  const exhales = [0, 1, 2].map((i) => stepRamp(p, 2 + i / 3, 2 + (i + 1) / 3));
 
-  // Huvudet lutar något åt höger i steg 3 (orienterar mot nästa möte)
-  const tilt = stepIdx === 3 ? easeInOut(sp) * 4 : stepIdx > 3 ? 4 : 0;
+  // Huvudet lutar kontinuerligt runt steg 3
+  const tilt = stepRamp(p, 2.7, 3.3) * 4;
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="h-56 w-[20rem]" aria-hidden>
