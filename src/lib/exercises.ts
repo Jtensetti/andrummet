@@ -1015,7 +1015,7 @@ export const getByKind = (cat: Category, kind: ExerciseKind | "all") =>
     ? getByCategory(cat)
     : getByCategory(cat).filter((e) => e.kind === kind);
 
-/** 8 huvudbehov på startsidan (i ordning) */
+/** Alla kategorier på startsidan — visas som ett enhetligt rutnät */
 export const FEELINGS: {
   category: Category;
   label: string;
@@ -1029,12 +1029,12 @@ export const FEELINGS: {
   { category: "sleep", label: "Sova", question: "Vill landa mot kvällen" },
   { category: "reflection", label: "Reflektera", question: "Behöver tänka klart" },
   { category: "quick-pause", label: "Snabb paus", question: "Bara stanna en stund" },
+  { category: "compassion", label: "Var snäll mot dig själv", question: "Hård mot mig själv" },
+  { category: "anger", label: "Hantera ilska", question: "Det kokar inombords" },
+  { category: "worklife", label: "Arbetsdag", question: "Möten, mejl, människor" },
 ];
 
-/** Sekundära kategorier (visas under "Fler") */
-export const MORE_CATEGORIES: Category[] = ["compassion", "anger", "worklife"];
+/** Kvar för bakåtkompatibilitet — alla kategorier visas nu i FEELINGS */
+export const MORE_CATEGORIES: Category[] = [];
 
-export const ALL_CATEGORIES: Category[] = [
-  ...FEELINGS.map((f) => f.category),
-  ...MORE_CATEGORIES,
-];
+export const ALL_CATEGORIES: Category[] = FEELINGS.map((f) => f.category);
