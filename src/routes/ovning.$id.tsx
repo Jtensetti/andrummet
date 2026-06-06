@@ -424,10 +424,8 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
                             {sub.text}
                           </motion.p>
                         </AnimatePresence>
-                        <p className="text-[11px] font-bold uppercase tracking-widest opacity-60">
-                          Steg {stepIdx + 1} / {ex.steps.length} · {ex.steps[stepIdx]?.label}
-                        </p>
                       </div>
+
                     );
                   })()}
                 </>
