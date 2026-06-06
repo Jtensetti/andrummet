@@ -387,8 +387,6 @@ function NotDriving(p: BespokeProps) {
 function ResetBars(p: BespokeProps) {
   const W = 260;
   const H = 280;
-  const stepIdx = p.stepIndex ?? 0;
-  const sp = clamp01(p.stepProgress ?? 0);
   const breathe = useBreathPulse(5000);
 
   // Tre staplar: axlar (topp), käke (mitt), andetag (botten)
@@ -401,27 +399,25 @@ function ResetBars(p: BespokeProps) {
   const fullH = 200;
   const minH = 36;
 
-  // Hur mycket varje stapel har "sjunkit" (0..1)
-  const drop = (i: number) => {
-    if (stepIdx > i) return 1;
-    if (stepIdx === i) return easeInOut(sp);
-    return 0;
-  };
+  // Hur mycket varje stapel har "sjunkit" (0..1) — kontinuerlig ramp per stapel
+  const drop = (i: number) => stepRamp(p, i, i + 1);
 
-  // Medvetenhets-bandets vertikala position (0 = topp, 1 = botten)
-  // 3 = sveper topp→botten, 4 = botten→topp, 5 = mitten + puls
-  let bandY: number | null = null;
-  let bandOp = 0;
-  if (stepIdx === 3) {
-    bandY = lerp(40, baselineY - 20, easeInOut(sp));
-    bandOp = 1;
-  } else if (stepIdx === 4) {
-    bandY = lerp(baselineY - 20, 40, easeInOut(sp));
-    bandOp = 1;
-  } else if (stepIdx >= 5) {
-    bandY = (40 + baselineY - 20) / 2 + Math.sin(breathe * Math.PI * 2) * 6;
-    bandOp = 0.85;
-  }
+  // Medvetenhets-bandet: sveper ner under steg 3, upp under steg 4,
+  // landar i mitten och pulserar från steg 5. Allt som kontinuerliga ramper.
+  const topY = 40;
+  const bottomY = baselineY - 20;
+  const midY = (topY + bottomY) / 2;
+  const bandIn = stepRamp(p, 2.7, 3.1);
+  const sweepDown = stepRamp(p, 3, 4);
+  const sweepUp = stepRamp(p, 4, 5);
+  const settle = stepRamp(p, 5, 5.4);
+
+  const yDown = lerp(topY, bottomY, sweepDown);
+  const yUp = lerp(yDown, topY, sweepUp);
+  const yRest = midY + Math.sin(breathe * Math.PI * 2) * 6;
+  const bandY = lerp(yUp, yRest, settle);
+  const bandOp = bandIn * lerp(1, 0.85, settle);
+  const dotR = lerp(8, 10 + breathe * 4, settle);
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="h-72 w-64" aria-hidden>
