@@ -1124,8 +1124,10 @@ const POLISHED_IDS = new Set<string>([
   "mark-tanken",
   "lat-det-singla-ner",
   "surfa-vagen",
+  "du-blev-hallen",
 
 ]);
+
 
 export const isPolished = (id: string) => POLISHED_IDS.has(id);
 
