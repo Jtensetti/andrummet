@@ -735,8 +735,6 @@ function BodyScan(p: BespokeProps) {
 function NeedDrop(p: BespokeProps) {
   const W = 260;
   const H = 320;
-  const stepIdx = p.stepIndex ?? 0;
-  const sp = clamp01(p.stepProgress ?? 0);
   const breathe = useBreathPulse(5400);
 
   const cx = W / 2;
@@ -745,24 +743,23 @@ function NeedDrop(p: BespokeProps) {
   const youCy = H * 0.5;
   const youR = 46;
 
-  // Steg 2: en behov-prick lyser upp och sjunker från behov-fältet till magen
-  const dropY = stepIdx >= 2 ? lerp(youCy + 6, bellyY, easeInOut(stepIdx === 2 ? sp : 1)) : youCy;
-  const dropR =
-    stepIdx === 2 ? lerp(5, 9, easeInOut(sp))
-    : stepIdx === 3 ? lerp(9, 5, easeInOut(sp))
-    : stepIdx >= 4 ? 5 + breathe * 1.4
-    : 0;
+  // Kontinuerliga ramper
+  const thoughtsFade = 1 - stepRamp(p, 0.5, 1.2); // tankar-bubblor tonas ut
+  const sortIn = stepRamp(p, 0.7, 1.3);
+  const sortDim = stepRamp(p, 1.7, 2.3);
+  const sortOp = sortIn * lerp(1, 0.25, sortDim);
+  const dropFall = stepRamp(p, 1.8, 2.6); // droppen sjunker
+  const dropGrow = stepRamp(p, 1.8, 2.6);
+  const dropShrink = stepRamp(p, 2.7, 3.5);
+  const breathOn = stepRamp(p, 3.6, 4.2);
+  const handsOp = stepRamp(p, 3.7, 4.3);
 
-  // Borde/Behov-fältens opacity
-  const sortOp =
-    stepIdx === 0 ? 0
-    : stepIdx === 1 ? easeInOut(sp)
-    : stepIdx === 2 ? lerp(1, 0.25, easeInOut(sp))
-    : 0.2;
+  const dropY = lerp(youCy + 6, bellyY, dropFall);
+  let dropR = lerp(0, 9, dropGrow);
+  dropR = lerp(dropR, 5, dropShrink);
+  dropR = lerp(dropR, 5 + breathe * 1.4, breathOn);
 
-  // Steg 4: händer som sluter sig om kärnan, andas med pulsen
-  const handsOp = stepIdx === 4 ? easeInOut(sp) : 0;
-  const handGap = stepIdx === 4 ? lerp(50, 24, easeInOut(sp)) + breathe * 2 : 24;
+  const handGap = lerp(50, 24 + breathe * 2, handsOp);
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="h-72 w-[17rem]" aria-hidden>
@@ -829,13 +826,7 @@ function NeedDrop(p: BespokeProps) {
       )}
 
       {/* "Du" — lugn central cirkel */}
-      <circle
-        cx={cx}
-        cy={youCy}
-        r={youR}
-        fill={SOFT}
-        fillOpacity={0.5}
-      />
+      <circle cx={cx} cy={youCy} r={youR} fill={SOFT} fillOpacity={0.5} />
       <circle
         cx={cx}
         cy={youCy}
@@ -846,34 +837,32 @@ function NeedDrop(p: BespokeProps) {
         strokeWidth={2}
       />
 
-      {/* Steg 0: tankar-prickar bubblar upp ur huvudet */}
-      {stepIdx === 0 &&
+      {/* Tankar-prickar bubblar upp ur huvudet, tonas ut kontinuerligt */}
+      {thoughtsFade > 0.02 &&
         Array.from({ length: 8 }, (_, i) => {
           const phase = (breathe + i / 8) % 1;
           const a = (i / 8) * Math.PI * 2;
-          const rise = phase; // 0 nedanför → 1 högre upp
+          const rise = phase;
           const x = cx + Math.cos(a) * (16 + rise * 28);
           const y = headY - rise * 36;
-          const op = (1 - Math.abs(rise - 0.5) * 2) * 0.85;
+          const op = (1 - Math.abs(rise - 0.5) * 2) * 0.85 * thoughtsFade;
           return (
             <circle key={i} cx={x} cy={y} r={3 + (1 - rise) * 1.5} fill={SOFT} fillOpacity={op} />
           );
         })}
 
-      {/* Behov-droppen som sjunker (steg 2+) */}
+      {/* Behov-droppen som sjunker */}
       {dropR > 0.1 && (
         <circle cx={cx} cy={dropY} r={dropR} fill={ACCENT} fillOpacity={0.95} />
       )}
 
-      {/* Steg 4: två händer (bågar) sluter sig om kärnan */}
+      {/* Två händer (bågar) sluter sig om kärnan */}
       {handsOp > 0.02 && (
         <g opacity={handsOp} stroke={ACCENT} strokeWidth={3} fill="none" strokeLinecap="round">
-          {/* Vänster hand — båge öppen åt höger */}
           <path
             d={`M ${cx - handGap} ${bellyY - 14} Q ${cx - handGap - 18} ${bellyY}, ${cx - handGap} ${bellyY + 14}`}
             strokeOpacity={0.85}
           />
-          {/* Höger hand — båge öppen åt vänster */}
           <path
             d={`M ${cx + handGap} ${bellyY - 14} Q ${cx + handGap + 18} ${bellyY}, ${cx + handGap} ${bellyY + 14}`}
             strokeOpacity={0.85}
@@ -883,6 +872,7 @@ function NeedDrop(p: BespokeProps) {
     </svg>
   );
 }
+
 
 // ─── 8. Tre vänliga meningar — meningar landar i bröstet ───
 // 5 steg:
@@ -894,20 +884,21 @@ function NeedDrop(p: BespokeProps) {
 function KindSentences(p: BespokeProps) {
   const W = 280;
   const H = 240;
-  const stepIdx = p.stepIndex ?? 0;
-  const sp = clamp01(p.stepProgress ?? 0);
   const breathe = useBreathPulse(5200);
 
   const youCx = W * 0.5;
   const youCy = H * 0.55;
   const youR = 62;
 
-  // Vänlig "spegel" — en mindre cirkel som dyker upp i steg 0 och dröjer kvar svagt
+  // Vänlig "spegel" — tonas in under steg 0, dröjer kvar svagt
   const friendCx = W * 0.82;
   const friendR = 28;
-  const friendOp =
-    stepIdx === 0 ? easeInOut(sp) * 0.7
-    : 0.4;
+  const friendIn = stepRamp(p, 0.1, 0.9);
+  const friendSettle = stepRamp(p, 0.9, 1.3);
+  const friendOp = lerp(0, 0.7, friendIn) * (1 - friendSettle) + 0.4 * friendSettle;
+  const linkOp = lerp(0.3, 0.6, friendIn) * (1 - friendSettle);
+
+  const heartPulseOn = stepRamp(p, 3.6, 4.2);
 
   // Tre meningar — staplade i hjärtat (mitten av "du"-cirkeln)
   const slotH = 14;
@@ -919,15 +910,15 @@ function KindSentences(p: BespokeProps) {
     <svg viewBox={`0 0 ${W} ${H}`} className="h-60 w-72" aria-hidden>
       {/* "Vän"-spegel */}
       <circle cx={friendCx} cy={youCy - 18} r={friendR} fill={SOFT} fillOpacity={friendOp} />
-      {/* Mjuk linje mellan vän och du — endast tydlig i steg 0 */}
-      {stepIdx === 0 && (
+      {/* Mjuk linje mellan vän och du — tonas in/ut kontinuerligt */}
+      {linkOp > 0.02 && (
         <line
           x1={youCx + youR + 6}
           x2={friendCx - friendR - 6}
           y1={youCy - 18}
           y2={youCy - 18}
           stroke={ACCENT}
-          strokeOpacity={0.3 + easeInOut(sp) * 0.3}
+          strokeOpacity={linkOp}
           strokeWidth={2}
           strokeDasharray="4 4"
         />
@@ -935,39 +926,30 @@ function KindSentences(p: BespokeProps) {
 
       {/* "Du" — yttre cirkel */}
       <circle cx={youCx} cy={youCy} r={youR} fill={SOFT} fillOpacity={0.4} />
-      {/* Hjärt-zon — pulserar lite i steg 4 */}
+      {/* Hjärt-zon — pulserar med andetaget när allt är på plats */}
       <circle
         cx={youCx}
         cy={youCy}
-        r={42 + (stepIdx >= 4 ? breathe * 3 : 0)}
+        r={42 + breathe * 3 * heartPulseOn}
         fill={SOFT}
         fillOpacity={0.55}
       />
 
-      {/* Tre meningar */}
+      {/* Tre meningar — varje glider in över sitt eget step-intervall */}
       {[0, 1, 2].map((i) => {
-        // Mening i landar i steg i+1 (1, 2, 3)
-        const arriveStep = i + 1;
-        let visible = 0;
-        let slideT = 0;
-        if (stepIdx > arriveStep) {
-          visible = 1;
-          slideT = 1;
-        } else if (stepIdx === arriveStep) {
-          visible = easeInOut(sp);
-          slideT = easeInOut(sp);
-        }
+        const arrive = stepRamp(p, i + 0.7, i + 1.7); // 0→1 under "sitt" steg
+        const visible = arrive;
+        const slideT = arrive;
         if (visible < 0.02) return null;
 
         const targetY = stackTop + i * (slotH + slotGap);
-        // Kommer in från höger sida (där vännen står)
         const startX = friendCx;
         const targetX = youCx - slotW / 2;
         const x = lerp(startX, targetX, slideT);
         const y = lerp(youCy - slotH / 2, targetY, slideT);
 
-        // I steg 4 pulserar alla tre med samma andetag
-        const pulseOp = stepIdx >= 4 ? 0.85 + breathe * 0.15 : 0.9;
+        // Synkron andnings-puls när allt är på plats
+        const pulseOp = lerp(0.9, 0.85 + breathe * 0.15, heartPulseOn);
 
         return (
           <rect
@@ -986,6 +968,7 @@ function KindSentences(p: BespokeProps) {
   );
 }
 
+
 // ─── 9. Svalna innan svar — eld blir glöd ──────────────────
 // 5 steg:
 //  0 "Stanna här"             → 5 vassa lågor flackrar tall + jittrigt
@@ -996,8 +979,6 @@ function KindSentences(p: BespokeProps) {
 function FlamesToEmber(p: BespokeProps) {
   const W = 280;
   const H = 240;
-  const stepIdx = p.stepIndex ?? 0;
-  const sp = clamp01(p.stepProgress ?? 0);
   const breathe = useBreathPulse(5400);
 
   const baseY = H - 36;
@@ -1005,18 +986,26 @@ function FlamesToEmber(p: BespokeProps) {
   const spacing = 38;
   const startX = (W - (flames - 1) * spacing) / 2;
 
-  // Hur "släckta" lågorna är (0 vild eld, 1 glöd)
-  const cool =
-    stepIdx <= 1 ? 0
-    : stepIdx === 2 ? 0.15
-    : stepIdx === 3 ? easeInOut(sp)
-    : 1;
+  // Kontinuerliga ramper över hela övningen
+  // cool: 0 i 0..1, 0.15 plateau under steg 2, sedan upp mot 1 under steg 3
+  const coolHint = 0.15 * stepRamp(p, 1.6, 2.2);
+  const coolMain = stepRamp(p, 2.6, 3.6);
+  const cool = coolHint * (1 - coolMain) + coolMain;
 
-  // Andnings-modulering: i steg 1 styr breath-pulsen höjden tydligt
-  const breathMod = stepIdx === 1 ? 1 : stepIdx === 0 ? 0.4 : 0;
+  // breathMod: tonas in 0.4 i steg 0 → 1 i steg 1 → 0 från steg 2
+  const breathRamp01 = stepRamp(p, 0.6, 1);
+  const breathFadeOut = stepRamp(p, 1.6, 2);
+  const breathMod = lerp(0.4, 1, breathRamp01) * (1 - breathFadeOut);
 
-  // Jitter — vilt i 0, dämpas
-  const jitterAmp = stepIdx === 0 ? 5 : stepIdx === 1 ? 2 : 0;
+  // jitter: 5→2 → 0
+  const jitterAmp = lerp(5, 2, breathRamp01) * (1 - breathFadeOut);
+
+  // Mittlågans highlight under steg 2
+  const highlightOn = stepRamp(p, 1.6, 2.2) * (1 - stepRamp(p, 2.6, 3.2));
+
+  // Övergång eld → ember-vy
+  const emberPhase = stepRamp(p, 3.4, 4.2);
+  const flameVis = 1 - emberPhase;
 
   // Höjd-bas per låga (mittlåga högst)
   const baseHeights = [70, 100, 130, 100, 70];
@@ -1034,28 +1023,23 @@ function FlamesToEmber(p: BespokeProps) {
         strokeWidth={2}
       />
 
-      {stepIdx < 4 &&
+      {flameVis > 0.02 &&
         Array.from({ length: flames }, (_, i) => {
           const x = startX + i * spacing;
-          // Lågans nuvarande höjd
-          const breath = (1 - breathe) * breathMod * 18; // ut = mindre höjd
+          const breath = (1 - breathe) * breathMod * 18;
           const baseH = baseHeights[i] - breath;
-          const h = lerp(baseH, 14, cool); // sjunker mot ember
-          const halfW = lerp(13, 22, cool); // bredare när glöd
+          const h = lerp(baseH, 14, cool);
+          const halfW = lerp(13, 22, cool);
           const jx = Math.sin(breathe * Math.PI * 4 + i) * jitterAmp;
 
-          // Markera mittlågan i steg 2
-          const highlight = stepIdx === 2 && i === 2 ? 1 : 0;
-          const op = lerp(0.9, 0.7, cool) + highlight * 0.1;
+          const highlight = i === 2 ? highlightOn : 0;
+          const op = (lerp(0.9, 0.7, cool) + highlight * 0.1) * flameVis;
 
-          // Form: triangulär låga som rundas mer ju kallare
-          // Använd path: M (x-half, baseY) Q (x, baseY-h*1.1) (x+half, baseY)
           const ctrlY = baseY - h * lerp(1.15, 1.0, cool);
           const path = `M ${x - halfW + jx} ${baseY} Q ${x + jx} ${ctrlY} ${x + halfW + jx} ${baseY} Z`;
 
           return (
             <g key={i}>
-              {/* Glöd-mark under lågan när vi kyler ner */}
               {cool > 0.3 && (
                 <ellipse
                   cx={x}
@@ -1063,26 +1047,26 @@ function FlamesToEmber(p: BespokeProps) {
                   rx={halfW + 4}
                   ry={4 + cool * 3}
                   fill={ACCENT}
-                  fillOpacity={0.4 * cool}
+                  fillOpacity={0.4 * cool * flameVis}
                 />
               )}
               <path d={path} fill={ACCENT} fillOpacity={op} />
-              {highlight > 0 && (
+              {highlight > 0.02 && (
                 <circle
                   cx={x + jx}
                   cy={baseY - h * 0.5}
                   r={5 + breathe * 2}
                   fill="currentColor"
-                  fillOpacity={0.6}
+                  fillOpacity={0.6 * highlight}
                 />
               )}
             </g>
           );
         })}
 
-      {/* Steg 4: en lugn glöd i mitten */}
-      {stepIdx >= 4 && (
-        <g>
+      {/* En lugn glöd i mitten — tonas in kontinuerligt */}
+      {emberPhase > 0.02 && (
+        <g opacity={emberPhase}>
           <ellipse
             cx={W / 2}
             cy={baseY + 2}
@@ -1113,6 +1097,7 @@ function FlamesToEmber(p: BespokeProps) {
   );
 }
 
+
 // ─── 10. Mellan två möten — pausen mellan två rum ──────────
 // Två rum (förra/nästa möte) på var sin sida. Mellan dem står du.
 //  0 "Stå upp om du kan"           → figuren reser sig från sittande
@@ -1122,8 +1107,6 @@ function FlamesToEmber(p: BespokeProps) {
 function MeetingsTimeline(p: BespokeProps) {
   const W = 320;
   const H = 220;
-  const stepIdx = p.stepIndex ?? 0;
-  const sp = clamp01(p.stepProgress ?? 0);
   const breathe = useBreathPulse(5200);
 
   const floorY = H - 26;
@@ -1135,30 +1118,28 @@ function MeetingsTimeline(p: BespokeProps) {
   // Vänster rum (förra mötet) är alltid dämpat
   const leftOp = 0.4;
 
-  // Höger rum lyser upp gradvis i steg 3
-  const rightFocus = stepIdx === 3 ? easeInOut(sp) : 0;
+  // Höger rum lyser upp kontinuerligt runt steg 3
+  const rightFocus = stepRamp(p, 2.7, 3.3);
   const rightOp = 0.4 + rightFocus * 0.5;
 
-  // Figur — reser sig i steg 0
-  const stand = stepIdx === 0 ? easeInOut(sp) : stepIdx > 0 ? 1 : 0;
+  // Figur reser sig kontinuerligt under steg 0
+  const stand = stepRamp(p, 0, 1);
   const figX = W / 2;
   const headR = 10;
   const headY = lerp(floorY - 46, floorY - 96, stand);
   const bodyTopY = headY + headR;
   const bodyBotY = floorY - 4;
 
-  // Axlar — droppar i steg 1
-  const shoulderDrop = stepIdx === 1 ? easeInOut(sp) : stepIdx > 1 ? 1 : 0;
+  // Axlar droppar kontinuerligt under steg 1
+  const shoulderDrop = stepRamp(p, 1, 2);
   const shoulderY = lerp(bodyTopY + 1, bodyTopY + 12, shoulderDrop);
   const shoulderHalfW = lerp(13, 18, shoulderDrop);
 
-  // Tre andetag — varje får sin tredjedel av sp i steg 2
-  const exhales = stepIdx === 2
-    ? [0, 1, 2].map((i) => clamp01(sp * 3 - i))
-    : stepIdx > 2 ? [1, 1, 1] : [0, 0, 0];
+  // Tre andetag — varje får sitt eget tredjedels-intervall i steg 2
+  const exhales = [0, 1, 2].map((i) => stepRamp(p, 2 + i / 3, 2 + (i + 1) / 3));
 
-  // Huvudet lutar något åt höger i steg 3 (orienterar mot nästa möte)
-  const tilt = stepIdx === 3 ? easeInOut(sp) * 4 : stepIdx > 3 ? 4 : 0;
+  // Huvudet lutar kontinuerligt runt steg 3
+  const tilt = stepRamp(p, 2.7, 3.3) * 4;
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="h-56 w-[20rem]" aria-hidden>
