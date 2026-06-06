@@ -1251,6 +1251,11 @@ const POLISHED_IDS = new Set<string>([
   "lat-det-singla-ner",
   "surfa-vagen",
   "du-blev-hallen",
+  "slapp-axlarna-tre-ganger",
+  "en-sak-at-gangen",
+  "rakna-ner-fran-tio",
+  "mjuk-omstart",
+  "stang-dagen-mjukt",
 ]);
 
 
