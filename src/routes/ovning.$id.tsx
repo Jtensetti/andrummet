@@ -372,7 +372,7 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -6 }}
                             transition={{ duration: 0.25 }}
-                            className="min-h-[3.5rem] text-3xl font-extrabold leading-tight tracking-tight md:text-4xl"
+                            className="flex min-h-[4.75rem] items-start justify-center text-3xl font-extrabold leading-tight tracking-tight md:min-h-[5.75rem] md:text-4xl"
                           >
                             {sub.text}
                           </motion.p>
