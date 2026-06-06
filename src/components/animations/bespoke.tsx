@@ -1400,6 +1400,163 @@ function LeavesOnStream(_p: BespokeProps) {
   );
 }
 
+// ─── Märk tanken ───────────────────────────────────────────
+// Aktiv defusion: en diffus "tanke" (mjuk blob) kristalliseras till
+// en namngiven geometrisk form och driver bort. Loopen fortsätter
+// oberoende av steg — tankar kommer, tankar märks, tankar släpps.
+function NameTheThought(_: BespokeProps) {
+  const t = useTimeSec();
+  const breathe = useBreathPulse(5400);
+  const W = 320;
+  const H = 280;
+  const cx = W / 2;
+  const cy = H / 2 + 6;
+
+  const LABELS = ["planering", "oro", "minne", "kritik", "fantasi", "borde"];
+  const SHAPES = ["circle", "square", "triangle", "hexagon"] as const;
+
+  const cycle = 6.5;
+  const idx = Math.floor(t / cycle);
+  const phase = (t % cycle) / cycle; // 0..1
+  const label = LABELS[idx % LABELS.length];
+  const shape = SHAPES[idx % SHAPES.length];
+
+  // Faser inom en cykel:
+  //   0.00–0.70  diffus blob (full)
+  //   0.70–0.85  blobben kristalliseras, etiketten tonar in
+  //   0.85–1.00  namngivet objekt driver ut + ny blob tonar in
+  const fuzzMix =
+    phase < 0.7 ? 1 : phase < 0.85 ? 1 - (phase - 0.7) / 0.15 : 0;
+  const crystIn = phase < 0.7 ? 0 : phase < 0.85 ? (phase - 0.7) / 0.15 : 1;
+  const exitU = phase < 0.85 ? 0 : (phase - 0.85) / 0.15;
+  const exitFade = 1 - exitU;
+  const exitX = exitU * 90;
+  const newBlobOp = exitU;
+
+  // Diffus blob — vågig path som rör sig långsamt.
+  const N = 26;
+  const baseR = 48 + breathe * 4;
+  const blobPts: string[] = [];
+  for (let i = 0; i < N; i++) {
+    const a = (i / N) * Math.PI * 2;
+    const wob =
+      Math.sin(a * 3 + t * 1.1) * 7 + Math.sin(a * 5 - t * 0.7) * 3.5;
+    const r = baseR + wob;
+    const x = cx + Math.cos(a) * r;
+    const y = cy + Math.sin(a) * r;
+    blobPts.push(`${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`);
+  }
+  blobPts.push("Z");
+  const blobPath = blobPts.join(" ");
+
+  // Ambient — ord som driver förbi i bakgrunden ("nästa tanke är på väg").
+  const ambient = [
+    { period: 11, y: 56, offset: 0.0, text: "planering" },
+    { period: 13, y: 92, offset: 0.42, text: "oro" },
+    { period: 17, y: 232, offset: 0.65, text: "minne" },
+    { period: 12, y: 258, offset: 0.18, text: "kritik" },
+    { period: 15, y: 38, offset: 0.78, text: "fantasi" },
+    { period: 14, y: 268, offset: 0.5, text: "borde" },
+  ];
+
+  // Kristalliserad form
+  const r = 28;
+  const shapeX = cx + exitX;
+  const shapeEl = (() => {
+    if (shape === "circle")
+      return <circle cx={shapeX} cy={cy} r={r} fill={ACCENT} fillOpacity={0.92} />;
+    if (shape === "square")
+      return (
+        <rect
+          x={shapeX - r}
+          y={cy - r}
+          width={r * 2}
+          height={r * 2}
+          rx={6}
+          fill={ACCENT}
+          fillOpacity={0.92}
+        />
+      );
+    if (shape === "triangle") {
+      const h = r * Math.sqrt(3);
+      return (
+        <polygon
+          points={`${shapeX},${cy - r} ${shapeX + h * 0.5},${cy + r * 0.55} ${shapeX - h * 0.5},${cy + r * 0.55}`}
+          fill={ACCENT}
+          fillOpacity={0.92}
+        />
+      );
+    }
+    const pts: string[] = [];
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * Math.PI * 2 - Math.PI / 2;
+      pts.push(`${shapeX + Math.cos(a) * r},${cy + Math.sin(a) * r}`);
+    }
+    return <polygon points={pts.join(" ")} fill={ACCENT} fillOpacity={0.92} />;
+  })();
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-72 w-72" aria-hidden>
+      {/* Ambient: nya tankar på väg in */}
+      {ambient.map((a, i) => {
+        const span = W + 140;
+        const u = (t / a.period + a.offset) % 1;
+        const x = -70 + u * span;
+        const edge = Math.min(x + 70, W - x, 50) / 50;
+        const fade = Math.max(0, Math.min(1, edge));
+        return (
+          <text
+            key={`amb-${i}`}
+            x={x}
+            y={a.y}
+            fontSize="12"
+            fontStyle="italic"
+            fill="currentColor"
+            opacity={0.32 * fade}
+          >
+            {a.text}
+          </text>
+        );
+      })}
+
+      {/* Diffus blob — "en tanke utan kant" */}
+      <path d={blobPath} fill={SOFT} fillOpacity={0.55 * fuzzMix} />
+      <path
+        d={blobPath}
+        fill="none"
+        stroke="currentColor"
+        strokeOpacity={0.18 * fuzzMix}
+        strokeWidth={1}
+      />
+
+      {/* Kristalliserad, namngiven tanke */}
+      <g opacity={crystIn * exitFade}>
+        {shapeEl}
+        <text
+          x={shapeX}
+          y={cy + r + 20}
+          textAnchor="middle"
+          fontSize="13"
+          fontWeight={700}
+          fill="currentColor"
+          opacity={0.9}
+        >
+          {label}
+        </text>
+      </g>
+
+      {/* Den nästa blobben anar sig — fade in under exit */}
+      <circle
+        cx={cx}
+        cy={cy}
+        r={22 + breathe * 4}
+        fill={SOFT}
+        fillOpacity={0.45 * newBlobOp}
+      />
+    </svg>
+  );
+}
+
 // ─── Router ────────────────────────────────────────────────
 const BESPOKE: Record<string, (p: BespokeProps) => ReactElement> = {
   "stang-47-flikar": CloseTabs,
@@ -1413,6 +1570,7 @@ const BESPOKE: Record<string, (p: BespokeProps) => ReactElement> = {
   "svalna-innan-svar": FlamesToEmber,
   "mellan-tva-moten": MeetingsTimeline,
   "lov-i-backen": LeavesOnStream,
+  "mark-tanken": NameTheThought,
 };
 
 export function hasBespoke(id: string | undefined): boolean {
