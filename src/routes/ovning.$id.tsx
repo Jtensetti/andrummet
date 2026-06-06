@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { X, ArrowLeft } from "lucide-react";
+import { X } from "lucide-react";
 import { getExercise, METRIC_LABELS, type Category } from "@/lib/exercises";
 import { addEntry } from "@/lib/history";
 import { AnimationFor } from "@/components/animations";
@@ -65,11 +65,9 @@ function Player() {
 function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }) {
   const navigate = useNavigate();
 
-  const initialPhase: Phase = ex.metaphor
-    ? "intro"
-    : ex.requiresRating
-      ? "before"
-      : "running";
+  // Alla övningar öppnas på samma sätt: skattningsskärm om övningen kräver
+  // det, annars direkt in i löpande läge. Ingen separat metafor-intro.
+  const initialPhase: Phase = ex.requiresRating ? "before" : "running";
 
   const [phase, setPhase] = useState<Phase>(initialPhase);
   const [stepIdx, setStepIdx] = useState(0);
@@ -190,43 +188,6 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
       </button>
 
       <AnimatePresence mode="wait">
-        {phase === "intro" && ex.metaphor && (
-          <motion.div
-            key="intro"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            className="mx-auto flex min-h-[100dvh] max-w-md flex-col justify-center px-6 py-12"
-          >
-            <p className="text-xs font-bold uppercase tracking-widest opacity-75">
-              Bilden bakom övningen
-            </p>
-            <h1 className="mt-2 text-3xl font-extrabold leading-tight md:text-4xl">
-              {ex.title}
-            </h1>
-            <p className="mt-5 text-lg leading-relaxed opacity-95">
-              {ex.metaphor.intro}
-            </p>
-            <div className="mt-8 flex justify-center">
-              <div className="rounded-3xl bg-black/10 p-6">
-                <AnimationFor
-                  kind={ex.metaphor.illustration ?? ex.animation}
-                  phase="andas in"
-                  progress={0.4}
-                />
-              </div>
-            </div>
-            <p className="mt-6 text-center text-xs font-semibold uppercase tracking-widest opacity-60">
-              Följ texten — den byter med några sekunders mellanrum.
-            </p>
-            <button
-              onClick={() => setPhase(ex.requiresRating ? "before" : "running")}
-              className="mt-6 rounded-full bg-black/85 px-6 py-4 text-base font-extrabold text-white active:scale-[0.98]"
-            >
-              Jag är med
-            </button>
-          </motion.div>
-        )}
 
         {phase === "before" && (
           <motion.div
@@ -261,14 +222,6 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
             >
               Hoppa över skattning
             </button>
-            {ex.metaphor && (
-              <button
-                onClick={() => setPhase("intro")}
-                className="mt-4 inline-flex items-center justify-center gap-1 text-xs font-semibold opacity-60"
-              >
-                <ArrowLeft className="h-3 w-3" /> Tillbaka till bilden
-              </button>
-            )}
           </motion.div>
         )}
 

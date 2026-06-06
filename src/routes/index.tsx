@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { FEELINGS, MORE_CATEGORIES, CATEGORY_LABELS, type Category } from "@/lib/exercises";
+import { FEELINGS, type Category } from "@/lib/exercises";
 import { motion } from "framer-motion";
 import { Timer } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
@@ -77,7 +77,7 @@ function Home() {
         </div>
       </Link>
 
-      {/* 8 behovskakel */}
+      {/* Alla kategorier — enhetligt rutnät med lika stora kort */}
       <section
         aria-label="Välj ett behov"
         className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4"
@@ -92,7 +92,7 @@ function Home() {
             <Link
               to="/k/$category"
               params={{ category: f.category }}
-              className={`group relative block min-h-[140px] overflow-hidden rounded-3xl ${TILE_BG[f.category]} p-4 shadow-sm transition active:scale-[0.98] hover:shadow-md md:aspect-square md:min-h-0 md:p-5`}
+              className={`group relative block h-[160px] overflow-hidden rounded-3xl ${TILE_BG[f.category]} p-4 shadow-sm transition active:scale-[0.98] hover:shadow-md md:aspect-square md:h-auto md:p-5`}
             >
               <TileDecor category={f.category} />
               <div className="relative flex h-full flex-col justify-between">
@@ -106,25 +106,6 @@ function Home() {
             </Link>
           </motion.div>
         ))}
-      </section>
-
-      {/* Fler kategorier */}
-      <section className="mt-6">
-        <p className="mb-2 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
-          Mer specifikt
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {MORE_CATEGORIES.map((cat) => (
-            <Link
-              key={cat}
-              to="/k/$category"
-              params={{ category: cat }}
-              className={`rounded-full ${TILE_BG[cat]} px-4 py-2 text-xs font-bold shadow-sm transition active:scale-95`}
-            >
-              {CATEGORY_LABELS[cat]}
-            </Link>
-          ))}
-        </div>
       </section>
 
       <p className="mt-10 max-w-prose text-xs text-muted-foreground">
