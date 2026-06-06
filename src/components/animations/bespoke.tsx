@@ -1558,11 +1558,10 @@ function NameTheThought(_: BespokeProps) {
 }
 
 // ─── Låt det singla ner (snöglob) ──────────────────────────
-// Tankarna är redan i globen. Du behöver inte tänka dem bort —
-// du behöver bara sluta skaka. Sedimentet sjunker av sig själv.
-// Cykeln (14s) är oberoende av stegen: skakning → settling → stilla →
-// ny skakning. Globen i sig står helt still.
-function SnowGlobeSettle(_: BespokeProps) {
+// EN lång båge över hela övningen: virvlarna pågår ett bra tag,
+// sedan singlar partiklarna långsamt ner och vid sista ordet
+// står allt helt stilla. Ingen loop — bara en enda settling.
+function SnowGlobeSettle(p: BespokeProps) {
   const W = 280;
   const H = 280;
   const cx = W / 2;
@@ -1570,12 +1569,18 @@ function SnowGlobeSettle(_: BespokeProps) {
   const R = 94; // glasets ytterradie
   const Rin = 88; // vattnets/clip-radien
   const t = useTimeSec();
+  const u = totalT(p); // 0..1 över hela övningen
 
-  // En skakning var 14:e sekund. Amplituden dämpas exponentiellt.
-  const cycle = 14;
-  const phase = t % cycle;
-  const tau = 2.9;
-  const shakeAmp = Math.exp(-phase / tau);
+  // Virvelamplitud: full storm fram till ~55 %, sedan mjuk settling
+  // mot 0 vid u=1. Lätt andning ovanpå så det aldrig ser fruset ut
+  // medan stormen pågår.
+  const settleStart = 0.55;
+  const settleU =
+    u < settleStart ? 0 : Math.min(1, (u - settleStart) / (1 - settleStart));
+  const settleEase = 1 - Math.pow(1 - settleU, 1.8); // ease-out
+  const baseAmp = 1 - settleEase;
+  const breath = 0.92 + Math.sin(t * 0.9) * 0.08;
+  const shakeAmp = baseAmp * breath;
 
   // 56 partiklar med deterministisk seed → samma hög varje rendering.
   const N = 56;
@@ -1591,26 +1596,28 @@ function SnowGlobeSettle(_: BespokeProps) {
     const col = i % 11;
     const rowJ = (r1 - 0.5) * 3;
     const colJ = (r2 - 0.5) * 5;
-    // Högen smalnar av uppåt.
     const rowWidth = Math.max(2.5, 8 - row * 1.5);
     const restX = cx + (col - 5) * rowWidth + colJ;
     const restY = cy + Rin - 10 - row * 6 + rowJ;
 
-    // Skak-mål: en slumpad punkt inne i cirkeln, lätt avlång.
-    const sa = r1 * Math.PI * 2;
-    const sr = (0.25 + r2 * 0.7) * Rin;
-    const shakeX = cx + Math.cos(sa) * sr;
-    const shakeY = cy + Math.sin(sa) * sr * 0.92;
+    // Långsamt driftande "ankarpunkt" inne i globen — gör att
+    // virveln inte ser ut att gå i samma slinga om och om igen.
+    const driftFreq = 0.08 + r1 * 0.05;
+    const driftPh = r2 * Math.PI * 2;
+    const sa = driftPh + t * driftFreq;
+    const sr = (0.25 + r2 * 0.65) * Rin;
+    const anchorX = cx + Math.cos(sa) * sr;
+    const anchorY = cy + Math.sin(sa) * sr * 0.92;
 
-    // Liten virvel ovanpå målpunkten medan amplituden ännu finns kvar.
-    const swirlFreq = 0.7 + r1 * 0.9;
+    // Virvel ovanpå ankarpunkten — alltid aktiv, skalas av shakeAmp.
+    const swirlFreq = 0.55 + r1 * 0.8;
     const swirlPh = r2 * Math.PI * 2;
     const swirlAmp = 7 + r1 * 16;
-    const swirlX = Math.cos(phase * swirlFreq * 2 + swirlPh) * swirlAmp;
-    const swirlY = Math.sin(phase * swirlFreq * 2 + swirlPh * 1.3) * swirlAmp;
+    const swirlX = Math.cos(t * swirlFreq + swirlPh) * swirlAmp;
+    const swirlY = Math.sin(t * swirlFreq * 1.13 + swirlPh * 1.3) * swirlAmp;
 
-    const x = lerp(restX, shakeX + swirlX, shakeAmp);
-    const y = lerp(restY, shakeY + swirlY, shakeAmp);
+    const x = lerp(restX, anchorX + swirlX, shakeAmp);
+    const y = lerp(restY, anchorY + swirlY, shakeAmp);
 
     particles.push({
       x,
