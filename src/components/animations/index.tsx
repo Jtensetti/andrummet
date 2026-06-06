@@ -114,22 +114,26 @@ function Bow({ phase = "", stepIndex = 0, stepProgress = 0 }: Props) {
 }
 
 // ─── Orb ──────────────────────────────────────────────────────
-function Orb({ phase = "", stepIndex = 0, stepProgress = 0 }: Props) {
+function Orb({ phase = "", progress = 0, stepProgress = 0 }: Props) {
   const b = breathOf(phase);
   const t = clamp01(stepProgress);
+  // Eased breath: mjuk in/ut istället för linjär. Neutral mittpunkt 0.72
+  // gör att icke-andnings-steg ("Stanna", "Stilla") kan stå still utan att
+  // skapa ett synligt hopp mellan steg.
+  const ease = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+  const NEUTRAL = 0.72;
   let scale: number;
-  if (b === "in") scale = lerp(0.4, 1, t);
-  else if (b === "out") scale = lerp(1, 0.4, t);
+  if (b === "in") scale = lerp(NEUTRAL, 1, ease);
+  else if (b === "out") scale = lerp(NEUTRAL, 0.4, ease);
   else if (b === "hold") scale = 1;
   else if (b === "rest") scale = 0.45;
-  else {
-    scale = 0.6 + 0.4 * Math.sin(t * Math.PI);
-    void stepIndex;
-  }
+  else scale = NEUTRAL; // stilla, ingen egen puls
+  // Bakgrundsringen andas långsamt över hela övningen — fristående från steg.
+  const ringOpacity = 0.32 + 0.12 * Math.sin(clamp01(progress) * Math.PI * 2);
   const R = 110;
   return (
     <svg viewBox="-130 -130 260 260" className="h-64 w-64 md:h-72 md:w-72" aria-hidden>
-      <circle cx={0} cy={0} r={R} fill={SOFT} fillOpacity={0.4} />
+      <circle cx={0} cy={0} r={R} fill={SOFT} fillOpacity={ringOpacity} />
       <circle cx={0} cy={0} r={R * scale} fill={ACCENT} />
     </svg>
   );
@@ -401,19 +405,44 @@ function Weight({ progress = 0, stepIndex = 0, stepCount = 1, stepProgress = 0 }
 }
 
 // ─── Gather — punkter glider in mot mitten ───────────────────
-function Gather({ stepProgress = 0 }: Props) {
-  const t = clamp01(stepProgress);
-  const n = 8;
+function Gather({ stepIndex = 0, stepCount = 1, stepProgress = 0 }: Props) {
+  // En prick per steg glider in mot mitten och stannar där. Övriga står stilla
+  // på sin plats i ringen tills det är deras tur. Ingen återställning mellan steg.
+  const n = Math.max(stepCount, 1);
   const R = 110;
+  const CENTER = 18; // klungans radie
+  const t = clamp01(stepProgress);
+  const ease = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
   return (
     <svg viewBox="-130 -130 260 260" className="h-64 w-64 md:h-72 md:w-72" aria-hidden>
       <circle cx={0} cy={0} r={R} fill={SOFT} fillOpacity={0.35} />
       {Array.from({ length: n }, (_, i) => {
-        const a = (i / n) * Math.PI * 2;
-        const r = lerp(R, 14, t);
-        return <circle key={i} cx={Math.cos(a) * r} cy={Math.sin(a) * r} r={9} fill={ACCENT} />;
+        const a = (i / n) * Math.PI * 2 - Math.PI / 2;
+        const ringX = Math.cos(a) * R;
+        const ringY = Math.sin(a) * R;
+        // klung-plats: liten cirkel runt centrum så prickarna inte överlappar exakt
+        const ca = (i / n) * Math.PI * 2;
+        const centerX = Math.cos(ca) * CENTER;
+        const centerY = Math.sin(ca) * CENTER;
+        let x = ringX;
+        let y = ringY;
+        if (i < stepIndex) {
+          x = centerX;
+          y = centerY;
+        } else if (i === stepIndex) {
+          x = lerp(ringX, centerX, ease);
+          y = lerp(ringY, centerY, ease);
+        }
+        return <circle key={i} cx={x} cy={y} r={9} fill={ACCENT} />;
       })}
-      <circle cx={0} cy={0} r={8 + 18 * t} fill={ACCENT} fillOpacity={0.5 + 0.5 * t} />
+      {/* mjuk halo som växer i takt med hur många som samlats */}
+      <circle
+        cx={0}
+        cy={0}
+        r={8 + 16 * clamp01((stepIndex + ease) / n)}
+        fill={ACCENT}
+        fillOpacity={0.25}
+      />
     </svg>
   );
 }

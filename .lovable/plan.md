@@ -1,88 +1,42 @@
-# Plan: En till övning i de tunna kategorierna
+## Problem
 
-## Bakgrund
+Båda animationerna återställs vid varje stegbyte vilket ger ett ryckigt "loop"-intryck istället för en sammanhängande rörelse som i resten av appen.
 
-På startsidan listas alla 11 kategorier, men endast övningar i `POLISHED_IDS` (i `src/lib/exercises.ts`) visas på kategorisidorna. Idag är fördelningen:
+**Mjuk omstart (orb):** Steg som "Andas in/ut" styrs av andnings­logiken (krymper/växer mellan 0.4 och 1.0), men stegen "Stanna här" och "Stilla" har ingen andnings­etikett och faller tillbaka på en sinus­puls (0.6→1.0→0.6 per steg). Resultat: orben hoppar i storlek vid varje stegbyte — t.ex. slutar utandningen på 0.4 och börjar nästa steg på 0.6 — och pulsen i icke-andnings­steg känns som en egen liten loop.
 
-| Kategori | Polerade idag |
-|---|---|
-| Lugna kroppen (body) | 1 — Kroppsskanning |
-| Fokusera (focus) | 1 — Fokuslinsen |
-| Sova (sleep) | 1 — Sov mjukare |
-| Snabb paus (quick-pause) | 1 — Stäng några fönster |
-| Arbetsdag (worklife) | 1 — Mellan två möten |
-| (övriga) | 2–3 |
+**En sak åt gången (gather):** De 8 prickarna samlas in mot mitten över `stepProgress` 0→1, och snäpper sedan tillbaka ut till ringen vid nästa steg. Sex steg = sex återställningar. Metaforen ("samla det utspridda till en punkt") bryts.
 
-Mål: en till per kategori — totalt 5 nya — där varje övning kompletterar (inte upprepar) den befintliga, har en metafor som hänger ihop med vald animation, och språk i samma ton som de senaste språkjusteringarna (kort, ovanifrån-fritt, nedtonat, svenskt).
+## Lösning
 
-Allt återanvänder befintliga animationsprimitiver i `src/components/animations/index.tsx` — inga nya animationer behöver byggas.
+Inga textändringar, inga nya animationer — bara förfining av befintliga `Orb` och `Gather` i `src/components/animations/index.tsx` så de följer hela övningens båge, precis som `Horizon`, `Meter`, `Stack` m.fl. redan gör.
 
----
+### Gather — samlas en åt gången
 
-## De fem nya övningarna
+Istället för att alla 8 prickarna pulsar in–ut per steg: en prick faller in i mitten per steg och stannar där. Det säger exakt det övningen säger ("välj en", "resten får vänta", "börja där").
 
-### 1. Lugna kroppen — "Släpp axlarna tre gånger"
-- **Komplement till:** Kroppsskanning (lång, hela kroppen) → den nya är **kort, fysisk, en sak**.
-- **Längd:** 2 min, `kind: "short"`, metric: `kroppsspänning`.
-- **Animation:** `weight` — en cirkel sjunker långsamt längs en lodrät linje. Varje steg = ett kroppsområde släpps, vikten sjunker ett snäpp.
-- **Pedagogiskt:** spänning = något som hålls uppe. Att släppa = låta tyngden falla. Synkat: cirkeln rör sig nedåt exakt i takt med stegets klocka.
-- **Steg (skiss):** Lägg märke till axlarna → släpp axlarna → mjuka käken → släpp pannan → lång utandning → klart.
-- **Avslut:** "Tre platser mjukare. Det räcker."
+- Använd `stepIndex` + `stepCount` + `stepProgress` för att avgöra hur många prickar som redan är i mitten, plus den som just nu glider in.
+- Prickar som "valts" sitter still i en liten klunga nära centrum.
+- Prickar som "väntar" sitter still på sin plats i ringen (ingen rörelse mellan steg).
+- Den aktuella pricken interpolerar från sin ringposition in mot klungan över `stepProgress`.
+- Mjuk easeInOut så rörelsen inte är linjär.
 
-### 2. Fokusera — "En sak åt gången"
-- **Komplement till:** Fokuslinsen (zoom in på en uppgift) → den nya är **valet i sig**: rensa bordet innan du börjar.
-- **Längd:** 3 min, `kind: "short"`, metric: `fokus`.
-- **Animation:** `gather` — åtta punkter glider in från kanten mot mitten och blir en kärna. Distraktionerna samlas till en enda punkt = den du gör nu.
-- **Pedagogiskt:** känslan av att "allt drar i mig samtidigt" blir bildligt rensad. Punkterna kommer in i takt med stegen.
-- **Steg (skiss):** Vad ligger på bordet just nu? → välj en sak → resten får vänta sin tur → bestäm var du börjar → börja där.
-- **Avslut:** "En sak. Resten finns kvar — men inte i vägen."
+Resultat: en lugn, kumulativ samling över hela övningen — inget snäpper tillbaka.
 
-### 3. Sova — "Räkna ner från tio"
-- **Komplement till:** Sov mjukare (kroppsavspänning) → den nya är **klassisk nedräkning** med utandning per siffra.
-- **Längd:** 4 min, `kind: "short"`, metric: `trötthet`.
-- **Animation:** `meter-down` — en mätare som tömmer sig stegvis. Tio steg, ett snäpp per utandning.
-- **Pedagogiskt:** insomning är en sänkning, inte en knapp. Mätaren går exakt en tiondel ner per steg = synligt mått på att du landar.
-- **Steg (skiss):** 10 steg där varje är "Andas ut — [siffra]" + kort viskning. Sista steget tystnar.
-- **Avslut:** "Du behöver inte komma till noll. Du behöver bara sjunka."
+### Orb — en enda mjuk andning genom övningen
 
-### 4. Snabb paus — "Mjuk omstart"
-- **Komplement till:** Stäng några fönster (rensa tankar) → den nya är **kroppslig återställning** mellan två sysslor.
-- **Längd:** 1 min, `kind: "short"`, metric: `stress`.
-- **Animation:** `orb` — en cirkel som krymper till nästan inget och växer tillbaka mjukt. Som när en skärm släcks och tänds igen.
-- **Pedagogiskt:** övergång = en mjuk paus, inte ett avbrott. Cirkeln rör sig med andetaget: krymper på ut, växer på in.
-- **Steg (skiss):** Stanna här → andas ut (krymp) → andas in (väx) → en till → klart, byt riktning.
-- **Avslut:** "Inte ny dag. Bara ny minut. Räcker."
+Behåll andnings­kopplingen för "Andas in/ut", men ta bort den fristående sinus­pulsen i icke-andnings­steg och eliminera hoppen vid stegbyten.
 
-### 5. Arbetsdag — "Stäng dagen mjukt"
-- **Komplement till:** Mellan två möten (övergång *inom* dagen) → den nya är **avslutet av dagen**.
-- **Längd:** 3 min, `kind: "short"`, metric: `stress`.
-- **Animation:** `horizon` — horisontlinjen sjunker över hela övningen, som en solnedgång. Inget kvar att lyfta.
-- **Pedagogiskt:** arbetet upphör inte av sig självt — kroppen behöver en signal. Horisonten som sänks = "nu mörkar vi dagen".
-- **Steg (skiss):** Sista mejlet är skickat → vad blev gjort idag? → vad lämnar du till imorgon? → en lång utandning → stäng locket.
-- **Avslut:** "Dagen är inte färdig. Men din del är slut för idag."
+- För steg med breath (`in`/`out`/`hold`/`rest`): interpolera storleken från **stegets startvärde** till **stegets slutvärde** utifrån stegets egen riktning (in: 0.45→1.0, out: 1.0→0.45, hold/rest: konstant).
+- För steg utan breath ("Stanna här", "Stilla"): håll storleken konstant på samma värde som föregående steg slutade på — så det aldrig blir ett synligt hopp.
+- Lägg till en mycket långsam, oberoende "andning" på bakgrundsringens opacity (sin över hela `progress`, inte per steg) så bilden lever utan att konkurrera med stegrytmen.
 
----
+Resultat: orben rör sig som en lugn andning som följer instruktionerna, och stegbytena syns inte längre som ryck.
 
-## Tonläge för texterna
+## Teknisk detalj
 
-Samma som de nyligen översatta övningarna: korta meningar, vardagligt svenskt, ingen wellness-amerikanism ("manifestera", "din inre kraft", "magnifikt"), inget pekande uppifrån. Skripten håller sig till `["kort fras", "kort fras"]`-mönstret per steg — som BOX/WAVE i filen.
+Filer som ändras:
+- `src/components/animations/index.tsx` — `Gather` och `Orb` (cirka 15 + 25 rader)
 
-Jag skriver klart hela texten (titel, kort beskrivning, steg-skript, avslut, metafor-intro) per övning innan implementation. Du får se allt i samma leverans.
+`Gather` behöver `stepIndex`, `stepCount`, `stepProgress` (alla finns redan i `Props`). `Orb` behöver dessutom föregående stegs slutvärde — beräknas deterministiskt från `stepIndex` genom att gå igenom de andra stegen är dyrt; enklare lösning: vi har inte stegens etiketter här, så vi använder en enkel regel — låt icke-breath-steg hålla `0.72` (mellanvärdet) och sätt breath-steg så att de börjar/slutar på 0.72 för in/out där det är möjligt (in: 0.45→1.0, out: 1.0→0.45, hold/rest: 0.72). Kombinerat med fade-mellan-steg via `AnimatePresence` på övergripande nivå räcker det för att ta bort det synliga hoppet.
 
----
-
-## Tekniskt (för referens)
-
-Allt sker i en fil: `src/lib/exercises.ts`.
-
-1. Lägg till fem nya `Seed`-objekt i `SEEDS`-arrayen, varje med kategori, animation, metric, steps, closing och metaphor enligt ovan.
-2. Lägg till de fem nya id:na i `POLISHED_IDS` så att de syns på kategorisidorna.
-3. Inget annat berörs: animationerna finns redan, kategorikorten finns redan, routern hanterar `/ovning/$id` redan.
-
-Inga DB-ändringar. Inga nya komponenter. Inga routes. Ingen designändring i UI.
-
----
-
-## Vad du behöver bekräfta
-
-Antingen "kör hela planen" — då skriver jag de fem övningarna och lägger in dem — eller säg vilken av de fem du vill ändra koncept/animation på först.
+Ingen påverkan på andra övningar som använder `orb` eller `gather` — beteendet blir mjukare för alla.
