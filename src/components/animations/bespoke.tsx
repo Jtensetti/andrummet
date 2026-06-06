@@ -18,6 +18,22 @@ const SOFT = "var(--anim-soft, currentColor)";
 const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
 const lerp = (a: number, b: number, t: number) => a + (b - a) * clamp01(t);
 const easeInOut = (u: number) => 0.5 - Math.cos(Math.PI * clamp01(u)) / 2;
+const smoothstep = (a: number, b: number, x: number) => {
+  if (b === a) return x < a ? 0 : 1;
+  const k = clamp01((x - a) / (b - a));
+  return k * k * (3 - 2 * k);
+};
+
+/**
+ * Kontinuerlig 0→1 ramp över hela övningens tid, mellan stegen
+ * `fromStep` och `toStep` (bråk OK). Använd istället för
+ * `stepIdx === N ? easeInOut(sp) : ...` så att rörelsen inte
+ * återstartas vid stegbyten.
+ */
+function stepRamp(p: BespokeProps, fromStep: number, toStep: number) {
+  const sc = Math.max(1, p.stepCount ?? 1);
+  return smoothstep(fromStep / sc, toStep / sc, totalT(p));
+}
 
 export type BespokeProps = {
   stepIndex?: number;
