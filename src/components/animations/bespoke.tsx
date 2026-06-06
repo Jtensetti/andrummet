@@ -884,20 +884,21 @@ function NeedDrop(p: BespokeProps) {
 function KindSentences(p: BespokeProps) {
   const W = 280;
   const H = 240;
-  const stepIdx = p.stepIndex ?? 0;
-  const sp = clamp01(p.stepProgress ?? 0);
   const breathe = useBreathPulse(5200);
 
   const youCx = W * 0.5;
   const youCy = H * 0.55;
   const youR = 62;
 
-  // Vänlig "spegel" — en mindre cirkel som dyker upp i steg 0 och dröjer kvar svagt
+  // Vänlig "spegel" — tonas in under steg 0, dröjer kvar svagt
   const friendCx = W * 0.82;
   const friendR = 28;
-  const friendOp =
-    stepIdx === 0 ? easeInOut(sp) * 0.7
-    : 0.4;
+  const friendIn = stepRamp(p, 0.1, 0.9);
+  const friendSettle = stepRamp(p, 0.9, 1.3);
+  const friendOp = lerp(0, 0.7, friendIn) * (1 - friendSettle) + 0.4 * friendSettle;
+  const linkOp = lerp(0.3, 0.6, friendIn) * (1 - friendSettle);
+
+  const heartPulseOn = stepRamp(p, 3.6, 4.2);
 
   // Tre meningar — staplade i hjärtat (mitten av "du"-cirkeln)
   const slotH = 14;
@@ -909,15 +910,15 @@ function KindSentences(p: BespokeProps) {
     <svg viewBox={`0 0 ${W} ${H}`} className="h-60 w-72" aria-hidden>
       {/* "Vän"-spegel */}
       <circle cx={friendCx} cy={youCy - 18} r={friendR} fill={SOFT} fillOpacity={friendOp} />
-      {/* Mjuk linje mellan vän och du — endast tydlig i steg 0 */}
-      {stepIdx === 0 && (
+      {/* Mjuk linje mellan vän och du — tonas in/ut kontinuerligt */}
+      {linkOp > 0.02 && (
         <line
           x1={youCx + youR + 6}
           x2={friendCx - friendR - 6}
           y1={youCy - 18}
           y2={youCy - 18}
           stroke={ACCENT}
-          strokeOpacity={0.3 + easeInOut(sp) * 0.3}
+          strokeOpacity={linkOp}
           strokeWidth={2}
           strokeDasharray="4 4"
         />
@@ -925,39 +926,30 @@ function KindSentences(p: BespokeProps) {
 
       {/* "Du" — yttre cirkel */}
       <circle cx={youCx} cy={youCy} r={youR} fill={SOFT} fillOpacity={0.4} />
-      {/* Hjärt-zon — pulserar lite i steg 4 */}
+      {/* Hjärt-zon — pulserar med andetaget när allt är på plats */}
       <circle
         cx={youCx}
         cy={youCy}
-        r={42 + (stepIdx >= 4 ? breathe * 3 : 0)}
+        r={42 + breathe * 3 * heartPulseOn}
         fill={SOFT}
         fillOpacity={0.55}
       />
 
-      {/* Tre meningar */}
+      {/* Tre meningar — varje glider in över sitt eget step-intervall */}
       {[0, 1, 2].map((i) => {
-        // Mening i landar i steg i+1 (1, 2, 3)
-        const arriveStep = i + 1;
-        let visible = 0;
-        let slideT = 0;
-        if (stepIdx > arriveStep) {
-          visible = 1;
-          slideT = 1;
-        } else if (stepIdx === arriveStep) {
-          visible = easeInOut(sp);
-          slideT = easeInOut(sp);
-        }
+        const arrive = stepRamp(p, i + 0.7, i + 1.7); // 0→1 under "sitt" steg
+        const visible = arrive;
+        const slideT = arrive;
         if (visible < 0.02) return null;
 
         const targetY = stackTop + i * (slotH + slotGap);
-        // Kommer in från höger sida (där vännen står)
         const startX = friendCx;
         const targetX = youCx - slotW / 2;
         const x = lerp(startX, targetX, slideT);
         const y = lerp(youCy - slotH / 2, targetY, slideT);
 
-        // I steg 4 pulserar alla tre med samma andetag
-        const pulseOp = stepIdx >= 4 ? 0.85 + breathe * 0.15 : 0.9;
+        // Synkron andnings-puls när allt är på plats
+        const pulseOp = lerp(0.9, 0.85 + breathe * 0.15, heartPulseOn);
 
         return (
           <rect
@@ -975,6 +967,7 @@ function KindSentences(p: BespokeProps) {
     </svg>
   );
 }
+
 
 // ─── 9. Svalna innan svar — eld blir glöd ──────────────────
 // 5 steg:
