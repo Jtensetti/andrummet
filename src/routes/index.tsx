@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { FEELINGS, type Category } from "@/lib/exercises";
 import { motion } from "framer-motion";
-import { Timer } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 
 export const Route = createFileRoute("/")({
@@ -57,25 +56,6 @@ function Home() {
           Vad behöver du <span className="text-[var(--stress)]">just nu</span>?
         </h1>
       </header>
-
-      {/* Primär CTA — en kort paus */}
-      <Link
-        to="/ovning/$id"
-        params={{ id: "mellan-tva-moten" }}
-        className="group relative mb-6 flex items-center justify-between gap-3 overflow-hidden rounded-3xl bg-foreground p-5 text-background shadow-lg transition active:scale-[0.99] md:mb-8 md:p-6"
-      >
-        <div>
-          <p className="text-xs font-bold uppercase tracking-widest opacity-70">
-            Om du bara har en minut
-          </p>
-          <p className="mt-1 text-xl font-extrabold leading-tight md:text-2xl">
-            Starta en minutspaus
-          </p>
-        </div>
-        <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-background/15 backdrop-blur md:h-14 md:w-14">
-          <Timer className="h-6 w-6" />
-        </div>
-      </Link>
 
       {/* Alla kategorier — enhetligt rutnät med lika stora kort */}
       <section
