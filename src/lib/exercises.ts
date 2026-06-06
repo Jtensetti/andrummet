@@ -920,6 +920,31 @@ const SEEDS: Seed[] = [
     ],
     closing: "Du är mänsklig. Det räcker idag.",
   },
+  {
+    id: "du-blev-hallen",
+    title: "Du blev hållen",
+    short: "Efter ett misstag — bli hållen, inte tillrättavisad.",
+    category: "compassion",
+    kind: "short",
+    minutes: 3,
+    animation: "ring",
+    metric: "stress",
+    steps: [
+      ["Något brast", 24, ["Något gick fel", "eller bara fel nog", "lägg märke till", "den hårda rösten", "den som rättar"]],
+      ["Lägg ner pinnen", 28, ["Du står med en pinne", "och slår dig själv", "lägg ner den", "bara för nu", "bara för en stund"]],
+      ["Du behöver hållas", 32, ["Just nu behöver du", "inte fixas", "du behöver hållas", "som du skulle hålla någon", "som har det svårt"]],
+      ["Landa här", 32, ["Lägg en hand", "på bröstet", "eller magen", "känn värmen", "du är här", "du är hållen"]],
+      ["Du är inte ensam", 36, ["Andra människor", "har också sumpat det", "har också varit hårda", "mot sig själva", "just nu, någonstans", "är någon precis som du"]],
+      ["Andas där", 28, ["Andas in värme", "andas ut piskan", "du behöver inte", "göra mer", "bara bli hållen"]],
+    ],
+    closing: "Du föll inte. Du blev hållen.",
+    metaphor: {
+      intro: "Vi lägger ner pinnen. Och låter dig hållas — av dig själv, och av att du inte är ensam.",
+      illustration: "ring",
+    },
+  },
+
+
 
   // ─── ILSKA ────────────────────────────────────────────────
   {
