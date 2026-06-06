@@ -170,7 +170,7 @@ const SEEDS: Seed[] = [
       ["5 saker du SER", 40, ["Låt blicken vandra", "namnge det du ser", "en sak i taget"]],
       ["4 saker du HÖR", 32, ["Stäng ögonen om du vill", "vad hör du nu?", "även det tysta räknas"]],
       ["3 saker du KÄNNER", 30, ["Märk kroppen mot underlaget", "tyget mot huden", "luftens temperatur"]],
-      ["2 saker du LUKTAR", 24, ["Andas in genom näsan", "vad finns där?", "inget alls är också ett svar"]],
+      ["2 saker du LUKTAR", 24, ["Andas in genom näsan", "vad finns där?", "ingenting är också ett svar"]],
       ["1 sak du SMAKAR", 15, ["Smaka i munnen", "vad finns kvar där?", "stanna med det en stund"]],
     ],
     closing: "Du är tillbaka i rummet. Oron fick vänta en stund.",
@@ -233,7 +233,7 @@ const SEEDS: Seed[] = [
       ["Andas ut", 7, ["Andas ut", "tömt", "handen ner", "släpp", "stilla", "snart en till"]],
       ["Andas in", 5, ["Andas in", "lugnt", "handen följer med", "stanna"]],
       ["Andas ut", 7, ["Andas ut", "mjukt", "släpp axlarna också", "stilla", "lägre tempo", "bra"]],
-      ["Bara känn handen", 20, ["Bara känn", "handen mot magen", "den lyfts", "och sänks", "du behöver inte göra något", "andetaget sköter sig"]],
+      ["Bara känn handen", 20, ["Bara känn", "handen mot magen", "den lyfts", "och sänks", "du behöver inte göra nåt", "andetaget sköter sig"]],
     ],
     closing: "Andetaget gick längre ner än vanligt. Bra.",
   },
@@ -253,7 +253,7 @@ const SEEDS: Seed[] = [
       ["Andas in", 4, IN_SCRIPT],
       ["Andas ut", 6, ["Andas ut", "längre", "lugnt", "stilla", "snart sista", "bra"]],
       ["Andas in", 4, IN_SCRIPT],
-      ["Andas ut", 8, ["Andas ut", "långsamt", "släpp allt", "stilla", "klart", "klart", "klart", "stilla"]],
+      ["Andas ut", 8, ["Andas ut", "långsamt", "släpp allt", "stilla", "klart", "stilla", "stilla", "stilla"]],
       ["Gå in", 6, ["Du är klar", "gå in nu", "med lugnare puls"]],
     ],
     closing: "Tre andetag. Inte allt. Bara tre. Räcker.",
@@ -273,7 +273,7 @@ const SEEDS: Seed[] = [
       ["Stanna", 12, ["Stanna", "var du är", "du behöver inte göra något", "bara vara här"]],
       ["Andas in", 6, ["Andas in", "lugnt", "genom näsan"]],
       ["Andas ut", 10, ["Andas ut", "mjukt", "längre än in", "släpp axlarna", "stilla"]],
-      ["Se dig omkring", 16, ["Lyft blicken", "se rummet", "färger", "former", "ljud", "du är här", "inte i tankarna", "stanna kvar"]],
+      ["Se dig omkring", 16, ["Lyft blicken", "se rummet", "färger", "former", "ljud", "du är här", "inte i huvudet", "stanna kvar"]],
       ["Märk en sak", 16, ["Välj en sak", "i rummet", "titta på den", "vad är det?", "säg det tyst", "bra", "stanna där", "andas"]],
     ],
     closing: "Du stannade. Det räknas.",
@@ -323,7 +323,7 @@ const SEEDS: Seed[] = [
     animation: "stack",
     metric: "stress",
     steps: [
-      ["Vad tar plats?", 20, ["Vad ligger överst", "i huvudet just nu", "lista tyst", "två-tre saker", "låt dem dyka upp", "utan att värdera"]],
+      ["Vad tar plats?", 20, ["Vad ligger överst", "i huvudet just nu", "lista tyst", "två-tre saker", "låt dem dyka upp", "döm dem inte"]],
       ["Välj tre tyst", 18, ["Välj tre", "som tar mest plats", "namnge dem", "för dig själv", "en", "två", "tre"]],
       ["Lägg den första i 'sen'-lådan", 14, ["Den första", "lägg ner den", "i 'sen'-lådan", "den finns kvar", "den behöver inte lösas nu"]],
       ["Den andra", 14, ["Den andra", "lägg ner den också", "samma låda", "den får vänta", "stäng locket"]],
@@ -351,7 +351,7 @@ const SEEDS: Seed[] = [
       ["Du sitter vid ratten", 40, ["Du kör", "du sitter vid ratten", "händerna vilar på ratten", "du bestämmer", "du har ratten"]],
       ["Känn ratten", 40, ["Känn händerna", "på ratten", "varma och stadiga", "du styr", "du har kontrollen"]],
       ["Vägen är öppen", 48, ["Vägen framför dig", "den är öppen", "du bestämmer farten", "du väljer riktningen"]],
-      ["Du kör ändå", 56, ["Det kan kännas mycket", "du kör ändå", "i din riktning", "stadigt", "säkert"]],
+      ["Du kör ändå", 56, ["Det kan kännas mycket", "du kör ändå", "i din riktning", "lugnt", "stadigt"]],
       ["Vart vill du köra?", 56, ["Vart vill du", "köra nu?", "ett litet steg", "i vilken riktning?", "vad är viktigt idag?"]],
       ["En liten handling", 48, ["En liten handling", "i den riktningen", "vad kan du göra?", "idag", "just idag", "räcker"]],
     ],
@@ -416,7 +416,7 @@ const SEEDS: Seed[] = [
     steps: [
       ["Lägg märke till volymen", 20, ["Lyssna inåt", "hur högt är det?", "från 1 till 10", "vilken siffra?", "döm inte"]],
       ["Var sitter den?", 28, ["Var sitter oron?", "bröstet?", "magen?", "halsen?", "huvudet?", "lägg en hand där"]],
-      ["Dra reglaget ett snäpp", 28, ["Föreställ dig", "ett ljudreglage", "dra ner ett snäpp", "bara ett", "inte tyst", "bara lägre"]],
+      ["Dra reglaget ett snäpp", 28, ["Föreställ dig", "ett ljudreglage", "dra ner ett snäpp", "bara ett snäpp", "inte tyst", "lite lägre"]],
       ["Ett till", 28, ["Ett snäpp till", "ner", "oron finns kvar", "men lägre", "stilla"]],
       ["Andas ut tills mjukt", 56, ["Andas in", "andas ut", "längre ut än in", "ett snäpp till ner", "andas", "stilla", "mjukare", "räcker"]],
     ],
@@ -437,7 +437,7 @@ const SEEDS: Seed[] = [
     metric: "oro",
     steps: [
       ["En våg är på väg", 20, ["Lägg märke till oron", "den är inte farlig", "den är en våg", "den är på väg in"]],
-      ["Stå på brädan", 25, ["Du behöver inte stoppa vågen", "du behöver bara stå kvar", "fötterna stadiga", "andas"]],
+      ["Stå på brädan", 25, ["Du behöver inte stoppa vågen", "du behöver bara stå kvar", "håll balansen", "andas"]],
       ["Vågen växer", 35, ["Låt den växa", "kämpa inte emot", "ju mer du brottas", "desto högre blir den", "låt den bara komma"]],
       ["Det här är toppen", 40, ["Det känns mycket nu", "andas — stå kvar", "toppen är inte farlig", "toppen är där den börjar falla"]],
       ["Den faller av sig själv", 40, ["Se hur den sjunker", "du gjorde ingenting", "du stannade bara kvar", "vågen tar hand om sig själv"]],
@@ -450,8 +450,6 @@ const SEEDS: Seed[] = [
       illustration: "drift",
     },
   },
-
-
 
   // ─── SLÄPPA TANKAR ────────────────────────────────────────
   {
@@ -468,7 +466,7 @@ const SEEDS: Seed[] = [
       ["Mjuka käken", 20, ["Käken", "öppna en glipa", "tungan ner från gommen", "släpp"]],
       ["Andas ut genom munnen", 20, ["Andas in genom näsan", "ut genom munnen", "som en suck", "låt axlarna sjunka"]],
       ["Lägg märke till kroppen", 28, ["Skanna kort", "huvud till tå", "var är det spänt?", "var är det mjukt?", "ingen rättning behövs", "lägg bara märke"]],
-      ["Lägg märke till tankarna", 28, ["Vad ligger överst?", "i huvudet just nu", "namnge för dig själv", "utan att värdera", "låt dem vara"]],
+      ["Lägg märke till tankarna", 28, ["Vad ligger överst?", "i huvudet just nu", "namnge för dig själv", "döm dem inte", "låt dem vara"]],
       ["Kom tillbaka hit", 28, ["Tillbaka", "till andetaget", "till kroppen", "till rummet", "du är här"]],
     ],
     closing: "Du gjorde nästan ingenting i tre minuter. Det räknas.",
@@ -510,7 +508,7 @@ const SEEDS: Seed[] = [
       ["Lägg den på ett löv", 40, ["Föreställ dig ett löv", "som flyter förbi", "lägg tanken på lövet", "några ord räcker", "tyst", "som en lapp"]],
       ["Låt lövet flyta", 40, ["Knuffa inte", "håll inte fast", "låt lövet driva", "med strömmen", "iväg", "bra"]],
       ["Nästa tanke, nästa löv", 50, ["En ny tanke kommer", "ett nytt löv", "lägg den där", "låt det flyta", "om och om", "i din egen takt"]],
-      ["Du sitter kvar vid floden", 50, ["Tankarna kommer", "tankarna går", "du sitter kvar", "vid floden", "stilla", "du är inte tankarna"]],
+      ["Du sitter kvar vid floden", 50, ["Tankarna kommer", "tankarna går", "du sitter kvar", "vid floden", "stilla", "du är inte dina tankar"]],
     ],
     closing: "Tankarna fortsatte komma. Du fortsatte släppa dem.",
     metaphor: {
@@ -531,7 +529,7 @@ const SEEDS: Seed[] = [
       ["Hjärnan är en snöglob", 20, ["den har skakats om", "hela dagen", "tankarna virvlar", "du ser ingenting klart"]],
       ["Sluta skaka", 35, ["du behöver inte", "tänka dem bort", "du behöver bara", "sluta röra om", "ställ ner globen"]],
       ["Låt det singla ner", 40, ["partiklarna sjunker", "av sig själva", "långsamt", "en i taget", "ingen ansträngning"]],
-      ["En ny skakning kommer", 35, ["en oro dyker upp", "och virvlar runt allt igen", "det är okej", "det händer", "ställ ner igen"]],
+      ["En ny skakning kommer", 35, ["en tanke dyker upp", "och virvlar runt allt igen", "det är okej", "det händer", "ställ ner igen"]],
       ["Vattnet blir klart", 35, ["samma tankar finns kvar", "men du ser igenom dem", "de är inte stormen", "längre"]],
       ["Ta med dig stillheten", 15, ["globen finns kvar", "i handen", "ställ ner den", "när du behöver"]],
     ],
@@ -555,7 +553,7 @@ const SEEDS: Seed[] = [
     steps: [
       ["Tre saker du gör NU", 36, ["Lista tyst", "tre saker", "som måste göras", "idag", "just NU", "säg dem"]],
       ["Tre som får VÄNTA", 36, ["Tre saker", "som kan vänta", "till imorgon", "eller nästa vecka", "säg dem tyst"]],
-      ["Tre du ALDRIG gör", 36, ["Tre saker", "som du släpper helt", "inte värda din tid", "säg dem", "bra"]],
+      ["Tre du ALDRIG gör", 36, ["Tre saker", "du kan släppa helt", "de är inte värda din tid", "säg dem", "bra"]],
       ["Välj minsta från NU", 30, ["Från NU-listan", "välj den minsta", "den lättaste", "första steget", "vad är det?"]],
       ["Andas. Börja där.", 30, ["Andas in", "andas ut", "öppna det du behöver", "ta första raden", "börja där", "nu"]],
     ],
@@ -578,7 +576,7 @@ const SEEDS: Seed[] = [
       ["Lägg märke till uppmärksamheten", 20, ["Hur ligger uppmärksamheten?", "är den spridd?", "hoppar den runt?", "ingen värdering"]],
       ["Välj ett ord eller en uppgift", 28, ["Välj en sak", "ett ord", "en uppgift", "en mening", "vad är det?"]],
       ["Låt det vara mitten", 28, ["Sätt det i mitten", "som en lins", "allt fokus dit", "bara den saken"]],
-      ["Resten i kanten", 40, ["Allt annat", "får finnas", "i utkanten", "det försvinner inte", "men inte i mitten"]],
+      ["Resten i kanten", 40, ["Allt annat", "får finnas", "i utkanten", "det finns kvar", "men inte i centrum"]],
       ["Andas in mot mitten", 40, ["Andetaget söker mitten", "kanterna släpper", "samla", "en sak", "den saken"]],
     ],
     closing: "Linsen är inte perfekt. Den är bara mer samlad.",
@@ -675,7 +673,7 @@ const SEEDS: Seed[] = [
     metric: "kroppsspänning",
     steps: [
       ["Pannan", 48, ["Lägg märke", "till pannan", "är den spänd?", "är den slät?", "ingen rättning behövs", "notera bara"]],
-      ["Käken", 48, ["Käken", "biter du ihop?", "biter tänderna mot varandra?", "släpp lite", "öppna munnen en glipa"]],
+      ["Käken", 48, ["Käken", "biter du ihop tänderna?", "biter tänderna mot varandra?", "släpp lite", "öppna munnen en glipa"]],
       ["Hals och axlar", 56, ["Halsen", "axlarna", "är de upp?", "är de spända?", "släpp ner dem", "några centimeter"]],
       ["Bröstkorg", 56, ["Bröstkorgen", "lyfts den på inandning?", "sjunker den på utandning?", "mjukt"]],
       ["Mage", 48, ["Magen", "är den spänd?", "är den mjuk?", "släpp helt", "andetaget söker dit"]],
@@ -736,7 +734,7 @@ const SEEDS: Seed[] = [
     steps: [
       ["Dra axlarna upp", 10, ["Dra axlarna", "upp mot öronen", "håll", "håll", "släpp snart"]],
       ["Släpp dem ner", 14, ["Släpp", "ner", "långt ner", "tungt", "låt dem hänga"]],
-      ["Lägg märke till skillnaden", 16, ["Märk skillnaden", "innan och efter", "är det mjukare?", "längre nacke?", "bra"]],
+      ["Lägg märke till skillnaden", 16, ["Märk skillnaden", "innan och efter", "är det mjukare?", "lättare i nacken?", "bra"]],
       ["En till — upp", 10, ["Upp igen", "axlarna", "mot öronen", "håll", "släpp snart"]],
       ["Och släpp", 14, ["Släpp", "ner", "tungt", "hänger", "stilla"]],
       ["Bara hänger nu", 22, ["Axlarna hänger", "tunga", "ner från nacken", "andas in", "andas ut", "släpp lite till", "bra"]],
@@ -756,7 +754,7 @@ const SEEDS: Seed[] = [
     metric: "stress",
     requiresRating: false,
     steps: [
-      ["Vad dyker upp först?", 36, ["Fråga tyst", "vad behöver jag?", "just nu", "det första svaret", "räcker", "utan att värdera", "lägg bara märke", "vad kom?", "okej"]],
+      ["Vad dyker upp först?", 36, ["Fråga tyst", "vad behöver jag?", "just nu", "det första svaret", "räcker", "döm det inte", "lägg bara märke", "vad kom?", "okej"]],
       ["Är det ett behov — eller ett borde?", 36, ["Är det", "ett behov?", "eller ett borde?", "vad känns det som?", "lyssna en gång till", "behovet sitter lägre ner", "i kroppen", "kravet sitter i huvudet", "vilket var det?"]],
       ["Vad skulle faktiskt hjälpa?", 36, ["Vad skulle hjälpa", "den här timmen?", "inte hela veckan", "inte hela livet", "bara nu", "en enda sak", "låt den komma", "vänta lite", "där"]],
       ["Gör det litet", 36, ["Vad är en liten version?", "ett glas vatten", "fem minuter ute", "ringa en vän", "lägga sig ner", "vad blir det för dig?", "det lilla räcker", "det får räknas", "okej"]],
@@ -777,7 +775,7 @@ const SEEDS: Seed[] = [
     requiresRating: false,
     steps: [
       ["Vem jämför du dig med?", 56, ["Vem jämför du dig", "med just nu?", "någon på en skärm?", "en kollega?", "din syster?", "namnge tyst"]],
-      ["Vad kostar det dig?", 56, ["Vad kostar", "den jämförelsen?", "tid?", "glädje?", "energi?", "lägg märke"]],
+      ["Vad kostar det dig?", 56, ["Vad kostar", "den jämförelsen dig?", "tid?", "glädje?", "energi?", "lägg märke"]],
       ["Lägg ner måttstocken", 56, ["Föreställ dig", "en måttstock", "i handen", "lägg ner den", "på golvet", "bara fem minuter"]],
       ["Vad finns kvar?", 80, ["När du inte mäter", "vad finns kvar?", "i ditt liv", "som faktiskt är ditt?", "lyssna", "vänta", "döm inte"]],
       ["En sak du gillar", 80, ["En sak", "i ditt liv", "som du faktiskt gillar", "just nu", "litet eller stort", "namnge det"]],
@@ -804,7 +802,7 @@ const SEEDS: Seed[] = [
       ["Vilken känsla är starkast?", 56, ["Lyssna inåt", "vilken känsla", "är starkast nu?", "döm inte", "namnge den tyst"]],
       ["Var sitter den?", 56, ["Var i kroppen?", "bröstet?", "magen?", "halsen?", "kinden?", "lägg en hand där"]],
       ["Vad försöker den säga?", 80, ["Vad försöker", "känslan säga?", "vad behöver du veta?", "lyssna", "vänta", "döm inte", "kanske ett ord"]],
-      ["Vad skulle den behöva höra?", 80, ["Vad skulle", "den behöva höra?", "från någon snäll?", "en mening", "en vänlig mening"]],
+      ["Vad skulle den behöva höra?", 80, ["Vad skulle", "den behöva höra?", "från någon som är snäll mot dig?", "en mening", "en vänlig mening"]],
       ["Säg det själv", 80, ["Säg den meningen", "till känslan", "tyst", "som till en vän", "som du menar det", "stanna där"]],
       ["Låt känslan vara", 80, ["Den får finnas", "du dömer inte", "du fixar inte", "du lyssnade", "det räcker"]],
     ],
@@ -877,7 +875,6 @@ const SEEDS: Seed[] = [
   },
 
   // ─── KOMPASSION ───────────────────────────────────────────
-
   {
     id: "tre-vanliga-meningar",
     title: "Tre vänliga meningar",
@@ -889,7 +886,7 @@ const SEEDS: Seed[] = [
     metric: "stress",
     requiresRating: false,
     steps: [
-      ["Tänk på dig som en vän", 40, ["Tänk dig själv", "som en vän", "som har det svårt", "vad skulle du säga?", "med vilken ton?"]],
+      ["Tänk på dig som en vän", 40, ["Tänk på dig själv", "som en vän", "som har det svårt just nu", "vad skulle du säga?", "med vilken ton?"]],
       ["Säg en vänlig mening", 56, ["Första meningen", "säg den för dig själv", "som du menar det", "kort", "snäll", "ärlig"]],
       ["En till", 56, ["En till mening", "säg den inombords", "till dig själv", "som en vän skulle", "stanna där"]],
       ["Och en sista", 56, ["Sista meningen", "säg den lågt", "låt den landa", "låt den vara som den är", "den får finnas"]],
@@ -916,7 +913,7 @@ const SEEDS: Seed[] = [
       ["Du gör så gott du kan", 40, ["Säg tyst", "jag gör så gott", "jag kan just nu", "med det jag har", "med vad jag vet", "det räcker"]],
       ["Du behöver inte vara perfekt", 40, ["Säg tyst", "jag behöver inte", "vara perfekt", "jag får vara mänsklig", "jag får göra fel"]],
       ["Andas in vänlighet", 28, ["Andas in", "vänlighet", "som värme", "in i bröstet"]],
-      ["Andas ut piskan", 28, ["Andas ut", "piskan", "kraven", "släpp", "släpp", "släpp"]],
+      ["Andas ut piskan", 28, ["Andas ut", "de hårda kraven", "piskan", "släpp", "släpp", "släpp"]],
     ],
     closing: "Du är mänsklig. Det räcker idag.",
   },
@@ -934,7 +931,7 @@ const SEEDS: Seed[] = [
       ["Lägg ner pinnen", 28, ["Du står med en pinne", "och slår dig själv", "lägg ner den", "bara för nu", "bara för en stund"]],
       ["Du behöver hållas", 32, ["Just nu behöver du", "inte fixas", "du behöver hållas", "som du skulle hålla någon", "som har det svårt"]],
       ["Landa här", 32, ["Lägg en hand", "på bröstet", "eller magen", "känn värmen", "du är här", "du är hållen"]],
-      ["Du är inte ensam", 36, ["Andra människor", "har också sumpat det", "har också varit hårda", "mot sig själva", "just nu, någonstans", "är någon precis som du"]],
+      ["Du är inte ensam", 36, ["Andra människor", "har också gått på nåt", "har också varit hårda", "mot sig själva", "just nu, någonstans", "är någon precis som du"]],
       ["Andas där", 28, ["Andas in värme", "andas ut piskan", "du behöver inte", "göra mer", "bara bli hållen"]],
     ],
     closing: "Du föll inte. Du blev hållen.",
@@ -943,8 +940,6 @@ const SEEDS: Seed[] = [
       illustration: "ring",
     },
   },
-
-
 
   // ─── ILSKA ────────────────────────────────────────────────
   {
@@ -960,7 +955,7 @@ const SEEDS: Seed[] = [
       ["Stanna här", 28, ["Stanna", "svara inte än", "låt det vänta", "ingen brådska", "du är här"]],
       ["Andas ut längre", 32, ["In genom näsan", "ut genom munnen", "låt utandningen bli lång", "släpp axlarna", "släpp käken", "låt elden svalna"]],
       ["Var sitter elden?", 32, ["Var brinner det?", "bröstet?", "magen?", "käken?", "händerna?", "se efter", "utan att värdera"]],
-      ["Flammor blir glöd", 36, ["Se lågorna", "sjunka", "lägre", "lägre", "fortfarande het", "men inte rasande", "glöd", "röd och stilla"]],
+      ["Flammor blir glöd", 36, ["Se lågorna", "sjunka", "lägre", "lägre", "fortfarande het", "men inte rasande", "glöd", "röd och tyst"]],
       ["Svara från glöden", 32, ["Härifrån svarar du", "från glöden", "inte från elden", "vad vill du säga?", "vad är sant?", "lugnt", "tydligt", "redo"]],
     ],
     closing: "Glöd är fortfarande het. Den brinner bara inte upp rummet.",
@@ -999,7 +994,7 @@ const SEEDS: Seed[] = [
       ["Var sitter ilskan?", 36, ["Var i kroppen?", "bröstet?", "käken?", "händerna?", "magen?", "lägg märke"]],
       ["Vad hände innan?", 48, ["Vad hände", "precis innan?", "vad triggade?", "ord?", "blick?", "minne?"]],
       ["Vad gjorde ont?", 56, ["Vad gjorde ont?", "inte bara fel", "vad sårades?", "vilken känsla", "under ilskan?"]],
-      ["Vad behövde du?", 56, ["Vad behövde du", "som du inte fick?", "att bli sedd?", "tagen på allvar?", "respekterad?", "förstådd?"]],
+      ["Vad behövde du?", 56, ["Vad behövde du", "som du inte fick?", "att bli sedd?", "tagen på allvar?", "respekterad?", "hörd?"]],
       ["Andas. Det får göra ont.", 56, ["Andas in", "andas ut", "det får göra ont", "du behöver inte fixa", "bara lyssna", "vara där"]],
     ],
     closing: "Under ilskan fanns något annat. Du tittade efter.",
@@ -1073,7 +1068,7 @@ const SEEDS: Seed[] = [
     steps: [
       ["Stäng inkorgen", 14, ["Stäng inkorgen", "ett ögonblick", "den finns kvar", "men inte i ögonen"]],
       ["Vad är akut — på riktigt?", 22, ["Vad är akut", "på riktigt?", "för dig", "för idag", "inte för andra", "namnge"]],
-      ["Vad är akut för andra?", 22, ["Vad är akut", "för någon annan?", "men inte för dig?", "det är inte ditt", "lägg åt sidan"]],
+      ["Vad är akut för andra?", 22, ["Vad är akut", "för någon annan?", "men inte för dig?", "det är inte ditt", "lägg det åt sidan"]],
       ["Vad kan vänta?", 22, ["Vad kan vänta", "till imorgon?", "till nästa vecka?", "ge dig själv lov"]],
       ["Öppna — gör en sak", 24, ["Öppna inkorgen", "gör en sak", "en", "inte alla", "klart"]],
     ],
@@ -1091,7 +1086,7 @@ const SEEDS: Seed[] = [
     steps: [
       ["Stanna utanför", 14, ["Stanna", "utanför dörren", "ett ögonblick", "innan du går in"]],
       ["Släpp dagens lista", 18, ["Allt som var", "på din lista", "släpp det", "det finns kvar", "men inte här"]],
-      ["Vad ska du vara?", 28, ["Vad behöver du vara", "när du går in?", "närvarande?", "lugn?", "tålmodig?", "välj en sak"]],
+      ["Vad vill du vara?", 28, ["Vad vill du vara", "när du går in?", "närvarande?", "lugn?", "tålmodig?", "välj en sak"]],
       ["En lång utandning", 18, ["Andas in", "andas ut långt", "släpp", "redo"]],
       ["Gå in", 14, ["Gå in", "som den du vill vara", "inte som en kö av uppgifter"]],
     ],
@@ -1125,7 +1120,6 @@ const POLISHED_IDS = new Set<string>([
   "lat-det-singla-ner",
   "surfa-vagen",
   "du-blev-hallen",
-
 ]);
 
 
