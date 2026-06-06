@@ -782,8 +782,31 @@ const SEEDS: Seed[] = [
     closing: "Du sorterade. Något blev någon annans igen.",
     reflectionPrompt: "Vad var inte ditt?",
   },
+  {
+    id: "lov-i-backen",
+    title: "Löv i bäcken",
+    short: "Se tankarna passera. Du behöver inte hålla med.",
+    category: "reflection",
+    kind: "reflective",
+    minutes: 3,
+    animation: "drift",
+    metric: "oro",
+    requiresRating: true,
+    steps: [
+      ["Sätt dig vid bäcken", 20, ["Blicken mjuk", "ingenstans att vara", "bäcken rinner av sig själv"]],
+      ["Lägg nästa tanke på ett löv", 30, ["Vänta tills något dyker upp", "en oro, en plan, ett minne", "vad som helst", "lägg den på lövet", "låt det driva"]],
+      ["Tankar är inte order", 40, ["Du behöver inte hålla med", "du behöver inte argumentera", "låt lövet passera", "även om tanken känns viktig", "den får finnas", "och den får gå"]],
+      ["Om du följer med lövet", 30, ["Märk det", "du har klivit i vattnet", "kliv upp på stranden igen", "nästa tanke", "nytt löv"]],
+      ["Samma bäck, andra löv", 40, ["Tankar upprepar sig", "det är okej", "samma tanke får ett nytt löv", "den behöver inte lösas", "bara passera"]],
+      ["Lämna bäcken sakta", 20, ["Bäcken finns kvar utan dig", "ta med dig blicken", "inte tankarna"]],
+    ],
+    closing: "Bäcken finns kvar nästa gång du behöver den.",
+    microcopy: "Du satt och tittade. Det räknas.",
+    reflectionPrompt: "Vilken tanke var svårast att släppa förbi?",
+  },
 
   // ─── KOMPASSION ───────────────────────────────────────────
+
   {
     id: "tre-vanliga-meningar",
     title: "Tre vänliga meningar",
