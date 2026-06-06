@@ -1,129 +1,133 @@
 
-# Ny övning i "Hantera oro": **Surfa vågen**
+# Ny övning i "Var snäll mot dig själv": **Du blev hållen**
 
 ## Varför just den här övningen
 
-De fem befintliga oro-övningarna täcker:
+Befintliga compassion-övningar:
 
 | Övning | Vad den gör |
 |---|---|
-| **5-4-3-2-1** | Distraktion via sinnen — bort från oron, in i rummet |
-| **Ångesten får inte köra bilen** | ACT-värderiktning — agera trots oron |
-| **Oro som moln** | Dis-identifiera — "jag är inte tanken" |
-| **Hitta ankaret** | Kroppslig tyngd — jorda när huvudet flyger |
-| **Sänk volymen på oron** | Gradvis dämpning via reglage |
+| **Tre vänliga meningar** | Lånar tonen man har mot vänner — *röst/språk* |
+| **Du får vara mänsklig** | Generell tillåtelse att vara ofullkomlig — *kognitiv permission* |
 
-**Vad som saknas:** Den klassiska insikten att en *akut* ångestvåg toppar och avtar av sig själv på några minuter — om du inte motarbetar den. Ingen av övningarna ovan lär ut detta. "Sänk volymen" *sänker* aktivt. "Moln" är passiv distans. "Ankaret" jordar. Men ingen säger: *stanna kvar i toppen, den faller av sig själv*.
+**Lucka:** Det specifika ögonblicket *efter* ett misstag — när självkritiken är skarp ("jag sumpade det, jag är värdelös") och man behöver något *kroppsligt och hållande*, inte ord. Och: ingen av övningarna berör Kristin Neffs tredje pelare i självmedkänsla — **common humanity** ("andra människor faller också, jag är inte ensam i det här"). De två befintliga är inåtvända; den här lyfter blicken till att man hålls av något större.
 
-Detta är **urge surfing** (Alan Marlatt) — kärnan i DBT- och MBRP-arbete med ångest och begär. Pedagogiskt unik och med starkt egetvärde: nästa gång oron stiger känner användaren igen formen och vet att den faller.
+**Kärnbudskap:** *Du föll inte. Du landade. Och det du landade i är inte ensamt — det hålls av något större.*
 
-**Kärnbudskap:** *Du behöver inte stoppa vågen. Du behöver bara hålla dig på brädan tills den brutit.*
+## Animation: bollen som finner sin vagga
 
-## Animation: vågkurv som stiger, toppar, faller
-
-En horisontell vågkurva som långsamt växer från vänster till höger, når en topp, och faller mot noll. Inte loop — **en enda våg över hela övningens längd** (samma princip som snöglob-övningen som ändrades nyss).
+Inspirerad direkt av bilden — två nästlade bågar med en liten ljus boll som vilar i fickan där den inre kröner sig.
 
 ```text
-amplitud
-   ▲
-   │              ╱╲
-   │            ╱    ╲
-   │          ╱        ╲
-   │        ╱            ╲___
-   │     ╱                    ╲___
-   │___╱                          ╲_____
-   └────────────────────────────────────▶ tid (180s)
-   stigande    topp~40%    avtagande    plana
+       ╱─────────────╲           yttre båge:
+      ╱   ╱───────╲   ╲          "gemensam mänsklighet"
+     ╱   ╱         ╲   ╲         (lila)
+    ╱   ╱     ●     ╲   ╲        ← bollen vilar i vaggan
+    │   │            │   │       där inre möter yttre
+    │   │            │   │
+    │   │            │   │       inre båge:
+    │   │            │   │       "vänlighet mot dig själv"
+    └───┴────────────┴───┘       (rosa)
 ```
 
 **Visuellt:**
-- Tunn linjekurva i `--anxiety-accent` (varm orange) — *vågen själv*
-- Under linjen: mjukt fyllt fält i `--anxiety-soft` (dämpad gul) — *känslan*
-- En liten cirkel/surfare i `--anxiety-on` (vit) som åker längs kurvans överkant — *du, som håller dig kvar*
-- Bakgrund: `--anxiety` (teal) — vatten
-- **`useBreathPulse`** ger surfaren en knappt märkbar andning. Hen står stilla på brädan — det är vågen som rör sig.
+- **Yttre båge** i `--compassion` (varm rosa-lila) — *du hålls av andra som också faller*
+- **Inre båge** i `--compassion-accent` (mättad rosa) — *du håller dig själv vänligt*
+- **Boll** i `--compassion-on` (varmt ljus/cream) — *du, i det här ögonblicket*
+- Bakgrund: nästan transparent / neutral så bågarna får andas
+- Stilregler: platta SVG-former, inga gradienter, samma grammatik som övriga bespoke-animationer
 
-**Tekniskt mönster (samma som SnowGlobeSettle):**
-- `useTimeSec()` → `u = t / totalSeconds` (0..1 över hela övningen)
-- Amplitudkurva: `amp(u) = sin(π * u^0.7) * smoothPeak(u)` — asymmetrisk så att toppen ligger ~40 % in och fallet är längre än stigningen (matchar verkligt ångestförlopp)
-- Kurvan ritas som SVG `path` med ~80 punkter, beräknade per frame
-- Surfarens position: följer kurvans nuvarande högerkant (där "nu" är)
-- Inga `useState`-uppdateringar per partikel — bara `useTimeSec` driver allt
-- Stilregler: platt SVG, inga gradienter, samma stilmässiga grammatik som övriga bespoke
+**Animationsförlopp (en enda sammanhängande rörelse över hela övningen, ~3 min, samma `useTimeSec`-mönster som SnowGlobeSettle och RideTheWave):**
 
-**Pedagogisk synk:**
-- Steg 1–2 (orientera): vågen ligger nästan platt — bara svaga krusningar
-- Steg 3 (vågen stiger): kurvan börjar resa sig — användaren ser den växa medan texten säger "den växer"
-- Steg 4 (toppen): kurvan når sin maxhöjd när texten säger "det här är toppen"
-- Steg 5 (faller): kurvan börjar sjunka medan texten säger "se hur den faller av sig själv"
-- Steg 6 (lugnt vatten): kurvan är nästan platt igen, surfaren glider på stilla vatten
+1. **Början (steg 1–2):** Bara bollen syns, något ovanför centrum, **vinglande** sidledes med dämpad sinussvängning (`sin(t*3) * 30 * (1-u)^2` — amplituden klingar av). Bågarna är osynliga / nästan opaka. → *"något brast"*
+2. **Steg 2–3:** Den **inre rosa bågen tonas in** underifrån (`opacity` följer en mjuk easeOut över ~20 sek). Bollen börjar **falla långsamt** men i båge — inte rakt ner — mot vaggpunkten där bågens kant kommer att möta den yttre. → *"lägg ner det varsamt"*
+3. **Steg 4:** Bollen **finner sin plats** i fickan (`x,y` interpoleras med easeOutCubic till resting position). Mikrostuds (en, mjuk) när den landar. → *"du hålls"*
+4. **Steg 5:** Den **yttre lila bågen tonas in** runt — långsam expansion från inre bågens kontur. Bollen ligger stilla. → *"inte ensam"*
+5. **Steg 6:** Allt vilar. Bollen får en knappt märkbar **`useBreathPulse`** (5200ms cykel) — den andas. Båda bågarna pulserar **synkront och svagt** med samma rytm. → *"andas där"*
 
-Texten *beskriver vad användaren ser hända*. Pedagogiken ligger i sammanträffandet: budskapet *vågor faller av sig själv* bevisas av animationen som faller av sig själv.
+**Pedagogisk synk:** Användaren ser bollen **vingla → landa → bli omsluten → andas** medan texten beskriver exakt det. Bildens kärnbudskap — *du behövde inte hålla dig själv ensam* — bevisas i realtid: bollen rör sig inte själv mot vaggan, vaggan kommer fram och möter den.
+
+**Tekniska detaljer:**
+- `useTimeSec()` driver allt (u = 0..1 över ~180s)
+- Bågar ritas som SVG-`path` med kvadratiska bézier-kurvor (`M x,y Q cx,cy x2,y2`) — samma "fat arch"-form som referensbilden
+- Inga `useState`-uppdateringar per frame
+- Bollens position: piecewise envelope (wobble → fall → settle → rest) med `smoothstep`-överlappningar
+- Båg-opacity: stegvis fade-in vid u≈0.25 (inre) och u≈0.7 (yttre)
 
 ## Steg och script (~3 min, kind: short)
 
-1. **"En våg är på väg"** (20s)
-   - "lägg märke till oron"
-   - "den är inte farlig"
-   - "den är en våg"
+1. **"Något brast"** (24s)
+   - "något gick fel"
+   - "eller bara fel nog"
+   - "lägg märke till självkritiken"
+   - "den hårda rösten"
 
-2. **"Stå på brädan"** (25s)
-   - "du behöver inte stoppa vågen"
-   - "du behöver bara stå kvar"
-   - "fötterna stadiga"
+2. **"Lägg ner pinnen"** (28s)
+   - "du står med en pinne"
+   - "och slår dig själv"
+   - "lägg ner den"
+   - "bara för nu"
 
-3. **"Vågen växer"** (35s)
-   - "låt den växa"
-   - "kämpa inte emot"
-   - "ju mer du brottas, desto högre blir den"
+3. **"Du behöver hållas"** (32s)
+   - "just nu behöver du inte fixas"
+   - "du behöver hållas"
+   - "som du skulle hålla någon"
+   - "som har det svårt"
 
-4. **"Det här är toppen"** (40s)
-   - "det känns mycket nu"
-   - "andas — stå kvar"
-   - "toppen är där den börjar falla"
+4. **"Landa här"** (32s)
+   - "lägg en hand på bröstet"
+   - "eller magen"
+   - "känn värmen"
+   - "du är här"
+   - "du är hållen"
 
-5. **"Den faller av sig själv"** (40s)
-   - "se hur den sjunker"
-   - "du gjorde ingenting"
-   - "du stannade bara kvar"
+5. **"Du är inte ensam"** (36s)
+   - "andra människor"
+   - "har också sumpat det"
+   - "har också varit hårda mot sig själva"
+   - "just nu, någonstans"
+   - "är någon precis som du"
 
-6. **"Lugnt vatten"** (20s)
-   - "vågen bröt"
-   - "nästa kommer också att falla"
+6. **"Andas där"** (28s)
+   - "andas in värme"
+   - "andas ut piskan"
+   - "du behöver inte göra mer"
+   - "bli hållen"
 
-**Closing:** "Du stoppade inte vågen. Du surfade den."
+**Closing:** "Du föll inte. Du blev hållen."
 
-**Microcopy (done-screen):** "Vågen föll. Det gör de alltid."
+**Microcopy (done-screen):** "Du la ner pinnen."
 
 (Ingen `reflectionPrompt`, ingen `requiresRating` — `kind: "short"`.)
 
 ## Tekniska detaljer
 
-- **ID:** `surfa-vagen`
-- **Kategori:** `anxiety`
+- **ID:** `du-blev-hallen`
+- **Kategori:** `compassion`
 - **Kind:** `short`
 - **Längd:** 3 min
-- **Metric:** `oro`
-- **animation-fält:** `"drift"` (fallback — bespoke matchar på id)
+- **Metric:** `stress`
+- **animation-fält:** `"ring"` (fallback — bespoke matchar på id)
 
 ### Filer som ändras
 
 1. **`src/lib/exercises.ts`**
-   - Lägg till övningsobjektet direkt efter `sank-volymen-pa-oron` (så hela oro-blocket är samlat)
-   - Lägg till `"surfa-vagen"` i `POLISHED_IDS`-arrayen
+   - Lägg till övningsobjektet direkt efter `du-far-vara-mansklig` (så hela compassion-blocket är samlat)
+   - Lägg till `"du-blev-hallen"` i `POLISHED_IDS`-arrayen
 
 2. **`src/components/animations/bespoke.tsx`**
-   - Ny komponent `RideTheWave` som följer samma mönster som `SnowGlobeSettle`:
-     - `useTimeSec` driver hela vågkurvan (0..1 över exercise-längden)
-     - SVG `path` byggs per frame från ~80 sampelpunkter
-     - `useBreathPulse` på surfaren
-     - Stilfärger: anxiety / anxiety-accent / anxiety-soft / anxiety-on
-   - Registrera `surfa-vagen` → `RideTheWave` i `BESPOKE`-uppslaget
+   - Ny komponent `HeldInArch` som följer samma mönster som `SnowGlobeSettle` / `RideTheWave`:
+     - `useTimeSec` driver hela förloppet (0..1 över exercise-längden)
+     - Två SVG-`path`-bågar (inre + yttre) med opacity-envelope
+     - Boll med piecewise position-envelope (wobble → fall → settle → rest)
+     - `useBreathPulse` på bollen i sista fasen
+     - Stilfärger: compassion / compassion-accent / compassion-on
+   - Registrera `du-blev-hallen` → `HeldInArch` i `BESPOKE`-uppslaget
 
-3. **`.lovable/plan.md`** — uppdatera så planen reflekterar att Surfa vågen är tillagd.
+3. **`.lovable/plan.md`** — uppdatera så planen reflekterar att övningen är tillagd.
 
 ## Vad jag INTE rör
 
-- Befintliga oro-övningar, deras texter, animationer eller hastigheter
+- Befintliga compassion-övningar eller deras animationer
 - Kategorifärger, kortlayout, routing, startsidan
 - `ovning.$id.tsx` — `BespokeFor` plockar upp animationen automatiskt via id

@@ -1799,6 +1799,87 @@ function RideTheWave(p: BespokeProps) {
   );
 }
 
+// ─── Du blev hållen (self-compassion + common humanity) ─────
+// Liten ljus boll vinglar ovanför → inre båge tonas in →
+// bollen finner sin vagga där bågen kröner sig → yttre båge
+// tonas in runt om → allt andas tillsammans.
+function HeldInArch(p: BespokeProps) {
+  const W = 260;
+  const H = 280;
+  const u = totalT(p);
+  const t = useTimeSec();
+  const breathe = useBreathPulse(5200);
+
+  // Geometri — "fat arch" (raka sidor + halvcirkel på toppen)
+  const outerCx = 130, outerBaseY = 248, outerStraightTopY = 130, outerHalf = 90;
+  const innerCx = 130, innerBaseY = 248, innerStraightTopY = 170, innerHalf = 50;
+
+  const archPath = (cx: number, baseY: number, topY: number, half: number) => {
+    const left = cx - half, right = cx + half;
+    return `M ${left} ${baseY} V ${topY} A ${half} ${half} 0 0 1 ${right} ${topY} V ${baseY} Z`;
+  };
+  const outerPath = archPath(outerCx, outerBaseY, outerStraightTopY, outerHalf);
+  const innerPath = archPath(innerCx, innerBaseY, innerStraightTopY, innerHalf);
+
+  // Vaggpunkt — där bollen vilar i fickan mellan inre och yttre
+  const restX = 161;
+  const restY = 116;
+  const baseR = 11;
+
+  const smoothstep = (a: number, b: number, x: number) => {
+    const k = clamp01((x - a) / (b - a));
+    return k * k * (3 - 2 * k);
+  };
+
+  // Opacity-envelopes
+  const innerOp = smoothstep(0.20, 0.45, u);
+  const outerOp = smoothstep(0.65, 0.85, u);
+
+  // Boll: vinglar ovanför → driver i båge mot vaggan → liten studs → vila
+  const startX = 130;
+  const startY = 72;
+  const wobbleDecay = Math.pow(clamp01(1 - u / 0.45), 2);
+  const wobble = Math.sin(t * 2.4) * 18 * wobbleDecay;
+
+  const drift = smoothstep(0.30, 0.62, u);
+  const ballX = lerp(startX, restX, drift) + wobble * (1 - drift);
+  const ballY = lerp(startY, restY, drift);
+
+  // Mjuk landningsstuds runt u ≈ 0.62
+  const bp = clamp01((u - 0.58) / 0.10);
+  const bounce = bp > 0 && bp < 1 ? -Math.sin(bp * Math.PI) * 4 : 0;
+
+  // Andning först när allt är på plats
+  const restPhase = smoothstep(0.85, 1.0, u);
+  const ballR = baseR + breathe * 0.9 * restPhase;
+  const archBreath = 1 + breathe * 0.012 * restPhase;
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-72 w-72" aria-hidden>
+      <g
+        style={{
+          transformOrigin: `${outerCx}px ${outerBaseY}px`,
+          transform: `scale(${archBreath})`,
+          transition: "transform 200ms linear",
+        }}
+      >
+        {/* Yttre båge — gemensam mänsklighet, det större som håller */}
+        <path d={outerPath} fill={SOFT} fillOpacity={outerOp * 0.55} />
+        {/* Inre båge — vänlighet mot dig själv */}
+        <path d={innerPath} fill={ACCENT} fillOpacity={innerOp * 0.85} />
+      </g>
+      {/* Bollen — du, i det här ögonblicket */}
+      <circle
+        cx={ballX}
+        cy={ballY + bounce}
+        r={ballR}
+        fill="currentColor"
+        opacity={0.92}
+      />
+    </svg>
+  );
+}
+
 // ─── Router ────────────────────────────────────────────────
 const BESPOKE: Record<string, (p: BespokeProps) => ReactElement> = {
   "stang-47-flikar": CloseTabs,
@@ -1815,7 +1896,9 @@ const BESPOKE: Record<string, (p: BespokeProps) => ReactElement> = {
   "mark-tanken": NameTheThought,
   "lat-det-singla-ner": SnowGlobeSettle,
   "surfa-vagen": RideTheWave,
+  "du-blev-hallen": HeldInArch,
 };
+
 
 
 export function hasBespoke(id: string | undefined): boolean {
