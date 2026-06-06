@@ -1,47 +1,24 @@
-# Synka resten av övningarna med andningsövningarnas textmönster
+## Problem
 
-## Vad som faktiskt funkar i andningsövningarna
+När jag introducerade `TEXT_SPEED = 0.8` för att snabba upp text/voiceover med 20% förlorades den ursprungliga 1:1-synken mellan steg, animation, text och timer. Senast skalade jag även stegklockan med samma faktor — det gör övningen snabbare totalt, men ändrar fortfarande de ursprungliga stegtiderna som animationerna designades mot.
 
-I `src/routes/ovning.$id.tsx` har `andas-i-en-ruta` och `lang-utandning` en egen render-gren som ger tre lugna textnivåer:
+Original-designen: varje stegs `seconds` är sanningen. Animation, undertextsbyten, timer-räknare och progress-bar drevs alla från samma `stepElapsed / step.seconds` — perfekt synk.
 
-1. **En stor, stabil rubrik per steg** — byts bara när steget byts (`Andas in`, `Håll`, `Andas ut`, `Vila`). Ingen mid-step-shuffling.
-2. **En sekundräknare** — siffrorna `1 2 3 …` lyser upp en i taget i takt med stegets sekunder.
-3. **En liten konstant hjälptext** längst ner i uppercase tracking-widest (`Näsan in · munnen ut · längre ut än in`).
+## Lösning
 
-De **övriga** övningarna använder istället `subtitleFor()` som hackar upp `script`-arrayen efter `stepProgress`. Texten hoppar då mitt i ett steg, ofta osynkat med animation och voiceover-tempo — det är det som känns ryckigt.
+Ta bort `TEXT_SPEED` helt i `src/routes/ovning.$id.tsx` och återgå till att använda `ex.steps[stepIdx].seconds` rakt av som enda tidsbas:
 
-## Vad som ändras
+- rAF-loopen byter steg när `stepElapsedMs >= step.seconds * 1000`
+- `stepSeconds = step.seconds` (ingen skalning)
+- `totalSeconds = sum(step.seconds)` (ingen skalning)
+- `stepProgress = stepElapsed / stepSeconds`
+- `animStepProgress = stepProgress` (redan så)
+- `progress = elapsed / totalSeconds` med `elapsed = sum prior raw seconds + stepElapsed`
 
-Bara `src/routes/ovning.$id.tsx`, "else"-grenen i `phase === "running"` (den som idag kör `BespokeFor` / `AnimationFor` + `subtitleFor`). Animationerna, tempot och `ex.steps` rörs inte.
+Resultatet: animation, undertext, BoxBreath/BreathWave-räknare och progress-bar delar exakt samma klocka som från början. Om enskilda övningar känns för långsamma justerar vi `seconds` per steg i `src/lib/exercises.ts` i en separat omgång — då rör vi inte synken.
 
-### Ny struktur för icke-andningsövningar
+## Filer som ändras
 
-```text
-[ Animation ]
+- `src/routes/ovning.$id.tsx` — ta bort `TEXT_SPEED`-konstanten och alla `* TEXT_SPEED`-multiplikationer (rAF-loop, `stepSeconds`, `totalSeconds`, `elapsed`).
 
-Stegrubrik (stor, fet, byts bara vid stegbyte)
-● ● ● ○ ○ ○ ○        ← sekundräknare 1..stepSeconds
-Hjälptext (ex.short i liten uppercase)
-```
-
-Konkret:
-
-- **Stor rubrik**: `ex.steps[stepIdx].label`, animerad med samma `AnimatePresence` mode="wait" som idag men keyad på `stepIdx` (inte på `sub.index`) så den byts en gång per steg.
-- **Räknare**: samma komponent-mönster som i `lang-utandning`-grenen — `Array.from({ length: stepSeconds }).map(n => <span class={n <= count ? "opacity-100" : "opacity-30"}>{n}</span>)` med `flex-wrap` så långa steg (16–20 s) radbryts snyggt.
-- **Hjälptext**: `ex.short` i `text-xs font-semibold uppercase tracking-widest opacity-60`. Återanvänder fältet som redan finns på alla övningar — inget nytt fält i `Exercise`.
-
-### Vad som tas bort
-
-- `subtitleFor()`-funktionen och dess anrop i denna gren.
-- Behovet av `script`-arrayen i UI:t för icke-andningsövningar. Vi lämnar `script`-fältet kvar i `src/lib/exercises.ts` (kan användas till voiceover senare), men det renderas inte längre.
-
-### Vad som inte ändras
-
-- `andas-i-en-ruta` och `lang-utandning` — de har redan mönstret.
-- `ex.steps`, sekundlängder, `stepProgress`, rAF-loopen, animationerna.
-- Intro / before / after / done-faserna.
-- Krysset uppe i hörnet.
-
-## Teknisk not
-
-Räknaren beräknas som idag: `count = Math.min(stepSeconds, Math.floor(stepElapsed) + 1)`. Långa steg (t.ex. 20 s) får en wrappad rad med 20 prickar — samma visuella mönster som `BreathWave`-grenen redan använder med `flex-wrap`.
+Inga ändringar i animationskomponenter eller `exercises.ts`.
