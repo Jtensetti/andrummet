@@ -239,8 +239,6 @@ function CloseTabs(p: BespokeProps) {
 function NotDriving(p: BespokeProps) {
   const W = 320;
   const H = 240;
-  const stepIdx = p.stepIndex ?? 0;
-  const sp = clamp01(p.stepProgress ?? 0);
   const pulse = useBreathPulse(4200);
   const time = useTimeSec();
 
@@ -253,16 +251,15 @@ function NotDriving(p: BespokeProps) {
   const roadLeftNear = W * 0.05;
   const roadRightNear = W * 0.95;
 
-  // Hastighet: lugn från start, ökar något efter steg 0
-  const speed = stepIdx === 0 ? 0.18 : 0.28;
+  // Konstant hastighet hela övningen — inga hopp vid stegbyten
+  const speed = 0.24;
   const tNorm = (time * speed) % 1;
 
-  // 6 stripes som glider från horisont mot tittaren. Varje stripe har
-  // en fas u i [0..1) där u=0 är vid horisonten, u=1 är vid betraktaren.
+  // 6 stripes som glider från horisont mot tittaren.
   const N = 6;
   const stripes = Array.from({ length: N }, (_, i) => {
     const u = (tNorm + i / N) % 1;
-    const persp = u * u; // accelererar mot tittaren = känsla av fart
+    const persp = u * u;
     const y = lerp(horizonY, dashTop, persp);
     const w = lerp(2, 14, persp);
     const h = lerp(3, 18, persp);
@@ -270,11 +267,11 @@ function NotDriving(p: BespokeProps) {
     return { y, w, h, op, key: i };
   });
 
-  // Riktnings-pil i steg 4+
-  const arrowOp = stepIdx === 4 ? easeInOut(sp) : stepIdx > 4 ? 1 : 0;
+  // Riktnings-pil — tonas in kontinuerligt runt steg 4
+  const arrowOp = stepRamp(p, 3.6, 4.2);
 
-  // Liten handling — ljuspunkt på vägen i steg 5
-  const emberOp = stepIdx === 5 ? easeInOut(sp) : 0;
+  // Liten handling — ljuspunkt på vägen, tonas in runt steg 5
+  const emberOp = stepRamp(p, 4.6, 5.2);
   const emberPersp = 0.55; // halvvägs mellan horisont och tittaren
   const emberY = lerp(horizonY, dashTop, emberPersp);
 
