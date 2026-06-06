@@ -1,62 +1,75 @@
-# Mjuka ut animationerna
+## Mål
 
-## Vad som händer just nu
+Gå igenom samtliga 45 övningar i `src/lib/exercises.ts` och putsa språket så det känns **svenskt, vardagligt och som om en lugn röst pratar** — inte översatt självhjälp.
 
-Box-andning och våg-andningen flyter eftersom de drivs av **en enda kontinuerlig parameter** (`phaseProgress` 0→1) som glider in i nästa fas utan att något annat värde byter sida.
+Inga animationer, ingen timing, ingen struktur ändras. Bara orden.
 
-De bespoke-animationerna som hackar (`HeldInArch`, `CloseTabs`, `NotDriving`, `FocusLens`, `BodyScan`, `NeedDrop`, `KindSentences`, `FlamesToEmber`, `MeetingsTimeline`, `LeavesOnStream`, `NameTheThought`, `SnowGlobeSettle`, `RideTheWave` m.fl.) bryter mot detta på tre vanliga sätt:
+## Vad jag tittar efter
 
-1. **Diskret grenning på `stepIdx`.** Värden som `jitterAmount = stepIdx === 0 ? 1 : stepIdx === 1 ? 0.3 : 0` hoppar direkt vid varje stegbyte istället för att tona. Samma med `stand`, `shoulderDrop`, `dropY`, `arrowOp`, `emberOp`, `lensOp` osv. När `stepIdx` växlar ändras värdet i en frame.
-2. **`stepProgress` återställs till 0 vid varje steg.** Allt som skrivs `easeInOut(sp)` startar om från noll. För en *kontinuerlig* form (t.ex. en boll som faller hela övningen) blir det en synlig återstart.
-3. **`transition: transform 220ms linear` på en grupp vars `transform` redan uppdateras varje frame** (HeldInArch). CSS-övergången släpar efter rAF-uppdateringen och skapar en stegig "catch-up"-rörelse.
+Genom hela filen letar jag systematiskt efter:
 
-Box-andningen undviker allt detta: den läser bara `phaseIndex` + `phaseProgress` och ritar en punkt på en kvadrat-kant. Inget värde är "olika" mellan steg.
+1. **Engelska/amerikanismer**
+   - Titlar: `Reset` → svensk titel, `Mikropaus` → enklare ord.
+   - Lånord i flödet: *fixa, mindset, timer, reset, tracka, scrolla*.
+   - Datormetaforer som låter som produktivitetsbloggar: "47 mentala flikar", "webbläsare med trettio flikar", "öppna det dokumentet, ring det samtalet".
+   - Pep-talk-ekon: "Starkt jobbat", "Du gjorde det!", "Du är awesome", "Gå!".
 
-## Lösning — en gemensam mall
+2. **Översatt självhjälp-jargong**
+   - "Tack för varningen, hjärna" (att tala till organ).
+   - "Litet räknas. Litet är nog." (engelsk rytm: *small counts, small is enough*).
+   - "Redo" som slutord (ekar engelskans *ready*).
+   - "Du gör så gott du kan" (ren översättning av *doing your best*).
 
-Alla bespoke-animationer ska drivas av:
+3. **Stelhet och tempo**
+   - För många imperativ på rad ("Stäng. Märk. Välj.") — bryts upp eller mjukas.
+   - Onödiga "tyst i huvudet", "säg det tyst" som upprepas i varenda steg.
+   - "Andetaget" vs "andetaget ditt" — ibland naturligare med possessiv.
+   - Korta huggiga rader som skulle flyta bättre som en hel mening.
 
-- `u = totalT(p)` — kontinuerlig 0..1 över hela övningen (finns redan)
-- `t = useTimeSec()` — för wobble/drift som inte ska återstartas
-- `breathe = useBreathPulse(...)` — för andnings-puls
+4. **Specifika kulturella referenser**
+   - "någon på instagram" → mer neutralt ("någon på en skärm").
+   - Bilkörning i `Ångesten får inte köra bilen` — fungerar men språket runt ratten kan svenskifieras ("Vart vill du köra härnäst?" känns dubbat).
+   - Surfbräda i `Surfa vågen` — behålls (etablerad ACT-metafor) men ordvalet runt mjukas.
 
-Diskreta `if (stepIdx === N)`-grenar ersätts med **envelope-funktioner** över `u`:
+5. **Konsistens**
+   - FEELINGS-etiketterna på startsidan (`Lugna kroppen`, `Var snäll mot dig själv`, …) ska matcha samma ton som övningarna.
+   - `categoryLabel` och `metric`-etiketter (METRIC_LABELS) stäms av.
 
-```ts
-const envelope = (start, peak, end, u) => {
-  // mjukt upp till peak, mjukt ner till end
-  return smoothstep(start, peak, u) * (1 - smoothstep(peak, end, u));
-};
-const ramp = (a, b, u) => smoothstep(a, b, u); // 0→1 mellan a och b
+## Vad jag *inte* rör
+
+- `id` — bryter rutter och länkar.
+- `seconds` per steg — bryter timing och animation.
+- Antal script-rader per steg — bryter undertext-rytmen (`subtitleFor` delar upp tiden jämnt på antalet rader). Bytet sker rad-för-rad, samma antal in, samma antal ut.
+- `animation`, `kind`, `category`, `minutes`, `requiresRating` — datastruktur.
+- Andra filer än `src/lib/exercises.ts` (om inte en åtgärd kräver det, t.ex. METRIC_LABELS i samma fil).
+
+## Arbetssätt
+
+Ett pass, hela filen, en sammanhängande diff. För varje övning går jag genom:
+
+```
+title  →  short  →  steps[].label  →  steps[].script[]  →  closing
+       →  metaphor.intro  →  reflectionPrompt  →  microcopy
 ```
 
-Resultat: ingen variabel ändrar härkomst mellan steg, allt rör sig som en kontinuerlig kurva. Stegbytet blir osynligt — texten byts men formen flyter vidare.
+Och stämmer sedan av:
 
-## Approach
+- `FEELINGS[]` (startsidans etiketter och underrubriker)
+- `METRIC_LABELS` (om någon etikett skaver)
+- `categoryLabel`-strängarna i `build()`
 
-Jag gör det **i två omgångar**, inte alla på en gång — varje animation behöver verifieras visuellt och en stor diff-batch gör det svårt att se vad som gick fel.
+## Exempel på riktning (för att kalibrera tonen)
 
-### Omgång 1 — fixa de mest synligt hackiga + den vi just byggde
+- "Reset" → **"Sänk tempot"** (titel) + "Sänk tempot. Tre tag, en kropp." behålls som short.
+- "Starkt jobbat" → **"Bra gjort."** eller helt enkelt "Det räcker."
+- "Tack för varningen, hjärna / jag har märkt den" → **"Märkt. Jag noterar den. / Nästa tanke får sin egen etikett."**
+- "Stäng 47 mentala flikar / webbläsare med trettio flikar" → **"Stäng några fönster"** (titel) + metaforen blir "Huvudet är fullt av öppna fönster. Vi stänger tre." Funkar utan tekniktermer.
+- "öppna det dokumentet, ring det samtalet, börja där, nu" → **"öppna det du behöver, ta första raden, första klicket — börja där."**
+- "Litet räknas. Litet är nog." → **"Det lilla räcker. Det får räknas."**
+- "Redo" som slutord → **"Klar."** eller helt utelämnas.
 
-1. **`HeldInArch`** — ta bort `transition: transform 220ms linear` (rAF + CSS-transition krockar). Lämna kvar `scale()` direkt på varje frame. Mjuka övergångar mellan faserna är redan envelope-baserade, så när transitionen är borta blir det smidigt.
-2. **`CloseTabs`** — ersätt `stepIdx`-grenar i `jitterAmount`, `liftY`, `dim`, `fall` med envelopes över `u`. Brickorna ska *glida* till lådan, inte vänta på "sitt" steg och sedan hoppa.
-3. **`NotDriving`** (`reset`-bars, `FocusLens`) — samma mönster: ersätt `stepIdx === N ? easeInOut(sp) : ...` med `smoothstep(a, b, u)`.
+Riktningen är *vardaglig svenska* i andnings- och kroppsövningar, *stillsamt poetisk* i reflektions- och kompassionsövningar, *rakt och nyktert* i ilska/fokus. Jag bedömer per övning enligt ditt svar.
 
-### Omgång 2 — resten
+## Leverans
 
-`BodyScan`, `NeedDrop`, `KindSentences`, `FlamesToEmber`, `MeetingsTimeline`, `LeavesOnStream`, `NameTheThought`, `SnowGlobeSettle`, `RideTheWave`. Samma refaktor, men jag tar dem i en omgång till efter att du sett att omgång 1 ser rätt ut, så vi vet att mönstret känns bra innan jag applicerar det brett.
-
-### Vad jag *inte* rör
-
-- `BoxBreath` och `BreathWave` — de flyter redan korrekt.
-- `useTimeSec` / `useBreathPulse` / `totalT` — fungerar.
-- Texter, script, exercise-data — inget innehåll ändras, bara rörelsen.
-- Routerfilen `ovning.$id.tsx` — timern är redan rAF-driven.
-
-## Förväntat resultat
-
-När du tittar på en övning ska formen aldrig "klicka" till ett nytt läge när texten byter. Bollen glider, bågen växer, brickorna sjunker — allt på en enda kontinuerlig kurva från start till slut.
-
-## Vill du att jag kör omgång 1 nu?
-
-Jag kan börja direkt med `HeldInArch` + `CloseTabs` + `reset`/`FocusLens` så ser du mönstret. Säg till om du hellre vill att jag tar alla på en gång.
+En enda redigering av `src/lib/exercises.ts`. När den är på plats kan du gå in på 3–4 övningar du minns kändes stelaste, och säga var det fortfarande skaver — då tar jag ett kalibreringspass.
