@@ -18,6 +18,22 @@ const SOFT = "var(--anim-soft, currentColor)";
 const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
 const lerp = (a: number, b: number, t: number) => a + (b - a) * clamp01(t);
 const easeInOut = (u: number) => 0.5 - Math.cos(Math.PI * clamp01(u)) / 2;
+const smoothstep = (a: number, b: number, x: number) => {
+  if (b === a) return x < a ? 0 : 1;
+  const k = clamp01((x - a) / (b - a));
+  return k * k * (3 - 2 * k);
+};
+
+/**
+ * Kontinuerlig 0→1 ramp över hela övningens tid, mellan stegen
+ * `fromStep` och `toStep` (bråk OK). Använd istället för
+ * `stepIdx === N ? easeInOut(sp) : ...` så att rörelsen inte
+ * återstartas vid stegbyten.
+ */
+function stepRamp(p: BespokeProps, fromStep: number, toStep: number) {
+  const sc = Math.max(1, p.stepCount ?? 1);
+  return smoothstep(fromStep / sc, toStep / sc, totalT(p));
+}
 
 export type BespokeProps = {
   stepIndex?: number;
@@ -87,9 +103,14 @@ function CloseTabs(p: BespokeProps) {
   const boxX = (W - boxW) / 2;
   const boxY = H - boxH - 18;
 
-  const stepIdx = p.stepIndex ?? 0;
-  const sp = clamp01(p.stepProgress ?? 0);
   const breathe = useBreathPulse(5200);
+
+
+  // Kontinuerliga ramp-faser (oberoende av stegbyten)
+  const messFade = stepRamp(p, 0.6, 2); // röran lugnar sig 0.6→2
+  const liftPhase = stepRamp(p, 1, 2); // utvalda lyfts under steg 1
+  const dimPhase = stepRamp(p, 1, 2); // övriga dimmas
+  const breathOnly = stepRamp(p, 4.6, 5.4); // när bara lådan är kvar
 
   // 9 brickor, 3 av dem (index 1, 4, 7) är de utvalda
   const total = 9;
@@ -111,7 +132,7 @@ function CloseTabs(p: BespokeProps) {
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="h-72 w-64" aria-hidden>
-      {/* Lådan — alltid synlig, pulserar mjukt i steg 5 */}
+      {/* Lådan — alltid synlig, pulserar mjukt när bara den är kvar */}
       <rect
         x={boxX - 6}
         y={boxY - 4}
@@ -119,7 +140,7 @@ function CloseTabs(p: BespokeProps) {
         height={boxH + 14}
         rx={12}
         fill={SOFT}
-        fillOpacity={0.4 + (stepIdx >= 5 ? breathe * 0.2 : 0)}
+        fillOpacity={0.4 + breathOnly * breathe * 0.2}
       />
       {/* Lådans öppningslinje */}
       <line
@@ -138,35 +159,31 @@ function CloseTabs(p: BespokeProps) {
         const baseX = gridX + col * (tabW + colGap);
         const baseY = gridY + row * (tabH + rowGap);
         const isChosen = chosen.includes(i);
-        const chosenOrder = chosen.indexOf(i); // 0,1,2 → drop-steg 2,3,4
+        const chosenOrder = chosen.indexOf(i); // 0,1,2 → drop-faser
 
-        // Jitter (rörigt) i steg 0, klingar av efteråt
-        const jitterAmount = stepIdx === 0 ? 1 : stepIdx === 1 ? 0.3 : 0;
+        // Jitter (rörigt) — tonas ut kontinuerligt
+        const jitterAmount = 1 - messFade;
         const jx = (jitter(i, 1) - 0.5) * 8 * jitterAmount * (0.5 + breathe);
         const jy = (jitter(i, 2) - 0.5) * 6 * jitterAmount * (0.5 + breathe);
 
-        // Steg 1: utvalda lyfter fram (lite uppåt + opacitet upp), andra dimmas
+        // Utvalda lyfts mjukt, övriga dimmas mjukt
         let liftY = 0;
         let dim = 1;
-        if (stepIdx >= 1) {
-          if (isChosen) {
-            liftY = stepIdx === 1 ? -4 * easeInOut(sp) : -4;
-          } else {
-            const fade = stepIdx === 1 ? easeInOut(sp) : 1;
-            dim = lerp(1, 0.25, fade);
-          }
+        if (isChosen) {
+          liftY = -4 * liftPhase;
+        } else {
+          dim = lerp(1, 0.25, dimPhase);
         }
 
-        // Drop: vilket steg släpps just denna bricka i lådan?
+        // Drop: varje utvald bricka glider mot lådan över ett eget intervall
         let fall = 0;
         if (isChosen) {
-          const dropStep = 2 + chosenOrder; // 2, 3, 4
-          if (stepIdx > dropStep) fall = 1;
-          else if (stepIdx === dropStep) fall = easeInOut(sp);
+          const dropStart = 2 + chosenOrder; // 2, 3, 4
+          fall = stepRamp(p, dropStart, dropStart + 1);
         }
 
-        // Steg 5: alla brickor borta (utvalda i lådan, andra fadat helt)
-        if (stepIdx >= 5 && !isChosen) dim = 0;
+        // När bara lådan är kvar — övriga försvinner mjukt
+        if (!isChosen) dim *= 1 - breathOnly;
 
         // Mål för en fallande bricka: in i lådan, lite sidoförskjutning per ordning
         const restX = boxX + 12 + chosenOrder * ((boxW - 24 - tabW) / 2);
@@ -176,7 +193,7 @@ function CloseTabs(p: BespokeProps) {
         const y = lerp(baseY + jy + liftY, restY, fall);
 
         const fill = isChosen ? ACCENT : SOFT;
-        const op = lerp(0.85, 0, 1 - dim) * (fall > 0.95 ? 0.9 : 1);
+        const op = isChosen ? lerp(0.95, 0.7, fall) : lerp(0.85, 0, 1 - dim);
 
         if (op < 0.02) return null;
         return (
@@ -188,24 +205,26 @@ function CloseTabs(p: BespokeProps) {
             height={tabH}
             rx={5}
             fill={fill}
-            fillOpacity={isChosen ? lerp(0.95, 0.7, fall) : op}
+            fillOpacity={op}
           />
         );
       })}
 
-      {/* Andnings-prick i lådan i steg 5 */}
-      {stepIdx >= 5 && (
+      {/* Andnings-prick i lådan när bara den är kvar */}
+      {breathOnly > 0.02 && (
         <circle
           cx={W / 2}
           cy={boxY + boxH / 2 + 14}
           r={4 + breathe * 6}
           fill={ACCENT}
-          fillOpacity={0.6 + breathe * 0.3}
+          fillOpacity={(0.6 + breathe * 0.3) * breathOnly}
         />
       )}
+      
     </svg>
   );
 }
+
 
 // ─── 2. Ångesten får inte köra bilen ────────────────────────
 // Förstaperson: vy ut genom framrutan. Vägen rör sig MOT användaren
@@ -220,8 +239,6 @@ function CloseTabs(p: BespokeProps) {
 function NotDriving(p: BespokeProps) {
   const W = 320;
   const H = 240;
-  const stepIdx = p.stepIndex ?? 0;
-  const sp = clamp01(p.stepProgress ?? 0);
   const pulse = useBreathPulse(4200);
   const time = useTimeSec();
 
@@ -234,16 +251,15 @@ function NotDriving(p: BespokeProps) {
   const roadLeftNear = W * 0.05;
   const roadRightNear = W * 0.95;
 
-  // Hastighet: lugn från start, ökar något efter steg 0
-  const speed = stepIdx === 0 ? 0.18 : 0.28;
+  // Konstant hastighet hela övningen — inga hopp vid stegbyten
+  const speed = 0.24;
   const tNorm = (time * speed) % 1;
 
-  // 6 stripes som glider från horisont mot tittaren. Varje stripe har
-  // en fas u i [0..1) där u=0 är vid horisonten, u=1 är vid betraktaren.
+  // 6 stripes som glider från horisont mot tittaren.
   const N = 6;
   const stripes = Array.from({ length: N }, (_, i) => {
     const u = (tNorm + i / N) % 1;
-    const persp = u * u; // accelererar mot tittaren = känsla av fart
+    const persp = u * u;
     const y = lerp(horizonY, dashTop, persp);
     const w = lerp(2, 14, persp);
     const h = lerp(3, 18, persp);
@@ -251,11 +267,11 @@ function NotDriving(p: BespokeProps) {
     return { y, w, h, op, key: i };
   });
 
-  // Riktnings-pil i steg 4+
-  const arrowOp = stepIdx === 4 ? easeInOut(sp) : stepIdx > 4 ? 1 : 0;
+  // Riktnings-pil — tonas in kontinuerligt runt steg 4
+  const arrowOp = stepRamp(p, 3.6, 4.2);
 
-  // Liten handling — ljuspunkt på vägen i steg 5
-  const emberOp = stepIdx === 5 ? easeInOut(sp) : 0;
+  // Liten handling — ljuspunkt på vägen, tonas in runt steg 5
+  const emberOp = stepRamp(p, 4.6, 5.2);
   const emberPersp = 0.55; // halvvägs mellan horisont och tittaren
   const emberY = lerp(horizonY, dashTop, emberPersp);
 
@@ -371,8 +387,6 @@ function NotDriving(p: BespokeProps) {
 function ResetBars(p: BespokeProps) {
   const W = 260;
   const H = 280;
-  const stepIdx = p.stepIndex ?? 0;
-  const sp = clamp01(p.stepProgress ?? 0);
   const breathe = useBreathPulse(5000);
 
   // Tre staplar: axlar (topp), käke (mitt), andetag (botten)
@@ -385,27 +399,25 @@ function ResetBars(p: BespokeProps) {
   const fullH = 200;
   const minH = 36;
 
-  // Hur mycket varje stapel har "sjunkit" (0..1)
-  const drop = (i: number) => {
-    if (stepIdx > i) return 1;
-    if (stepIdx === i) return easeInOut(sp);
-    return 0;
-  };
+  // Hur mycket varje stapel har "sjunkit" (0..1) — kontinuerlig ramp per stapel
+  const drop = (i: number) => stepRamp(p, i, i + 1);
 
-  // Medvetenhets-bandets vertikala position (0 = topp, 1 = botten)
-  // 3 = sveper topp→botten, 4 = botten→topp, 5 = mitten + puls
-  let bandY: number | null = null;
-  let bandOp = 0;
-  if (stepIdx === 3) {
-    bandY = lerp(40, baselineY - 20, easeInOut(sp));
-    bandOp = 1;
-  } else if (stepIdx === 4) {
-    bandY = lerp(baselineY - 20, 40, easeInOut(sp));
-    bandOp = 1;
-  } else if (stepIdx >= 5) {
-    bandY = (40 + baselineY - 20) / 2 + Math.sin(breathe * Math.PI * 2) * 6;
-    bandOp = 0.85;
-  }
+  // Medvetenhets-bandet: sveper ner under steg 3, upp under steg 4,
+  // landar i mitten och pulserar från steg 5. Allt som kontinuerliga ramper.
+  const topY = 40;
+  const bottomY = baselineY - 20;
+  const midY = (topY + bottomY) / 2;
+  const bandIn = stepRamp(p, 2.7, 3.1);
+  const sweepDown = stepRamp(p, 3, 4);
+  const sweepUp = stepRamp(p, 4, 5);
+  const settle = stepRamp(p, 5, 5.4);
+
+  const yDown = lerp(topY, bottomY, sweepDown);
+  const yUp = lerp(yDown, topY, sweepUp);
+  const yRest = midY + Math.sin(breathe * Math.PI * 2) * 6;
+  const bandY = lerp(yUp, yRest, settle);
+  const bandOp = bandIn * lerp(1, 0.85, settle);
+  const dotR = lerp(8, 10 + breathe * 4, settle);
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="h-72 w-64" aria-hidden>
@@ -444,7 +456,7 @@ function ResetBars(p: BespokeProps) {
       })}
 
       {/* Medvetenhets-band */}
-      {bandY !== null && (
+      {bandOp > 0.02 && (
         <g opacity={bandOp}>
           <line
             x1={startX - 14}
@@ -455,12 +467,7 @@ function ResetBars(p: BespokeProps) {
             strokeOpacity={0.5}
             strokeWidth={2}
           />
-          <circle
-            cx={W / 2}
-            cy={bandY}
-            r={stepIdx >= 5 ? 10 + breathe * 4 : 8}
-            fill={ACCENT}
-          />
+          <circle cx={W / 2} cy={bandY} r={dotR} fill={ACCENT} />
         </g>
       )}
     </svg>
@@ -475,8 +482,6 @@ function ResetBars(p: BespokeProps) {
 //  3 "Resten i kanten"               → övriga glider ut till ringkant och stannar svaga
 //  4 "Andas in mot mitten"           → kant-prickarna andas in/ut mot mitten, linsen pulserar
 function FocusLens(p: BespokeProps) {
-  const stepIdx = p.stepIndex ?? 0;
-  const sp = clamp01(p.stepProgress ?? 0);
   const breathe = useBreathPulse(5200);
   const R = 110;
   const n = 14;
@@ -490,10 +495,16 @@ function FocusLens(p: BespokeProps) {
     return { x: Math.cos(a) * rr, y: Math.sin(a) * rr, a };
   };
 
-  const jitterAmp =
-    stepIdx === 0 ? 7
-    : stepIdx === 1 ? lerp(7, 2, easeInOut(sp))
-    : 1.5;
+  // Kontinuerliga ramper över hela övningen
+  const calmPhase = stepRamp(p, 0.5, 2); // jitter lugnar sig
+  const jitterAmp = lerp(7, 1.5, calmPhase);
+  const growChosen = stepRamp(p, 0.7, 1.7); // utvald växer
+  const toCenterRamp = stepRamp(p, 1.8, 2.8); // utvald glider mot mitten
+  const lensRamp = stepRamp(p, 2, 3); // blir lins
+  const toEdgeRamp = stepRamp(p, 2.8, 3.8); // övriga till kanten
+  const breathOn = stepRamp(p, 3.6, 4.2); // andnings-puls aktiveras
+  const dimRamp = stepRamp(p, 0.7, 1.7); // övriga dimmas
+  const ringRamp = stepRamp(p, 2.6, 3.4); // ring blir tydligare
 
   return (
     <svg viewBox="-130 -130 260 260" className="h-64 w-64 md:h-72 md:w-72" aria-hidden>
@@ -504,7 +515,7 @@ function FocusLens(p: BespokeProps) {
         r={R}
         fill="none"
         stroke="currentColor"
-        strokeOpacity={stepIdx >= 3 ? 0.35 : 0.12}
+        strokeOpacity={lerp(0.12, 0.35, ringRamp)}
         strokeWidth={2}
       />
 
@@ -517,33 +528,19 @@ function FocusLens(p: BespokeProps) {
         const edgeY = Math.sin(base.a) * (R - 6);
 
         if (isChosen) {
-          const toCenter =
-            stepIdx < 2 ? 0
-            : stepIdx === 2 ? easeInOut(sp)
-            : 1;
-          const grow = stepIdx >= 1 ? (stepIdx === 1 ? easeInOut(sp) : 1) : 0;
-          const lens = stepIdx >= 2 ? (stepIdx === 2 ? easeInOut(sp) : 1) : 0;
-          const cx = lerp(base.x + jx * 0.3, 0, toCenter);
-          const cy = lerp(base.y + jy * 0.3, 0, toCenter);
-          let r = lerp(6, 10, grow);
-          r = lerp(r, 22 + breathe * 4, lens);
+          const cx = lerp(base.x + jx * 0.3, 0, toCenterRamp);
+          const cy = lerp(base.y + jy * 0.3, 0, toCenterRamp);
+          let r = lerp(6, 10, growChosen);
+          r = lerp(r, 22 + breathe * 4, lensRamp);
           return <circle key={i} cx={cx} cy={cy} r={r} fill={ACCENT} fillOpacity={1} />;
         }
 
-        const toEdge =
-          stepIdx < 3 ? 0
-          : stepIdx === 3 ? easeInOut(sp)
-          : 1;
-        const breath = stepIdx >= 4 ? Math.sin(breathe * Math.PI * 2) * 10 : 0;
+        const breath = Math.sin(breathe * Math.PI * 2) * 10 * breathOn;
         const ax = Math.cos(base.a) * breath;
         const ay = Math.sin(base.a) * breath;
-        const cx = lerp(base.x + jx, edgeX - ax, toEdge);
-        const cy = lerp(base.y + jy, edgeY - ay, toEdge);
-        const dim =
-          stepIdx === 0 ? 0
-          : stepIdx === 1 ? easeInOut(sp)
-          : 1;
-        return <circle key={i} cx={cx} cy={cy} r={6} fill={SOFT} fillOpacity={lerp(0.75, 0.3, dim)} />;
+        const cx = lerp(base.x + jx, edgeX - ax, toEdgeRamp);
+        const cy = lerp(base.y + jy, edgeY - ay, toEdgeRamp);
+        return <circle key={i} cx={cx} cy={cy} r={6} fill={SOFT} fillOpacity={lerp(0.75, 0.3, dimRamp)} />;
       })}
     </svg>
   );
@@ -1829,10 +1826,7 @@ function HeldInArch(p: BespokeProps) {
     return `M ${left} ${baseYv} V ${topYv} A ${half} ${half} 0 0 1 ${right} ${topYv} V ${baseYv} Z`;
   };
 
-  const smoothstep = (a: number, b: number, x: number) => {
-    const k = clamp01((x - a) / (b - a));
-    return k * k * (3 - 2 * k);
-  };
+
 
   // Bollen vilar centrerat på inre bågens krön
   const baseR = 12;
@@ -1878,8 +1872,7 @@ function HeldInArch(p: BespokeProps) {
       <g
         style={{
           transformOrigin: `${cx}px ${baseY}px`,
-          transform: `scale(${(0.0 + outerGrow).toFixed(3)}, ${(0.0 + outerGrow).toFixed(3)}) scale(${archBreath})`,
-          transition: "transform 220ms linear",
+          transform: `scale(${outerGrow.toFixed(4)}, ${outerGrow.toFixed(4)}) scale(${archBreath.toFixed(4)})`,
         }}
       >
         <path
@@ -1892,8 +1885,7 @@ function HeldInArch(p: BespokeProps) {
       <g
         style={{
           transformOrigin: `${cx}px ${baseY}px`,
-          transform: `scale(1, ${innerGrow.toFixed(3)}) scale(${archBreath})`,
-          transition: "transform 220ms linear",
+          transform: `scale(1, ${innerGrow.toFixed(4)}) scale(${archBreath.toFixed(4)})`,
         }}
       >
         <path
