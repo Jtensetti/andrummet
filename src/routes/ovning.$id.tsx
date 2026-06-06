@@ -431,23 +431,8 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
                 </>
               )}
             </div>
+            <div />
 
-
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setPaused((p) => !p)}
-                className="grid h-14 w-14 place-items-center rounded-full bg-black/15"
-                aria-label={paused ? "Fortsätt" : "Pausa"}
-              >
-                {paused ? <Play className="h-6 w-6" /> : <Pause className="h-6 w-6" />}
-              </button>
-              <button
-                onClick={afterToDone}
-                className="rounded-full bg-black/10 px-4 py-3 text-xs font-bold opacity-70"
-              >
-                Hoppa till slut
-              </button>
-            </div>
           </motion.div>
         )}
 
