@@ -1092,6 +1092,137 @@ const SEEDS: Seed[] = [
     ],
     closing: "Du gick in som någon — inte som en kö av uppgifter.",
   },
+
+  // ─── NYA: en till per tunn kategori ───────────────────────
+  {
+    id: "slapp-axlarna-tre-ganger",
+    title: "Släpp axlarna tre gånger",
+    short: "Tre platser i kroppen. Tre släpp.",
+    category: "body",
+    kind: "short",
+    minutes: 2,
+    animation: "weight",
+    metric: "kroppsspänning",
+    steps: [
+      ["Märk axlarna", 16, ["Lägg märke", "till axlarna", "är de uppe?", "döm dem inte", "bara se efter"]],
+      ["Släpp axlarna", 20, ["Andas ut", "släpp axlarna ner", "lite längre ner", "och lite till", "bra"]],
+      ["Mjuka käken", 20, ["Käken", "öppna lite", "tungan från gommen", "släpp", "tyngre underkäke"]],
+      ["Släpp pannan", 20, ["Mjuka pannan", "släpp mellan ögonbrynen", "ögonen tunga", "bra"]],
+      ["En lång utandning", 24, ["Andas in", "lugnt", "andas ut", "längre", "släpp resten också", "stilla"]],
+      ["Stanna en stund", 20, ["Stanna", "i den mjukare kroppen", "du behöver inte göra mer", "bara känn"]],
+    ],
+    closing: "Tre platser mjukare. Det räcker.",
+    metaphor: {
+      intro:
+        "Spänning är något du håller uppe utan att märka det. Vi släpper tre platser — axlarna, käken, pannan. Tyngden får falla.",
+      illustration: "weight",
+    },
+  },
+
+  {
+    id: "en-sak-at-gangen",
+    title: "En sak åt gången",
+    short: "Rensa bordet. Välj en. Börja där.",
+    category: "focus",
+    kind: "short",
+    minutes: 3,
+    animation: "gather",
+    metric: "fokus",
+    steps: [
+      ["Vad ligger på bordet?", 24, ["Vad drar i dig", "just nu?", "lista tyst", "tre-fyra saker", "låt dem komma"]],
+      ["Allt får finnas", 20, ["De finns kvar", "även om du inte gör dem nu", "du tappar ingenting"]],
+      ["Välj en", 24, ["Välj en sak", "inte den största", "den närmaste", "den du faktiskt kan börja med"]],
+      ["Resten får vänta", 22, ["De andra", "lägg dem åt sidan", "de får sin tur", "men inte nu"]],
+      ["Bestäm första steget", 24, ["Vad är första steget?", "litet räcker", "öppna filen", "skriv en mening", "ring samtalet"]],
+      ["Börja där", 18, ["Börja där", "ingen behöver veta", "bara du och den ena saken"]],
+    ],
+    closing: "En sak. Resten finns kvar — men inte i vägen.",
+    metaphor: {
+      intro:
+        "Fokus är inte att vilja mer. Det är att samla allt som drar till en enda punkt — den du faktiskt gör nu.",
+      illustration: "gather",
+    },
+  },
+
+  {
+    id: "rakna-ner-fran-tio",
+    title: "Räkna ner från tio",
+    short: "Tio utandningar. En siffra åt gången. Nedåt.",
+    category: "sleep",
+    kind: "short",
+    minutes: 4,
+    animation: "meter-down",
+    metric: "trötthet",
+    steps: [
+      ["Lägg dig till rätta", 16, ["Hitta läget", "som känns bra", "armar tunga", "ben tunga", "du behöver inte göra något mer"]],
+      ["Tio", 18, ["Andas in", "andas ut", "tio", "ett snäpp ner"]],
+      ["Nio", 18, ["Andas in", "andas ut", "nio", "lite tyngre"]],
+      ["Åtta", 18, ["Andas in", "andas ut", "åtta", "släpp axlarna också"]],
+      ["Sju", 18, ["Andas in", "andas ut", "sju", "lägre"]],
+      ["Sex", 18, ["Andas in", "andas ut", "sex", "mjukare käke"]],
+      ["Fem", 18, ["Andas in", "andas ut", "fem", "halvvägs"]],
+      ["Fyra", 18, ["Andas in", "andas ut", "fyra", "tyngre"]],
+      ["Tre", 18, ["Andas in", "andas ut", "tre", "släpp pannan"]],
+      ["Två", 18, ["Andas in", "andas ut", "två", "stilla"]],
+      ["Ett", 22, ["Andas in", "andas ut", "ett", "du behöver inte komma till noll"]],
+    ],
+    closing: "Du behöver inte komma till noll. Du behöver bara sjunka.",
+    metaphor: {
+      intro:
+        "Sömn är ingen knapp. Den är en sänkning. Vi räknar ner — en siffra per utandning — och låter mätaren tömma sig.",
+      illustration: "meter-down",
+    },
+  },
+
+  {
+    id: "mjuk-omstart",
+    title: "Mjuk omstart",
+    short: "Mellan två saker. En minut. Krympa, växa.",
+    category: "quick-pause",
+    kind: "short",
+    minutes: 1,
+    animation: "orb",
+    metric: "stress",
+    steps: [
+      ["Stanna här", 10, ["Stanna", "var du är", "den förra saken är klar", "nästa har inte börjat"]],
+      ["Andas ut", 8, ["Andas ut", "långsamt", "låt allt krympa", "tomt"]],
+      ["Andas in", 6, ["Andas in", "fyll på", "lugnt", "växa"]],
+      ["Andas ut", 8, ["Andas ut", "släpp", "tomt", "stilla"]],
+      ["Andas in", 6, ["Andas in", "lite till", "växa igen"]],
+      ["Stilla", 12, ["Stanna en stund", "i det tomma mellanrummet", "du har just startat om"]],
+    ],
+    closing: "Inte ny dag. Bara ny minut. Räcker.",
+    metaphor: {
+      intro:
+        "Övergångar behöver en mjuk paus, inte ett tvärt avbrott. Cirkeln krymper på utandningen och växer på inandningen — som en skärm som släcks och tänds igen.",
+      illustration: "orb",
+    },
+  },
+
+  {
+    id: "stang-dagen-mjukt",
+    title: "Stäng dagen mjukt",
+    short: "Sista mejlet är skickat. Nu stänger vi locket.",
+    category: "worklife",
+    kind: "short",
+    minutes: 3,
+    animation: "horizon",
+    metric: "stress",
+    steps: [
+      ["Stanna vid skärmen", 18, ["Stanna", "innan du reser dig", "dagen är på väg att ta slut", "låt den göra det"]],
+      ["Vad blev gjort idag?", 32, ["Vad blev gjort?", "ingen stor lista", "bara en eller två saker", "som du faktiskt gjorde", "räcker"]],
+      ["Vad lämnar du till imorgon?", 32, ["Det som inte blev klart", "det får ligga kvar", "imorgon finns", "du behöver inte ta med det hem"]],
+      ["Stäng locket", 22, ["Stäng datorn", "eller bara säg det tyst", "klart för idag", "jag är inte här längre"]],
+      ["En lång utandning", 24, ["Andas in", "lugnt", "andas ut", "längre", "släpp dagen", "stilla"]],
+      ["Res dig som någon annan", 18, ["Res dig nu", "som någon utanför jobbet", "inte med en uppgift kvar i händerna"]],
+    ],
+    closing: "Dagen är inte färdig. Men din del är slut för idag.",
+    metaphor: {
+      intro:
+        "Arbetet upphör inte av sig självt — kroppen behöver en signal. Horisonten sjunker, som en solnedgång. Inget mer att lyfta idag.",
+      illustration: "horizon",
+    },
+  },
 ];
 
 export const EXERCISES: Exercise[] = SEEDS.map(build);
@@ -1120,6 +1251,11 @@ const POLISHED_IDS = new Set<string>([
   "lat-det-singla-ner",
   "surfa-vagen",
   "du-blev-hallen",
+  "slapp-axlarna-tre-ganger",
+  "en-sak-at-gangen",
+  "rakna-ner-fran-tio",
+  "mjuk-omstart",
+  "stang-dagen-mjukt",
 ]);
 
 
