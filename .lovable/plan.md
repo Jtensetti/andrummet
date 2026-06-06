@@ -1,73 +1,80 @@
+# Ny övning: Löv i bäcken
 
-## Vad jag hittade
+En klassisk ACT-defusionsövning där man lär sig se sina tankar passera istället för att fastna i dem. Lövet är tanken. Bäcken är medvetandet. Tanken är inte du — den flyter förbi.
 
-Jag gick igenom `script`-fälten och `closing`-meningarna i `src/lib/exercises.ts` för de 13 övningar som faktiskt visas i appen.
+## Placering
 
-### 1. Onaturlig eller felaktig svenska
+- **Kategori:** `reflection` (passar bättre än anxiety — det är en observations­övning, inte en lugnande)
+- **ID:** `lov-i-backen`
+- **Titel:** "Löv i bäcken"
+- **Längd:** 3 min
+- **Metric:** `clarity` (eller motsvarande befintlig — kollas mot METRIC_LABELS)
+- **requiresRating:** true
+- **reflectionPrompt:** "Vilken tanke var svårast att släppa förbi?"
 
-| Övning | Rad | Nuvarande | Problem |
-| --- | --- | --- | --- |
-| `vad-behover-jag-just-nu` | 711 | "behovet bor lägre ner i kroppen, **bordet sitter i huvudet**" | "bordet" = möbeln. Ordvitsen på *borde* fungerar inte i skrift. |
-| `svalna-innan-svar` | 842 | "in, **uut**, in, **uut**, längre" | Stavfel — ska vara "ut". |
-| `mellan-tva-moten` | 922 | "in, ut längre, in, **ut längst**, släpp" | "längst" som imperativ låter konstigt. |
-| `reset` | 442 | "Käken, öppna lite, tungan ner, släpp, stilla" | "tungan ner" hänger i luften — saknar varifrån. |
-| `reset` / `kroppsskanning` / `slapp-kaken` / `svalna` | 444, 628, 671, 843 | "fixa inget, **bara märk**" | "Märk" som imperativ är tekniskt korrekt men låter klippt och ovanligt. |
-| `kroppsskanning` | 629 | "biter du ihop?, **är tänderna emot?**, släpp lite" | "emot" som standalone är otydligt — borde vara "mot varandra". |
-| `fokuslinsen` | 529 | "lägg märke till uppmärksamheten, är den **spridd**? hoppar den?" | "spritheten" (rad 529 label) är hemsnickrat ord. |
-| `tre-vanliga-meningar` | 804 (closing) | "**Inte tönt.** Bara rättvist." | "Tönt" bryter den varma tonen i övningen. |
-| `angesten-far-inte-kora` | 351 | "händer på **10 och 2**" | Klockslagsmetaforen för ratten är dejt — många kör inte bil. |
-| `stang-47-flikar` | 326 | "Vad **snurrar**? i huvudet just nu, lista tyst" | "Snurrar" återanvänds gång på gång (se nedan). |
+## Animation (bespoke)
 
-### 2. Upprepade fraser (känns för lika)
+En platt, ovanifrån-vy av en bäck som rinner från vänster till höger. Två böljande linjer markerar strandkanterna (`SOFT`). Längs strömmen färdas ovala löv (`ACCENT`) i olika takt och y-offset. Varje löv föds till vänster, driver förbi, och försvinner till höger. Allt drivs av `useTimeSec` så rörelsen är kontinuerlig och oberoende av steg.
 
-Samma formuleringar dyker upp i många övningar — i synnerhet andnings-cuena. Här är de värsta upprepningarna och var de finns:
+**Pedagogisk koppling:**
+- Lövens hastighet är konstant — användaren kan inte stoppa dem, bara titta på
+- När `stepProgress` byter steg byts inte animationen, bara texten — det förstärker "tankarna kommer och går, du gör inget"
+- Inga gradient/skugga, samma stil som övriga bespoke-animationer
+- Subtil andningspuls (`useBreathPulse`) på bäckens svaja, så bilden andas utan att kräva andning
 
-- **"Andas in / andas ut längre / släpp"** → `reset`, `mellan-tva-moten`, `svalna-innan-svar`, `angesten-far-inte-kora`-stil, `sov-mjukare`, `kroppsskanning`. Identisk fras i 6 av 13.
-- **"Släpp axlarna, släpp käken"** → `reset`, `mellan-tva-moten`, `andning-innan-mote`, `mikropaus-vid-skrivbordet`. Samma kombo överallt.
-- **"Bara märk / döm inte"** → 8 av 13. Förlorar sin tyngd.
-- **"Tyst / säg det tyst"** → 9 av 13.
-- **"Stilla / bra"** som avslutande ord i scriptrader → 10+ ställen.
-- **"Vad snurrar i huvudet?"** → `reset`, `stang-47-flikar`, `lov-pa-en-flod`, `lagg-undan-till-sen`.
+**Skiss:**
+```text
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  ← strand (SOFT)
+   🍂      🍂            🍂      →
+        🍂        🍂           🍂  →
+   🍂           🍂      🍂        →
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+```
+(Löven renderas som enkla ellipser med liten rotation, inte emoji.)
 
-Notera: `andas-i-en-ruta` och `lang-utandning` använder `BoxBreath`/`BreathWave`-komponenterna och visar bara "Andas in / Håll / Andas ut / Vila" — deras scripts används aldrig. Så de räknas inte i upprepningarna ovan, men deras `BOX()`/`WAVE()`-helpers skriver fortfarande dessa scripts (oanvänd dödkod — kan lämnas, ingen påverkan).
+## Steg och script (övningsspecifikt språk)
 
-## Vad jag föreslår att vi gör
+Texterna är skrivna för just denna övning — ingen "andas in / andas ut", inget "släpp axlarna". Fokus ligger på observation och defusion.
 
-### Konkreta fraser att ersätta
+1. **"Sätt dig vid bäcken"** (20s)
+   - "blicken mjuk, ingenstans att vara"
+   - "bäcken rinner av sig själv"
 
-1. **"bordet sitter i huvudet"** → "kravet sitter i huvudet, behovet sitter lägre ner"
-2. **"uut"** → "ut" (stavfel)
-3. **"ut längst"** → "ut ännu längre"
-4. **"bara märk"** → varieras: "lägg bara märke", "notera bara", "se efter", "registrera"
-5. **"är tänderna emot?"** → "biter tänderna mot varandra?"
-6. **"spritheten"** → "den spridda uppmärksamheten"
-7. **"Inte tönt. Bara rättvist."** → "Inte mjäkigt. Bara rättvist."
-8. **"händer på 10 och 2"** → "händerna vilar på ratten" (universellare)
-9. **"tungan ner"** → "tungan ner från gommen" (full mening)
+2. **"Lägg nästa tanke på ett löv"** (30s)
+   - "vänta tills något dyker upp i huvudet"
+   - "en oro, en plan, ett minne — vad som helst"
+   - "lägg den på lövet och låt det driva"
 
-### Variationsstrategi för upprepningar
+3. **"Tankar är inte order"** (40s)
+   - "du behöver inte hålla med"
+   - "du behöver inte argumentera"
+   - "låt lövet passera även om tanken känns viktig"
 
-Skriv om andnings-cuena så varje övning har sin egen ton:
-- `reset` (stress, släppa) → "andas in lugnt, andas ut som en suck, axlarna sjunker"
-- `mellan-tva-moten` (worklife) → "kort in, lång ut, gör om tre gånger — sänk pulsen mellan rummen"
-- `svalna-innan-svar` (anger) → "in genom näsan, ut långsamt genom munnen — låt elden svalna"
-- `sov-mjukare` → "andetaget blir längre, ljudet blir mjukare, kroppen sjunker"
-- `kroppsskanning` → bibehåll "skanna utan att fixa"-ton, undvik andnings-cue
-- `angesten-far-inte-kora` → bibehåll bilmetafor, andnings-cue blir "händerna på ratten, andetaget hittar takten"
+4. **"Om du följer med lövet"** (30s)
+   - "märk det — du har klivit i vattnet"
+   - "kliv upp på stranden igen"
+   - "nästa tanke, nytt löv"
 
-Variera även de andra slitna fraserna:
-- "bara märk" → 4–5 olika synonymer fördelade över de 8 ställena
-- "döm inte" → "utan att värdera", "ingen rättning behövs", "låt det vara som det är"
-- "vad snurrar" → "vad ligger överst", "vad är högst i volym", "vad återkommer"
-- "stilla / bra" som slutord → varieras eller tas bort (oftast onödiga)
+5. **"Samma bäck, andra löv"** (40s)
+   - "tankar upprepar sig — det är okej"
+   - "samma tanke får ett nytt löv"
+   - "den behöver inte lösas, bara passera"
 
-### Avgränsning
+6. **"Lämna bäcken sakta"** (20s)
+   - "bäcken finns kvar utan dig"
+   - "ta med dig blicken, inte tankarna"
 
-- Bara `src/lib/exercises.ts` ändras.
-- Bara `script`-arrayer och enstaka `closing`/`label` rörs — inga ändringar i `seconds`, ID, struktur eller `metaphor.intro` (de är redan distinkta).
-- BoxBreath/BreathWave-övningarna (`andas-i-en-ruta`, `lang-utandning`) lämnas oförändrade eftersom deras script aldrig renderas.
+**Closing:** "Bäcken finns kvar nästa gång du behöver den."
+**Microcopy (done):** "Du satt och tittade. Det räknas."
 
-## Fil som ändras
+## Filer som ändras
 
-- `src/lib/exercises.ts`
+- `src/lib/exercises.ts` — lägg till övningen i listan med category `reflection`, fyll i steps/script/closing/microcopy. Sätt `animation: "river"` (fallback ignoreras eftersom bespoke matchar id).
+- `src/components/animations/bespoke.tsx` — ny komponent `LovIBacken` + registrera id `lov-i-backen` i `hasBespoke` / `BespokeFor`-uppslaget (samma mönster som befintliga bespoke-övningar).
 
+Inga ändringar i `ovning.$id.tsx` (BespokeFor plockar upp den automatiskt). Inga ändringar i routing, kategorifärger eller startsidan.
+
+## Vad jag INTE rör
+
+- Befintliga övningar, animationer, hastigheter, kategorifärger, kortlayout.
+- Andnings-UI med stegcountern (denna övning använder ren script-undertext, samma som övriga reflection-övningar).
