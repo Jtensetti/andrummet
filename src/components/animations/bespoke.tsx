@@ -482,8 +482,6 @@ function ResetBars(p: BespokeProps) {
 //  3 "Resten i kanten"               → övriga glider ut till ringkant och stannar svaga
 //  4 "Andas in mot mitten"           → kant-prickarna andas in/ut mot mitten, linsen pulserar
 function FocusLens(p: BespokeProps) {
-  const stepIdx = p.stepIndex ?? 0;
-  const sp = clamp01(p.stepProgress ?? 0);
   const breathe = useBreathPulse(5200);
   const R = 110;
   const n = 14;
@@ -497,10 +495,16 @@ function FocusLens(p: BespokeProps) {
     return { x: Math.cos(a) * rr, y: Math.sin(a) * rr, a };
   };
 
-  const jitterAmp =
-    stepIdx === 0 ? 7
-    : stepIdx === 1 ? lerp(7, 2, easeInOut(sp))
-    : 1.5;
+  // Kontinuerliga ramper över hela övningen
+  const calmPhase = stepRamp(p, 0.5, 2); // jitter lugnar sig
+  const jitterAmp = lerp(7, 1.5, calmPhase);
+  const growChosen = stepRamp(p, 0.7, 1.7); // utvald växer
+  const toCenterRamp = stepRamp(p, 1.8, 2.8); // utvald glider mot mitten
+  const lensRamp = stepRamp(p, 2, 3); // blir lins
+  const toEdgeRamp = stepRamp(p, 2.8, 3.8); // övriga till kanten
+  const breathOn = stepRamp(p, 3.6, 4.2); // andnings-puls aktiveras
+  const dimRamp = stepRamp(p, 0.7, 1.7); // övriga dimmas
+  const ringRamp = stepRamp(p, 2.6, 3.4); // ring blir tydligare
 
   return (
     <svg viewBox="-130 -130 260 260" className="h-64 w-64 md:h-72 md:w-72" aria-hidden>
@@ -511,7 +515,7 @@ function FocusLens(p: BespokeProps) {
         r={R}
         fill="none"
         stroke="currentColor"
-        strokeOpacity={stepIdx >= 3 ? 0.35 : 0.12}
+        strokeOpacity={lerp(0.12, 0.35, ringRamp)}
         strokeWidth={2}
       />
 
@@ -524,33 +528,19 @@ function FocusLens(p: BespokeProps) {
         const edgeY = Math.sin(base.a) * (R - 6);
 
         if (isChosen) {
-          const toCenter =
-            stepIdx < 2 ? 0
-            : stepIdx === 2 ? easeInOut(sp)
-            : 1;
-          const grow = stepIdx >= 1 ? (stepIdx === 1 ? easeInOut(sp) : 1) : 0;
-          const lens = stepIdx >= 2 ? (stepIdx === 2 ? easeInOut(sp) : 1) : 0;
-          const cx = lerp(base.x + jx * 0.3, 0, toCenter);
-          const cy = lerp(base.y + jy * 0.3, 0, toCenter);
-          let r = lerp(6, 10, grow);
-          r = lerp(r, 22 + breathe * 4, lens);
+          const cx = lerp(base.x + jx * 0.3, 0, toCenterRamp);
+          const cy = lerp(base.y + jy * 0.3, 0, toCenterRamp);
+          let r = lerp(6, 10, growChosen);
+          r = lerp(r, 22 + breathe * 4, lensRamp);
           return <circle key={i} cx={cx} cy={cy} r={r} fill={ACCENT} fillOpacity={1} />;
         }
 
-        const toEdge =
-          stepIdx < 3 ? 0
-          : stepIdx === 3 ? easeInOut(sp)
-          : 1;
-        const breath = stepIdx >= 4 ? Math.sin(breathe * Math.PI * 2) * 10 : 0;
+        const breath = Math.sin(breathe * Math.PI * 2) * 10 * breathOn;
         const ax = Math.cos(base.a) * breath;
         const ay = Math.sin(base.a) * breath;
-        const cx = lerp(base.x + jx, edgeX - ax, toEdge);
-        const cy = lerp(base.y + jy, edgeY - ay, toEdge);
-        const dim =
-          stepIdx === 0 ? 0
-          : stepIdx === 1 ? easeInOut(sp)
-          : 1;
-        return <circle key={i} cx={cx} cy={cy} r={6} fill={SOFT} fillOpacity={lerp(0.75, 0.3, dim)} />;
+        const cx = lerp(base.x + jx, edgeX - ax, toEdgeRamp);
+        const cy = lerp(base.y + jy, edgeY - ay, toEdgeRamp);
+        return <circle key={i} cx={cx} cy={cy} r={6} fill={SOFT} fillOpacity={lerp(0.75, 0.3, dimRamp)} />;
       })}
     </svg>
   );
