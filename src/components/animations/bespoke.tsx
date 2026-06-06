@@ -220,7 +220,7 @@ function CloseTabs(p: BespokeProps) {
           fillOpacity={(0.6 + breathe * 0.3) * breathOnly}
         />
       )}
-      {void stepIdx}
+      
     </svg>
   );
 }
