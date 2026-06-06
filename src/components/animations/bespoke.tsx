@@ -1323,9 +1323,14 @@ function LeavesOnStream(_p: BespokeProps) {
         fillOpacity={0.28}
       />
 
-      {/* Strömlinjer — antyder rörelse utan att stjäla blicken */}
+      {/* Strömlinjer — antyder rörelse utan att stjäla blicken.
+          Fade vid kanterna gör att återkomsten aldrig syns som ett hopp. */}
       {[80, 130, 170, 220].map((y, i) => {
-        const shift = ((t * 18 + i * 40) % (W + 40)) - 20;
+        const span = W + 60;
+        const shift = ((t * 18 + i * 40) % span) - 30;
+        // Mjuk in-/utfade vid bildens kanter (de sista ~24 px).
+        const edge = Math.min(shift + 30, W - shift, 24) / 24;
+        const fade = Math.max(0, Math.min(1, edge));
         return (
           <line
             key={`s-${i}`}
@@ -1334,7 +1339,7 @@ function LeavesOnStream(_p: BespokeProps) {
             y1={y}
             y2={y + 1}
             stroke="currentColor"
-            strokeOpacity={0.18}
+            strokeOpacity={0.18 * fade}
             strokeWidth={1.5}
             strokeLinecap="round"
           />
@@ -1357,16 +1362,19 @@ function LeavesOnStream(_p: BespokeProps) {
         strokeWidth={2}
       />
 
-      {/* Löv */}
+      {/* Löv — fade vid kanterna så att loopen inte syns som en pop. */}
       {leaves.map((l, i) => {
         const u = (t / l.period + l.offset) % 1;
-        const x = -20 + u * (W + 40);
+        const x = -30 + u * (W + 60);
         const bob = Math.sin(t * 1.4 + i) * 2.5;
         const rot = l.tilt + Math.sin(t * 0.8 + i) * 6;
+        const edge = Math.min(x + 30, W - x, 36) / 36;
+        const fade = Math.max(0, Math.min(1, edge));
         return (
           <g
             key={`leaf-${i}`}
             transform={`translate(${x.toFixed(1)} ${(l.y + bob).toFixed(1)}) rotate(${rot.toFixed(1)})`}
+            opacity={fade}
           >
             <ellipse
               cx={0}
