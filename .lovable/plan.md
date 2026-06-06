@@ -1,114 +1,119 @@
 
-# Ny övning: "Märk tanken"
+# Ny övning: "Låt det singla ner" (snöglob)
 
-En aktiv defusionsövning i kategorin **Reflektera**. Komplement till "Löv i bäcken" — där tittar man passivt på tankar som driver förbi; här gör man något konkret med dem: sätter en etikett på *sorten*, inte på innehållet.
+En övning i kategorin **stress / Släppa tankar** baserad på Jon Kabat-Zinns klassiska snöglob-metafor. Den fyller ett tomrum bland de tre befintliga övningarna och bär en pedagogisk insikt som ingen annan övning har: *du behöver inte tänka tankarna bort — du behöver bara sluta skaka.*
 
-## Varför just den här övningen
+## Varför den passar in (och inte dubblar något)
 
-- **Evidensbaserad teknik.** "Noting / labeling" är en kärnpraktik i både mindfulness (Goldstein, Salzberg) och ACT (Hayes). Att säga "det här är en oro-tanke" istället för att gå in i innehållet skapar avstånd utan att förtränga.
-- **Unik bland reflection-övningarna.** Ingen befintlig övning handlar om kategorisering. Löv i bäcken = se tankar gå förbi. Märk tanken = sätt en lapp på dem först. Olika muskler.
-- **Stark omedelbar nytta.** Funkar i busskön, i sängen, i mötet. Tre sekunders verktyg: *"planering"*, *"självkritik"*, *"minne"* — och så går tanken från diffus storm till tydligt objekt.
-- **Passar starka färgen.** Reflektera är en intensiv kategori; den här övningen är konkret och handlingsbar, inte luddig.
+| Befintlig övning | Vad den gör |
+|---|---|
+| **Reset** | Lugnar via kroppen (axlar, käke, andning) |
+| **Lägg undan till sen** | Externaliserar — flyttar tanken till en "sen"-låda |
+| **Löv på en flod** | Passiv observation — låter tankar driva förbi |
+| **Låt det singla ner** *(ny)* | **Sluta interagera helt — låt sedimentet falla av sig själv** |
 
-## Pedagogisk metafor
+Skillnaden mot "Löv på en flod" är subtil men verklig: där är man en aktiv åskådare som lägger varje tanke på ett löv. Här gör man *ingenting*. Tankarna är redan i globen. Man ställer bara ner den.
 
-Diffus tanke = ett moln av dimma man inte ser kanten på. När man **namnger sorten** (oro, plan, minne, kritik, fantasi) **kristalliserar** dimman till ett objekt man kan se — och då kan man också släppa det.
+## Pedagogisk metafor (klassisk men outnyttjad i appen)
 
-> "Det är inte 'jag kommer aldrig fixa det här' — det är en oro-tanke som dyker upp ofta."
+Hjärnan vid stress är en omskakad snöglob: tankar, oro, planer, minnen virvlar samtidigt och man ser ingenting klart. Reflexen är att försöka *fixa* — analysera, lösa, undertrycka. Det är att skaka mer.
+
+Den enda interventionen som faktiskt fungerar: **ställ ner globen**. Sedimentet sjunker av sig själv. Vattnet blir klart. Tankarna finns kvar — men de stormar inte.
 
 ## Animation (bespoke)
 
-Centralt i bildytan: en mjuk, oregelbunden **dimblob** (SVG path med några böljande punkter, animerad via `useTimeSec` så formen rör sig långsamt och organiskt). Runt blobben driver små **etikettord** in från sidorna — "planering", "oro", "minne", "kritik", "fantasi", "fantasi-katastrof", "borde".
+En cirkel/glob centralt. Inuti: ~50 små partiklar. Varje partikel har en *vilo-position* i en hög längs botten av globen. När en "skakning" sker (deterministisk händelse var ~14 sek) får alla partiklar en impuls som lyfter dem och sätter dem i kaotisk rörelse — sedan dämpas rörelsen exponentiellt och de singlar tillbaka mot botten.
 
-När en etikett driver "förbi" blobben (var ~6–8 sek):
-1. Etiketten saktar ner och dockar vid blobben
-2. Blobben **kristalliserar** — dimman drar ihop sig till en enkel geometrisk form (cirkel, fyrkant, triangel) med etiketten under
-3. Det namngivna objektet driver mjukt ut åt sidan och tonar bort
-4. En ny dimblob formas i mitten
+**Cykeln (oberoende av stegen — samma princip som Löv i bäcken):**
 
-Detta loopar kontinuerligt, oberoende av `stepProgress`. Texten byts; animationen fortsätter. Det förstärker budskapet: *tankar fortsätter komma — du fortsätter märka*.
+```text
+t=0.0s   ████  shake!  partiklar virvlar i hela globen
+t=2–8s   ░░    settling — exponentiell dämpning, partiklar singlar nedåt
+t=8–13s  .     stilla — tunt lager i botten, vattnet klart
+t=14s    ████  ny shake — nästa "tanke kom emellan"
+```
+
+**Pedagogisk synk:** animationen demonstrerar texten utan att vänta på den. När användaren läser "låt det singla ner" *ser* hen partiklarna singla. När texten säger "en ny skakning kommer" händer det också — fast i sin egen takt, inte på kommando. Det förstärker budskapet att du inte styr stormen, du bara ställer ner globen.
 
 **Stilregler (samma som övriga bespoke):**
-- Inga gradienter eller skuggor
-- `SOFT`-färg för dimman, `ACCENT` för etiketterna och de kristalliserade formerna
-- `useBreathPulse` ger blobben en subtil andning så bilden lever utan att kräva andning av användaren
-- Edge-fade på etiketter (samma teknik som löven i bäcken) så loopen inte hoppar
+- Platt SVG, inga gradienter eller skuggor
+- `SOFT` för globens kontur och vattnet
+- `ACCENT` för partiklarna
+- `useBreathPulse` ger globen en knappt märkbar andning (visar att den *står still* — den skakas inte)
+- `useTimeSec` driver shake-cykeln och partiklarnas exponentiella settling
 
-**Skiss:**
-```text
-   planering →
-              ╭─ ~~~ ─╮
-       oro → │  dimma  │ → [▢ minne]   (kristalliserad, driver ut)
-              ╰─ ~~~ ─╯
-   självkritik →
-```
+**Teknisk realisering:** Varje partikel är en deterministisk funktion av `t`:
+- `restX, restY` = vilo-position i hög-formationen (pre-beräknad en gång)
+- Vid varje skakning `tShake` får partikeln en seedad impuls (vinkel, amplitud)
+- `offset(t) = exp(-(t - tShake) / tau) * impulse + brownianWobble`
+- `position = rest + offset`, clampat innanför globens cirkel
+
+Inga useState-uppdateringar per partikel — bara `useTimeSec` driver hela bilden, samma mönster som alla andra bespoke-komponenter.
 
 ## Steg och script
 
-Texterna är skrivna för just den här övningen — fokus på *sortering* och *avstånd*, inte på andning eller kropp.
+Texterna är skrivna för exakt den här metaforen. Inget kroppsfokus, ingen "andas in / andas ut" — bara observation av att skaka eller stå still.
 
-1. **"Vänta in nästa tanke"** (20s)
-   - "blicken mjuk, ingen ansträngning"
-   - "förr eller senare dyker något upp"
-   - "en bild, en mening, en oro"
+1. **"Hjärnan är en snöglob"** (20s)
+   - "den har skakats om hela dagen"
+   - "tankarna virvlar"
+   - "du ser ingenting klart"
 
-2. **"Vad är det för sorts tanke?"** (35s)
-   - "planering? oro? minne?"
-   - "självkritik? fantasi? borde?"
-   - "leta efter sorten, inte innehållet"
+2. **"Sluta skaka"** (35s)
+   - "du behöver inte tänka dem bort"
+   - "du behöver bara sluta röra om"
+   - "ställ ner globen"
 
-3. **"Sätt ordet på den"** (35s)
-   - "säg tyst: 'det här är en oro-tanke'"
-   - "eller 'det här är planering'"
-   - "kort etikett, ingen analys"
+3. **"Låt det singla ner"** (40s)
+   - "partiklarna sjunker av sig själva"
+   - "långsamt, en i taget"
+   - "ingen ansträngning"
 
-4. **"Märk skillnaden"** (35s)
-   - "tanken är fortfarande där"
-   - "men nu är den ett objekt du ser"
-   - "inte en sanning du är inuti"
+4. **"En ny skakning kommer"** (35s)
+   - "en oro dyker upp och virvlar runt allt igen"
+   - "det är okej, det händer"
+   - "ställ ner globen igen"
 
-5. **"Samma sort igen?"** (35s)
-   - "många tankar är samma sort i ny förpackning"
-   - "även då — sätt etiketten"
-   - "'oro-tanke. igen.' räcker"
+5. **"Vattnet blir klart"** (35s)
+   - "samma tankar finns kvar"
+   - "men du ser igenom dem"
+   - "de är inte stormen längre"
 
-6. **"Tacka hjärnan, släpp"** (20s)
-   - "tack för varningen, hjärna"
-   - "jag har märkt den"
-   - "nästa tanke får sin egen etikett"
+6. **"Ta med dig stillheten"** (15s)
+   - "globen finns kvar i handen"
+   - "ställ ner den när du behöver"
 
-**Closing:** "Tankar slutar inte komma. Du har bara fått ett verktyg att se dem med."
-**Microcopy (done):** "Du satte ord på sorten. Det räknas."
-**Reflection prompt:** "Vilken sorts tanke dök upp oftast?"
+**Closing:** "Du tänkte dem inte bort. Du slutade skaka."
+**Microcopy (done):** "Du satte ner globen. Det räcker."
+
+(Övningen är `kind: "short"`, så ingen `reflectionPrompt` — kort övning, ingen rating.)
 
 ## Tekniska detaljer
 
-- **ID:** `mark-tanken`
-- **Kategori:** `reflection`
-- **Kind:** `reflective`
-- **Längd:** 4 min
-- **Metric:** `oro` (samma som lov-i-backen)
-- **requiresRating:** true
+- **ID:** `lat-det-singla-ner`
+- **Kategori:** `stress`
+- **Kind:** `short`
+- **Längd:** 3 min
+- **Metric:** `stress`
 - **animation-fält:** `"drift"` (fallback — bespoke matchar på id)
 
 ### Filer som ändras
 
 1. **`src/lib/exercises.ts`**
-   - Lägg till övningsobjektet i listan (precis efter `lov-i-backen`, så reflection-blocket är samlat)
-   - Lägg till `"mark-tanken"` i `POLISHED_IDS`-arrayen (samma fix som behövdes för löven)
+   - Lägg till övningsobjektet direkt efter `lov-pa-en-flod` (så stress-blocket är samlat)
+   - Lägg till `"lat-det-singla-ner"` i `POLISHED_IDS`-arrayen
 
 2. **`src/components/animations/bespoke.tsx`**
-   - Ny komponent `MarkTanken` som följer samma mönster som `LovIBacken`:
-     - `useTimeSec` driver dimblobens path-morf och etiketternas drift
-     - `useBreathPulse` ger subtil andning till blobben
-     - Beräkna ett cykliskt index för "vilken etikett kristalliseras just nu" baserat på `t`
-     - Edge-fade på etiketterna så loopen är osynlig
-   - Registrera `mark-tanken` i `hasBespoke` och `BespokeFor`-uppslaget
+   - Ny komponent `SnowGlobeSettle` som följer samma mönster som `LeavesOnStream` och `NameTheThought`:
+     - `useTimeSec` driver shake-cykeln (~14s) och exponentiell settling
+     - Partiklarnas vilo-positioner pre-beräknas en gång (deterministiska seedade slumpvärden)
+     - `useBreathPulse` ger globen subtil andning
+   - Registrera `lat-det-singla-ner` → `SnowGlobeSettle` i `BESPOKE`-uppslaget
 
-3. **`.lovable/plan.md`** — uppdatera planen så den dokumenterar båda nya övningar.
+3. **`.lovable/plan.md`** — uppdatera så planen reflekterar de tre nya övningarna.
 
 ## Vad jag INTE rör
 
 - Befintliga övningar, deras texter, animationer eller hastigheter
 - Kategorifärger, kortlayout, routing, startsidan
-- `ovning.$id.tsx` — `BespokeFor` plockar upp den nya animationen automatiskt
+- `ovning.$id.tsx` — `BespokeFor` plockar upp animationen automatiskt
