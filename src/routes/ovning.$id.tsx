@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { X, ArrowLeft } from "lucide-react";
+import { X } from "lucide-react";
 import { getExercise, METRIC_LABELS, type Category } from "@/lib/exercises";
 import { addEntry } from "@/lib/history";
 import { AnimationFor } from "@/components/animations";
@@ -222,14 +222,6 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
             >
               Hoppa över skattning
             </button>
-            {ex.metaphor && (
-              <button
-                onClick={() => setPhase("intro")}
-                className="mt-4 inline-flex items-center justify-center gap-1 text-xs font-semibold opacity-60"
-              >
-                <ArrowLeft className="h-3 w-3" /> Tillbaka till bilden
-              </button>
-            )}
           </motion.div>
         )}
 
