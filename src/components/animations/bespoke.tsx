@@ -1277,6 +1277,121 @@ function MeetingsTimeline(p: BespokeProps) {
   );
 }
 
+// ─── 11. Löv i bäcken (ACT-defusion) ─────────────────────────
+// Tankar är inte order. Lägg dem på ett löv och låt bäcken bära dem.
+// Animationen byter inte med stegen — bara texten ovanför gör det.
+// Lövens hastighet är konstant: man kan titta, inte stoppa.
+function LeavesOnStream(_p: BespokeProps) {
+  const W = 280;
+  const H = 280;
+  const t = useTimeSec();
+  const breathe = useBreathPulse(6400);
+
+  // Två böljande strandlinjer — uppe och nere.
+  // Båda svajar långsamt med samma andningspuls så bilden "andas".
+  const bank = (yBase: number, sign: number) => {
+    const pts: string[] = [];
+    const steps = 32;
+    for (let i = 0; i <= steps; i++) {
+      const x = (i / steps) * W;
+      const wob =
+        Math.sin(i * 0.55 + t * 0.6) * 3 +
+        Math.sin(i * 1.2 - t * 0.3) * 1.5 +
+        breathe * 2 * sign;
+      pts.push(`${x.toFixed(1)},${(yBase + wob).toFixed(1)}`);
+    }
+    return pts.join(" ");
+  };
+
+  // Sex löv som driver från vänster till höger i olika takt och y-läge.
+  // Varje löv har egen periodtid, så de aldrig hamnar i takt med varandra.
+  const leaves = [
+    { period: 14, y: 70, size: 14, tilt: -18, offset: 0.0 },
+    { period: 11, y: 110, size: 11, tilt: 22, offset: 0.4 },
+    { period: 17, y: 145, size: 16, tilt: -8, offset: 0.7 },
+    { period: 13, y: 180, size: 12, tilt: 14, offset: 0.2 },
+    { period: 19, y: 210, size: 15, tilt: -24, offset: 0.55 },
+    { period: 15, y: 90, size: 10, tilt: 30, offset: 0.85 },
+  ];
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-72 w-72" aria-hidden>
+      {/* Bäckens vatten — platt fyllning mellan stränderna */}
+      <polygon
+        points={`0,40 ${W},40 ${W},${H - 40} 0,${H - 40}`}
+        fill={SOFT}
+        fillOpacity={0.28}
+      />
+
+      {/* Strömlinjer — antyder rörelse utan att stjäla blicken */}
+      {[80, 130, 170, 220].map((y, i) => {
+        const shift = ((t * 18 + i * 40) % (W + 40)) - 20;
+        return (
+          <line
+            key={`s-${i}`}
+            x1={shift}
+            x2={shift + 28}
+            y1={y}
+            y2={y + 1}
+            stroke="currentColor"
+            strokeOpacity={0.18}
+            strokeWidth={1.5}
+            strokeLinecap="round"
+          />
+        );
+      })}
+
+      {/* Strandlinjer */}
+      <polyline
+        points={bank(38, 1)}
+        fill="none"
+        stroke="currentColor"
+        strokeOpacity={0.35}
+        strokeWidth={2}
+      />
+      <polyline
+        points={bank(H - 38, -1)}
+        fill="none"
+        stroke="currentColor"
+        strokeOpacity={0.35}
+        strokeWidth={2}
+      />
+
+      {/* Löv */}
+      {leaves.map((l, i) => {
+        const u = (t / l.period + l.offset) % 1;
+        const x = -20 + u * (W + 40);
+        const bob = Math.sin(t * 1.4 + i) * 2.5;
+        const rot = l.tilt + Math.sin(t * 0.8 + i) * 6;
+        return (
+          <g
+            key={`leaf-${i}`}
+            transform={`translate(${x.toFixed(1)} ${(l.y + bob).toFixed(1)}) rotate(${rot.toFixed(1)})`}
+          >
+            <ellipse
+              cx={0}
+              cy={0}
+              rx={l.size}
+              ry={l.size * 0.45}
+              fill={ACCENT}
+              fillOpacity={0.92}
+            />
+            <line
+              x1={-l.size}
+              x2={l.size}
+              y1={0}
+              y2={0}
+              stroke="currentColor"
+              strokeOpacity={0.25}
+              strokeWidth={1}
+            />
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
 // ─── Router ────────────────────────────────────────────────
 const BESPOKE: Record<string, (p: BespokeProps) => ReactElement> = {
   "stang-47-flikar": CloseTabs,
@@ -1289,6 +1404,7 @@ const BESPOKE: Record<string, (p: BespokeProps) => ReactElement> = {
   "tre-vanliga-meningar": KindSentences,
   "svalna-innan-svar": FlamesToEmber,
   "mellan-tva-moten": MeetingsTimeline,
+  "lov-i-backen": LeavesOnStream,
 };
 
 export function hasBespoke(id: string | undefined): boolean {
