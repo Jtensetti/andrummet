@@ -1845,10 +1845,7 @@ function HeldInArch(p: BespokeProps) {
     return `M ${left} ${baseYv} V ${topYv} A ${half} ${half} 0 0 1 ${right} ${topYv} V ${baseYv} Z`;
   };
 
-  const smoothstep = (a: number, b: number, x: number) => {
-    const k = clamp01((x - a) / (b - a));
-    return k * k * (3 - 2 * k);
-  };
+
 
   // Bollen vilar centrerat på inre bågens krön
   const baseR = 12;
