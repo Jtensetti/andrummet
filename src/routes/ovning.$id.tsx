@@ -409,26 +409,47 @@ function PlayerInner({ ex }: { ex: NonNullable<ReturnType<typeof getExercise>> }
                     />
                   )}
                   {(() => {
-                    const sub = subtitleFor(ex.steps[stepIdx], stepProgress);
+                    const count = Math.min(
+                      stepSeconds,
+                      Math.floor(stepElapsed) + 1,
+                    );
                     return (
                       <div className="flex max-w-md flex-col items-center gap-3 text-center">
                         <AnimatePresence mode="wait">
                           <motion.p
-                            key={`${stepIdx}-${sub.index}`}
+                            key={`step-${stepIdx}`}
                             initial={{ opacity: 0, y: 6 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -6 }}
                             transition={{ duration: 0.25 }}
                             className="min-h-[3.5rem] text-3xl font-extrabold leading-tight tracking-tight md:text-4xl"
                           >
-                            {sub.text}
+                            {ex.steps[stepIdx]?.label ?? ""}
                           </motion.p>
                         </AnimatePresence>
+                        <div
+                          className="flex flex-wrap items-center justify-center gap-2 text-lg font-bold tabular-nums"
+                          aria-live="polite"
+                        >
+                          {Array.from({ length: stepSeconds }, (_, i) => i + 1).map(
+                            (n) => (
+                              <span
+                                key={n}
+                                className={n <= count ? "opacity-100" : "opacity-30"}
+                              >
+                                {n}
+                              </span>
+                            ),
+                          )}
+                        </div>
+                        <p className="mt-1 text-xs font-semibold uppercase tracking-widest opacity-60">
+                          {ex.short}
+                        </p>
                       </div>
-
                     );
                   })()}
                 </>
+
               )}
             </div>
             <div />
