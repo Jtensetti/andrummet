@@ -426,6 +426,32 @@ const SEEDS: Seed[] = [
       illustration: "meter-down",
     },
   },
+  {
+    id: "surfa-vagen",
+    title: "Surfa vågen",
+    short: "Vågen toppar och faller. Du står kvar på brädan.",
+    category: "anxiety",
+    kind: "short",
+    minutes: 3,
+    animation: "drift",
+    metric: "oro",
+    steps: [
+      ["En våg är på väg", 20, ["Lägg märke till oron", "den är inte farlig", "den är en våg", "den är på väg in"]],
+      ["Stå på brädan", 25, ["Du behöver inte stoppa vågen", "du behöver bara stå kvar", "fötterna stadiga", "andas"]],
+      ["Vågen växer", 35, ["Låt den växa", "kämpa inte emot", "ju mer du brottas", "desto högre blir den", "låt den bara komma"]],
+      ["Det här är toppen", 40, ["Det känns mycket nu", "andas — stå kvar", "toppen är inte farlig", "toppen är där den börjar falla"]],
+      ["Den faller av sig själv", 40, ["Se hur den sjunker", "du gjorde ingenting", "du stannade bara kvar", "vågen tar hand om sig själv"]],
+      ["Lugnt vatten", 20, ["Vågen bröt", "vattnet blir stilla", "nästa kommer också att falla"]],
+    ],
+    closing: "Du stoppade inte vågen. Du surfade den.",
+    metaphor: {
+      intro:
+        "En ångestvåg är inte farlig. Den växer, toppar, och faller — om du inte motarbetar den. Du behöver inte stoppa den. Du behöver bara stå kvar på brädan tills den brutit.",
+      illustration: "drift",
+    },
+  },
+
+
 
   // ─── SLÄPPA TANKAR ────────────────────────────────────────
   {
@@ -1072,6 +1098,8 @@ const POLISHED_IDS = new Set<string>([
   "lov-i-backen",
   "mark-tanken",
   "lat-det-singla-ner",
+  "surfa-vagen",
+
 ]);
 
 export const isPolished = (id: string) => POLISHED_IDS.has(id);

@@ -1,119 +1,129 @@
 
-# Ny övning: "Låt det singla ner" (snöglob)
+# Ny övning i "Hantera oro": **Surfa vågen**
 
-En övning i kategorin **stress / Släppa tankar** baserad på Jon Kabat-Zinns klassiska snöglob-metafor. Den fyller ett tomrum bland de tre befintliga övningarna och bär en pedagogisk insikt som ingen annan övning har: *du behöver inte tänka tankarna bort — du behöver bara sluta skaka.*
+## Varför just den här övningen
 
-## Varför den passar in (och inte dubblar något)
+De fem befintliga oro-övningarna täcker:
 
-| Befintlig övning | Vad den gör |
+| Övning | Vad den gör |
 |---|---|
-| **Reset** | Lugnar via kroppen (axlar, käke, andning) |
-| **Lägg undan till sen** | Externaliserar — flyttar tanken till en "sen"-låda |
-| **Löv på en flod** | Passiv observation — låter tankar driva förbi |
-| **Låt det singla ner** *(ny)* | **Sluta interagera helt — låt sedimentet falla av sig själv** |
+| **5-4-3-2-1** | Distraktion via sinnen — bort från oron, in i rummet |
+| **Ångesten får inte köra bilen** | ACT-värderiktning — agera trots oron |
+| **Oro som moln** | Dis-identifiera — "jag är inte tanken" |
+| **Hitta ankaret** | Kroppslig tyngd — jorda när huvudet flyger |
+| **Sänk volymen på oron** | Gradvis dämpning via reglage |
 
-Skillnaden mot "Löv på en flod" är subtil men verklig: där är man en aktiv åskådare som lägger varje tanke på ett löv. Här gör man *ingenting*. Tankarna är redan i globen. Man ställer bara ner den.
+**Vad som saknas:** Den klassiska insikten att en *akut* ångestvåg toppar och avtar av sig själv på några minuter — om du inte motarbetar den. Ingen av övningarna ovan lär ut detta. "Sänk volymen" *sänker* aktivt. "Moln" är passiv distans. "Ankaret" jordar. Men ingen säger: *stanna kvar i toppen, den faller av sig själv*.
 
-## Pedagogisk metafor (klassisk men outnyttjad i appen)
+Detta är **urge surfing** (Alan Marlatt) — kärnan i DBT- och MBRP-arbete med ångest och begär. Pedagogiskt unik och med starkt egetvärde: nästa gång oron stiger känner användaren igen formen och vet att den faller.
 
-Hjärnan vid stress är en omskakad snöglob: tankar, oro, planer, minnen virvlar samtidigt och man ser ingenting klart. Reflexen är att försöka *fixa* — analysera, lösa, undertrycka. Det är att skaka mer.
+**Kärnbudskap:** *Du behöver inte stoppa vågen. Du behöver bara hålla dig på brädan tills den brutit.*
 
-Den enda interventionen som faktiskt fungerar: **ställ ner globen**. Sedimentet sjunker av sig själv. Vattnet blir klart. Tankarna finns kvar — men de stormar inte.
+## Animation: vågkurv som stiger, toppar, faller
 
-## Animation (bespoke)
-
-En cirkel/glob centralt. Inuti: ~50 små partiklar. Varje partikel har en *vilo-position* i en hög längs botten av globen. När en "skakning" sker (deterministisk händelse var ~14 sek) får alla partiklar en impuls som lyfter dem och sätter dem i kaotisk rörelse — sedan dämpas rörelsen exponentiellt och de singlar tillbaka mot botten.
-
-**Cykeln (oberoende av stegen — samma princip som Löv i bäcken):**
+En horisontell vågkurva som långsamt växer från vänster till höger, når en topp, och faller mot noll. Inte loop — **en enda våg över hela övningens längd** (samma princip som snöglob-övningen som ändrades nyss).
 
 ```text
-t=0.0s   ████  shake!  partiklar virvlar i hela globen
-t=2–8s   ░░    settling — exponentiell dämpning, partiklar singlar nedåt
-t=8–13s  .     stilla — tunt lager i botten, vattnet klart
-t=14s    ████  ny shake — nästa "tanke kom emellan"
+amplitud
+   ▲
+   │              ╱╲
+   │            ╱    ╲
+   │          ╱        ╲
+   │        ╱            ╲___
+   │     ╱                    ╲___
+   │___╱                          ╲_____
+   └────────────────────────────────────▶ tid (180s)
+   stigande    topp~40%    avtagande    plana
 ```
 
-**Pedagogisk synk:** animationen demonstrerar texten utan att vänta på den. När användaren läser "låt det singla ner" *ser* hen partiklarna singla. När texten säger "en ny skakning kommer" händer det också — fast i sin egen takt, inte på kommando. Det förstärker budskapet att du inte styr stormen, du bara ställer ner globen.
+**Visuellt:**
+- Tunn linjekurva i `--anxiety-accent` (varm orange) — *vågen själv*
+- Under linjen: mjukt fyllt fält i `--anxiety-soft` (dämpad gul) — *känslan*
+- En liten cirkel/surfare i `--anxiety-on` (vit) som åker längs kurvans överkant — *du, som håller dig kvar*
+- Bakgrund: `--anxiety` (teal) — vatten
+- **`useBreathPulse`** ger surfaren en knappt märkbar andning. Hen står stilla på brädan — det är vågen som rör sig.
 
-**Stilregler (samma som övriga bespoke):**
-- Platt SVG, inga gradienter eller skuggor
-- `SOFT` för globens kontur och vattnet
-- `ACCENT` för partiklarna
-- `useBreathPulse` ger globen en knappt märkbar andning (visar att den *står still* — den skakas inte)
-- `useTimeSec` driver shake-cykeln och partiklarnas exponentiella settling
+**Tekniskt mönster (samma som SnowGlobeSettle):**
+- `useTimeSec()` → `u = t / totalSeconds` (0..1 över hela övningen)
+- Amplitudkurva: `amp(u) = sin(π * u^0.7) * smoothPeak(u)` — asymmetrisk så att toppen ligger ~40 % in och fallet är längre än stigningen (matchar verkligt ångestförlopp)
+- Kurvan ritas som SVG `path` med ~80 punkter, beräknade per frame
+- Surfarens position: följer kurvans nuvarande högerkant (där "nu" är)
+- Inga `useState`-uppdateringar per partikel — bara `useTimeSec` driver allt
+- Stilregler: platt SVG, inga gradienter, samma stilmässiga grammatik som övriga bespoke
 
-**Teknisk realisering:** Varje partikel är en deterministisk funktion av `t`:
-- `restX, restY` = vilo-position i hög-formationen (pre-beräknad en gång)
-- Vid varje skakning `tShake` får partikeln en seedad impuls (vinkel, amplitud)
-- `offset(t) = exp(-(t - tShake) / tau) * impulse + brownianWobble`
-- `position = rest + offset`, clampat innanför globens cirkel
+**Pedagogisk synk:**
+- Steg 1–2 (orientera): vågen ligger nästan platt — bara svaga krusningar
+- Steg 3 (vågen stiger): kurvan börjar resa sig — användaren ser den växa medan texten säger "den växer"
+- Steg 4 (toppen): kurvan når sin maxhöjd när texten säger "det här är toppen"
+- Steg 5 (faller): kurvan börjar sjunka medan texten säger "se hur den faller av sig själv"
+- Steg 6 (lugnt vatten): kurvan är nästan platt igen, surfaren glider på stilla vatten
 
-Inga useState-uppdateringar per partikel — bara `useTimeSec` driver hela bilden, samma mönster som alla andra bespoke-komponenter.
+Texten *beskriver vad användaren ser hända*. Pedagogiken ligger i sammanträffandet: budskapet *vågor faller av sig själv* bevisas av animationen som faller av sig själv.
 
-## Steg och script
+## Steg och script (~3 min, kind: short)
 
-Texterna är skrivna för exakt den här metaforen. Inget kroppsfokus, ingen "andas in / andas ut" — bara observation av att skaka eller stå still.
+1. **"En våg är på väg"** (20s)
+   - "lägg märke till oron"
+   - "den är inte farlig"
+   - "den är en våg"
 
-1. **"Hjärnan är en snöglob"** (20s)
-   - "den har skakats om hela dagen"
-   - "tankarna virvlar"
-   - "du ser ingenting klart"
+2. **"Stå på brädan"** (25s)
+   - "du behöver inte stoppa vågen"
+   - "du behöver bara stå kvar"
+   - "fötterna stadiga"
 
-2. **"Sluta skaka"** (35s)
-   - "du behöver inte tänka dem bort"
-   - "du behöver bara sluta röra om"
-   - "ställ ner globen"
+3. **"Vågen växer"** (35s)
+   - "låt den växa"
+   - "kämpa inte emot"
+   - "ju mer du brottas, desto högre blir den"
 
-3. **"Låt det singla ner"** (40s)
-   - "partiklarna sjunker av sig själva"
-   - "långsamt, en i taget"
-   - "ingen ansträngning"
+4. **"Det här är toppen"** (40s)
+   - "det känns mycket nu"
+   - "andas — stå kvar"
+   - "toppen är där den börjar falla"
 
-4. **"En ny skakning kommer"** (35s)
-   - "en oro dyker upp och virvlar runt allt igen"
-   - "det är okej, det händer"
-   - "ställ ner globen igen"
+5. **"Den faller av sig själv"** (40s)
+   - "se hur den sjunker"
+   - "du gjorde ingenting"
+   - "du stannade bara kvar"
 
-5. **"Vattnet blir klart"** (35s)
-   - "samma tankar finns kvar"
-   - "men du ser igenom dem"
-   - "de är inte stormen längre"
+6. **"Lugnt vatten"** (20s)
+   - "vågen bröt"
+   - "nästa kommer också att falla"
 
-6. **"Ta med dig stillheten"** (15s)
-   - "globen finns kvar i handen"
-   - "ställ ner den när du behöver"
+**Closing:** "Du stoppade inte vågen. Du surfade den."
 
-**Closing:** "Du tänkte dem inte bort. Du slutade skaka."
-**Microcopy (done):** "Du satte ner globen. Det räcker."
+**Microcopy (done-screen):** "Vågen föll. Det gör de alltid."
 
-(Övningen är `kind: "short"`, så ingen `reflectionPrompt` — kort övning, ingen rating.)
+(Ingen `reflectionPrompt`, ingen `requiresRating` — `kind: "short"`.)
 
 ## Tekniska detaljer
 
-- **ID:** `lat-det-singla-ner`
-- **Kategori:** `stress`
+- **ID:** `surfa-vagen`
+- **Kategori:** `anxiety`
 - **Kind:** `short`
 - **Längd:** 3 min
-- **Metric:** `stress`
+- **Metric:** `oro`
 - **animation-fält:** `"drift"` (fallback — bespoke matchar på id)
 
 ### Filer som ändras
 
 1. **`src/lib/exercises.ts`**
-   - Lägg till övningsobjektet direkt efter `lov-pa-en-flod` (så stress-blocket är samlat)
-   - Lägg till `"lat-det-singla-ner"` i `POLISHED_IDS`-arrayen
+   - Lägg till övningsobjektet direkt efter `sank-volymen-pa-oron` (så hela oro-blocket är samlat)
+   - Lägg till `"surfa-vagen"` i `POLISHED_IDS`-arrayen
 
 2. **`src/components/animations/bespoke.tsx`**
-   - Ny komponent `SnowGlobeSettle` som följer samma mönster som `LeavesOnStream` och `NameTheThought`:
-     - `useTimeSec` driver shake-cykeln (~14s) och exponentiell settling
-     - Partiklarnas vilo-positioner pre-beräknas en gång (deterministiska seedade slumpvärden)
-     - `useBreathPulse` ger globen subtil andning
-   - Registrera `lat-det-singla-ner` → `SnowGlobeSettle` i `BESPOKE`-uppslaget
+   - Ny komponent `RideTheWave` som följer samma mönster som `SnowGlobeSettle`:
+     - `useTimeSec` driver hela vågkurvan (0..1 över exercise-längden)
+     - SVG `path` byggs per frame från ~80 sampelpunkter
+     - `useBreathPulse` på surfaren
+     - Stilfärger: anxiety / anxiety-accent / anxiety-soft / anxiety-on
+   - Registrera `surfa-vagen` → `RideTheWave` i `BESPOKE`-uppslaget
 
-3. **`.lovable/plan.md`** — uppdatera så planen reflekterar de tre nya övningarna.
+3. **`.lovable/plan.md`** — uppdatera så planen reflekterar att Surfa vågen är tillagd.
 
 ## Vad jag INTE rör
 
-- Befintliga övningar, deras texter, animationer eller hastigheter
+- Befintliga oro-övningar, deras texter, animationer eller hastigheter
 - Kategorifärger, kortlayout, routing, startsidan
-- `ovning.$id.tsx` — `BespokeFor` plockar upp animationen automatiskt
+- `ovning.$id.tsx` — `BespokeFor` plockar upp animationen automatiskt via id

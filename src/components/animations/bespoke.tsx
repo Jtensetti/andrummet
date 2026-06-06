@@ -1695,6 +1695,110 @@ function SnowGlobeSettle(p: BespokeProps) {
   );
 }
 
+// ─── Surfa vågen (urge surfing) ────────────────────────────
+// En enda våg över hela övningen: nästan platt → stigande →
+// topp ca 40 % in → långt avtagande → platt igen vid sista
+// ordet. Surfaren följer kurvans nuvarande topp.
+function RideTheWave(p: BespokeProps) {
+  const W = 280;
+  const H = 220;
+  const baseline = 150; // havsnivå
+  const maxAmp = 78;   // peak-höjd
+  const t = useTimeSec();
+  const u = totalT(p); // 0..1 över hela övningen
+  const breathe = useBreathPulse(5200);
+
+  // Asymmetrisk envelope: snabbare upp, längre ner.
+  // Topp vid u ≈ 0.42. Faller mjukt mot 0 vid u = 1.
+  const envelope = (() => {
+    const peak = 0.42;
+    if (u <= peak) {
+      const k = u / peak;          // 0..1 stigning
+      return Math.pow(k, 1.4);
+    }
+    const k = (u - peak) / (1 - peak); // 0..1 fall
+    return Math.pow(1 - k, 1.8);
+  })();
+
+  // Konstanta små krusningar så havet aldrig ser dött ut.
+  const ripple = 0.06;
+  const amp = maxAmp * (ripple + (1 - ripple) * envelope);
+
+  // Bygg vågkurvan: 80 sampelpunkter över bredden.
+  const N = 80;
+  const pts: Array<[number, number]> = [];
+  for (let i = 0; i <= N; i++) {
+    const x = (i / N) * W;
+    // Två sinusfaser i olika frekvens ger en levande, icke-repetitiv våg.
+    const phase1 = (i / N) * Math.PI * 2.2 + t * 0.6;
+    const phase2 = (i / N) * Math.PI * 3.7 - t * 0.35;
+    const wave = Math.sin(phase1) * 0.7 + Math.sin(phase2) * 0.3;
+    // Envelope-fönster: vågen är högst i mitten av synfältet.
+    const win = 0.55 + 0.45 * Math.sin((i / N) * Math.PI);
+    const y = baseline - amp * wave * win;
+    pts.push([x, y]);
+  }
+
+  // Surfarens x: glider in från vänster, stannar nära toppen, glider ut.
+  const surferU = 0.18 + u * 0.7;
+  const surferX = surferU * W;
+  // Hitta y på kurvan vid surferX (linjär interpolation).
+  const fIdx = (surferX / W) * N;
+  const iLow = Math.max(0, Math.min(N - 1, Math.floor(fIdx)));
+  const frac = fIdx - iLow;
+  const surferY = pts[iLow][1] * (1 - frac) + pts[iLow + 1][1] * frac;
+
+  // Bygg path-strängar: vågens linje + fyllt fält ner till botten.
+  const linePath = pts
+    .map(([x, y], i) => `${i === 0 ? "M" : "L"} ${x.toFixed(2)} ${y.toFixed(2)}`)
+    .join(" ");
+  const fillPath = `${linePath} L ${W} ${H} L 0 ${H} Z`;
+
+  const surferR = 5.5 + breathe * 0.8;
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-72 w-72" aria-hidden>
+      {/* Havet — fyllt fält under kurvan */}
+      <path d={fillPath} fill={SOFT} fillOpacity={0.38} />
+      {/* Vågens kontur */}
+      <path
+        d={linePath}
+        fill="none"
+        stroke={ACCENT}
+        strokeWidth={2.5}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      {/* Horisontlinje — havsnivå, knappt synlig */}
+      <line
+        x1={0}
+        x2={W}
+        y1={baseline}
+        y2={baseline}
+        stroke="currentColor"
+        strokeOpacity={0.12}
+        strokeDasharray="3 5"
+      />
+      {/* Surfaren — bräda + figur */}
+      <g
+        transform={`translate(${surferX.toFixed(2)} ${surferY.toFixed(2)})`}
+      >
+        {/* Bräda */}
+        <ellipse
+          cx={0}
+          cy={4}
+          rx={11}
+          ry={2.2}
+          fill="currentColor"
+          opacity={0.55}
+        />
+        {/* Kropp */}
+        <circle cx={0} cy={-2} r={surferR} fill={ACCENT} />
+      </g>
+    </svg>
+  );
+}
+
 // ─── Router ────────────────────────────────────────────────
 const BESPOKE: Record<string, (p: BespokeProps) => ReactElement> = {
   "stang-47-flikar": CloseTabs,
@@ -1710,7 +1814,9 @@ const BESPOKE: Record<string, (p: BespokeProps) => ReactElement> = {
   "lov-i-backen": LeavesOnStream,
   "mark-tanken": NameTheThought,
   "lat-det-singla-ner": SnowGlobeSettle,
+  "surfa-vagen": RideTheWave,
 };
+
 
 export function hasBespoke(id: string | undefined): boolean {
   return !!id && id in BESPOKE;
