@@ -804,6 +804,28 @@ const SEEDS: Seed[] = [
     microcopy: "Du satt och tittade. Det räknas.",
     reflectionPrompt: "Vilken tanke var svårast att släppa förbi?",
   },
+  {
+    id: "mark-tanken",
+    title: "Märk tanken",
+    short: "Sätt etikett på sorten — inte på innehållet.",
+    category: "reflection",
+    kind: "reflective",
+    minutes: 4,
+    animation: "drift",
+    metric: "oro",
+    requiresRating: true,
+    steps: [
+      ["Vänta in nästa tanke", 20, ["Blicken mjuk", "ingen ansträngning", "förr eller senare", "dyker något upp", "en bild, en mening, en oro"]],
+      ["Vad är det för sorts tanke?", 35, ["Planering?", "oro?", "minne?", "självkritik?", "fantasi?", "borde?", "leta efter sorten", "inte innehållet"]],
+      ["Sätt ordet på den", 35, ["Säg tyst", "'det här är en oro-tanke'", "eller 'det här är planering'", "kort etikett", "ingen analys"]],
+      ["Märk skillnaden", 35, ["Tanken är fortfarande där", "men nu är den ett objekt", "du ser", "inte en sanning", "du är inuti"]],
+      ["Samma sort igen?", 35, ["Många tankar är samma sort", "i ny förpackning", "även då — sätt etiketten", "'oro-tanke. igen.'", "räcker"]],
+      ["Tacka hjärnan, släpp", 20, ["Tack för varningen, hjärna", "jag har märkt den", "nästa tanke", "får sin egen etikett"]],
+    ],
+    closing: "Tankar slutar inte komma. Du har fått ett verktyg att se dem med.",
+    microcopy: "Du satte ord på sorten. Det räknas.",
+    reflectionPrompt: "Vilken sorts tanke dök upp oftast?",
+  },
 
   // ─── KOMPASSION ───────────────────────────────────────────
 
