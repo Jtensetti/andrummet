@@ -492,6 +492,29 @@ const SEEDS: Seed[] = [
       illustration: "drift",
     },
   },
+  {
+    id: "lat-det-singla-ner",
+    title: "Låt det singla ner",
+    short: "Sluta skaka. Låt grumset sjunka.",
+    category: "stress",
+    kind: "short",
+    minutes: 3,
+    animation: "drift",
+    metric: "stress",
+    steps: [
+      ["Hjärnan är en snöglob", 20, ["den har skakats om", "hela dagen", "tankarna virvlar", "du ser ingenting klart"]],
+      ["Sluta skaka", 35, ["du behöver inte", "tänka dem bort", "du behöver bara", "sluta röra om", "ställ ner globen"]],
+      ["Låt det singla ner", 40, ["partiklarna sjunker", "av sig själva", "långsamt", "en i taget", "ingen ansträngning"]],
+      ["En ny skakning kommer", 35, ["en oro dyker upp", "och virvlar runt allt igen", "det är okej", "det händer", "ställ ner igen"]],
+      ["Vattnet blir klart", 35, ["samma tankar finns kvar", "men du ser igenom dem", "de är inte stormen", "längre"]],
+      ["Ta med dig stillheten", 15, ["globen finns kvar", "i handen", "ställ ner den", "när du behöver"]],
+    ],
+    closing: "Du tänkte dem inte bort. Du slutade skaka.",
+    metaphor: {
+      intro: "Hjärnan i stress är en omskakad snöglob. Tankarna virvlar och du ser ingenting klart. Reflexen är att försöka fixa — det är att skaka mer. Ställ bara ner globen. Sedimentet sjunker av sig själv.",
+      illustration: "drift",
+    },
+  },
 
   // ─── FOKUSERA ─────────────────────────────────────────────
   {
@@ -1048,6 +1071,7 @@ const POLISHED_IDS = new Set<string>([
   "rott-gult-gront",
   "lov-i-backen",
   "mark-tanken",
+  "lat-det-singla-ner",
 ]);
 
 export const isPolished = (id: string) => POLISHED_IDS.has(id);

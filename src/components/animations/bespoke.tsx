@@ -1557,6 +1557,137 @@ function NameTheThought(_: BespokeProps) {
   );
 }
 
+// ─── Låt det singla ner (snöglob) ──────────────────────────
+// Tankarna är redan i globen. Du behöver inte tänka dem bort —
+// du behöver bara sluta skaka. Sedimentet sjunker av sig själv.
+// Cykeln (14s) är oberoende av stegen: skakning → settling → stilla →
+// ny skakning. Globen i sig står helt still.
+function SnowGlobeSettle(_: BespokeProps) {
+  const W = 280;
+  const H = 280;
+  const cx = W / 2;
+  const cy = 130;
+  const R = 94; // glasets ytterradie
+  const Rin = 88; // vattnets/clip-radien
+  const t = useTimeSec();
+
+  // En skakning var 14:e sekund. Amplituden dämpas exponentiellt.
+  const cycle = 14;
+  const phase = t % cycle;
+  const tau = 2.9;
+  const shakeAmp = Math.exp(-phase / tau);
+
+  // 56 partiklar med deterministisk seed → samma hög varje rendering.
+  const N = 56;
+  const particles: Array<{ x: number; y: number; r: number; op: number }> = [];
+  for (let i = 0; i < N; i++) {
+    const s1 = Math.sin(i * 12.9898) * 43758.5453;
+    const s2 = Math.sin(i * 78.233 + 1.7) * 12345.678;
+    const r1 = s1 - Math.floor(s1);
+    const r2 = s2 - Math.floor(s2);
+
+    // Vilo-position: liten hög längs botten av globen.
+    const row = Math.floor(i / 11); // 0..4
+    const col = i % 11;
+    const rowJ = (r1 - 0.5) * 3;
+    const colJ = (r2 - 0.5) * 5;
+    // Högen smalnar av uppåt.
+    const rowWidth = Math.max(2.5, 8 - row * 1.5);
+    const restX = cx + (col - 5) * rowWidth + colJ;
+    const restY = cy + Rin - 10 - row * 6 + rowJ;
+
+    // Skak-mål: en slumpad punkt inne i cirkeln, lätt avlång.
+    const sa = r1 * Math.PI * 2;
+    const sr = (0.25 + r2 * 0.7) * Rin;
+    const shakeX = cx + Math.cos(sa) * sr;
+    const shakeY = cy + Math.sin(sa) * sr * 0.92;
+
+    // Liten virvel ovanpå målpunkten medan amplituden ännu finns kvar.
+    const swirlFreq = 0.7 + r1 * 0.9;
+    const swirlPh = r2 * Math.PI * 2;
+    const swirlAmp = 7 + r1 * 16;
+    const swirlX = Math.cos(phase * swirlFreq * 2 + swirlPh) * swirlAmp;
+    const swirlY = Math.sin(phase * swirlFreq * 2 + swirlPh * 1.3) * swirlAmp;
+
+    const x = lerp(restX, shakeX + swirlX, shakeAmp);
+    const y = lerp(restY, shakeY + swirlY, shakeAmp);
+
+    particles.push({
+      x,
+      y,
+      r: 1.6 + r1 * 1.6,
+      op: 0.7 + r2 * 0.28,
+    });
+  }
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-72 w-72" aria-hidden>
+      <defs>
+        <clipPath id="snow-clip">
+          <circle cx={cx} cy={cy} r={Rin} />
+        </clipPath>
+      </defs>
+
+      {/* Sockel — globen vilar, blir inte skakad */}
+      <rect
+        x={cx - 60}
+        y={cy + Rin - 4}
+        width={120}
+        height={22}
+        rx={4}
+        fill={SOFT}
+        fillOpacity={0.4}
+      />
+      <rect
+        x={cx - 72}
+        y={cy + Rin + 18}
+        width={144}
+        height={8}
+        rx={3}
+        fill="currentColor"
+        opacity={0.25}
+      />
+
+      {/* Vattnet inuti globen */}
+      <circle cx={cx} cy={cy} r={Rin} fill={SOFT} fillOpacity={0.22} />
+
+      {/* Partiklar — klippta till globen */}
+      <g clipPath="url(#snow-clip)">
+        {particles.map((p, i) => (
+          <circle
+            key={i}
+            cx={p.x.toFixed(2)}
+            cy={p.y.toFixed(2)}
+            r={p.r}
+            fill={ACCENT}
+            fillOpacity={p.op}
+          />
+        ))}
+      </g>
+
+      {/* Glasets kontur */}
+      <circle
+        cx={cx}
+        cy={cy}
+        r={R}
+        fill="none"
+        stroke="currentColor"
+        strokeOpacity={0.42}
+        strokeWidth={2}
+      />
+      {/* Subtil reflex — antyder glas */}
+      <path
+        d={`M ${cx - R * 0.55} ${cy - R * 0.4} Q ${cx - R * 0.78} ${cy} ${cx - R * 0.45} ${cy + R * 0.38}`}
+        fill="none"
+        stroke="currentColor"
+        strokeOpacity={0.18}
+        strokeWidth={2}
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 // ─── Router ────────────────────────────────────────────────
 const BESPOKE: Record<string, (p: BespokeProps) => ReactElement> = {
   "stang-47-flikar": CloseTabs,
@@ -1571,6 +1702,7 @@ const BESPOKE: Record<string, (p: BespokeProps) => ReactElement> = {
   "mellan-tva-moten": MeetingsTimeline,
   "lov-i-backen": LeavesOnStream,
   "mark-tanken": NameTheThought,
+  "lat-det-singla-ner": SnowGlobeSettle,
 };
 
 export function hasBespoke(id: string | undefined): boolean {
