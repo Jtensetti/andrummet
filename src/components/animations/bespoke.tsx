@@ -1831,28 +1831,31 @@ function HeldInArch(p: BespokeProps) {
     return k * k * (3 - 2 * k);
   };
 
-  // Opacity-envelopes
-  const innerOp = smoothstep(0.20, 0.45, u);
-  const outerOp = smoothstep(0.65, 0.85, u);
+  // Bågarna finns från början — hållandet är redan där.
+  // De fördjupas bara: yttre tonar in tydligare, inre blir varmare när du landar.
+  const outerOp = 0.32 + smoothstep(0.55, 0.85, u) * 0.28;
+  const innerOp = 0.55 + smoothstep(0.25, 0.55, u) * 0.30;
 
   // Boll: vinglar ovanför → driver i båge mot vaggan → liten studs → vila
   const startX = 130;
-  const startY = 72;
+  const startY = 70;
   const wobbleDecay = Math.pow(clamp01(1 - u / 0.45), 2);
   const wobble = Math.sin(t * 2.4) * 18 * wobbleDecay;
 
   const drift = smoothstep(0.30, 0.62, u);
   const ballX = lerp(startX, restX, drift) + wobble * (1 - drift);
-  const ballY = lerp(startY, restY, drift);
+  // Båglik bana: ner och åt sidan, inte rakt
+  const arcLift = Math.sin(drift * Math.PI) * -12;
+  const ballY = lerp(startY, restY, drift) + arcLift;
 
   // Mjuk landningsstuds runt u ≈ 0.62
   const bp = clamp01((u - 0.58) / 0.10);
   const bounce = bp > 0 && bp < 1 ? -Math.sin(bp * Math.PI) * 4 : 0;
 
-  // Andning först när allt är på plats
-  const restPhase = smoothstep(0.85, 1.0, u);
-  const ballR = baseR + breathe * 0.9 * restPhase;
-  const archBreath = 1 + breathe * 0.012 * restPhase;
+  // Andning börjar mjukt så snart bollen har landat
+  const restPhase = smoothstep(0.62, 0.85, u);
+  const ballR = baseR + breathe * 1.1 * restPhase;
+  const archBreath = 1 + breathe * 0.014 * restPhase;
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="h-72 w-72" aria-hidden>
@@ -1864,9 +1867,9 @@ function HeldInArch(p: BespokeProps) {
         }}
       >
         {/* Yttre båge — gemensam mänsklighet, det större som håller */}
-        <path d={outerPath} fill={SOFT} fillOpacity={outerOp * 0.55} />
+        <path d={outerPath} fill={SOFT} fillOpacity={outerOp} />
         {/* Inre båge — vänlighet mot dig själv */}
-        <path d={innerPath} fill={ACCENT} fillOpacity={innerOp * 0.85} />
+        <path d={innerPath} fill={ACCENT} fillOpacity={innerOp} />
       </g>
       {/* Bollen — du, i det här ögonblicket */}
       <circle
